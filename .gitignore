@@ -1,0 +1,14 @@
+# Dependencies / build output
+node_modules/
+dist/
+
+# Local browser automation artifacts
+.playwright-mcp/
+*.log
+
+# Archived / backup files
+archive/
+
+# OS files
+.DS_Store
+Thumbs.db

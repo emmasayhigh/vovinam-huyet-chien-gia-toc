@@ -1,0 +1,5035 @@
+\*02020603050405020304Times New Roman;\*05050102010706020507Symbol;\*020b0604020202020204Arial;Google Sans;
+Georgia;;;;;;;Normal;
+heading 1;
+heading 2;
+heading 3;
+heading 4;
+heading 5;
+heading 6;\*Default Paragraph Font;
+\*
+Normal Table;
+Title;
+Subtitle;\*\'01●;;
+\'01○;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'02\'00.;\'01;
+\'01○;;\'01■;
+;\'01■;
+;\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01●;;
+\'01○;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01●;;
+\'01○;;\'01■;
+;\'01■;
+;\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01●;;
+\'01○;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01●;;
+\'01○;;\'01■;
+;\'01■;
+;\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01●;;
+\'01○;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01●;;
+\'01○;;\'01■;
+;\'01■;
+;\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01●;;
+\'01○;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'02\'00.;\'01;
+\'01○;;\'01■;
+;\'01■;
+;\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'02\'00.;\'01;
+\'01○;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01●;;
+\'01○;;\'01■;
+;\'01■;
+;\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\'01■;;
+\*
+
+\*\*Aspose.Words for Java 23.4.0;
+
+\*013f
+
+
+
+BI\'caN 
+NI\'caN 
+SỬ 
+GIA 
+TỘC 
+HỌ 
+PH\'d3 (
+ĐẠI 
+TO\'c0N 
+THƯ)
+
+
+
+Huyết
+ Chiến
+ Đại
+ Lục
+, Đoạn
+ Nghĩa
+ Đ\'e0i
+ T\'f4
+ Ch\'e2u
+, S\'e1t
+ Thần
+ Vovinam
+ & Mạch
+ Đất
+ Hiếm
+ Thập
+ Vạn
+ Đại
+ Sơn
+
+
+
+
+
+●Tuy\'ean
+ ng\'f4n
+ 
+Họ 
+Ph\'f3:
+ "
+Quyền 
+lực 
+tạo 
+n\'ean 
+gi\'e1 
+trị — 
+Huyết 
+thống, 
+Tr\'ed 
+tuệ, 
+Đo\'e0n 
+kết, 
+Vươn 
+tầm 
+thế 
+giới."
+
+
+
+
+
+●Khẩu
+ hiệu
+ 
+h\'e0o 
+m\'f4n 
+Họ 
+Ph\'f3:
+ "
+Kh\'f4ng 
+chỉ 
+l\'e0 
+anh 
+em 
+m\'e0 
+l\'e0 
+huyền 
+thoại."
+
+
+
+
+
+●Gia
+ quy
+ Họ
+ 
+Ng\'f4:
+ "
+Ng\'f4 
+Sơn 
+Ẩn 
+Vụ, 
+Th\'e2m 
+Bất 
+Khả 
+Trắc — 
+T\'ecnh 
+Đoạn 
+Nghĩa 
+Tuyệt, 
+Kiếm 
+Định 
+C\'e0n 
+Kh\'f4n."
+
+
+
+
+
+●Gia
+ huy
+ Triệu
+ 
+Gia:
+ "
+Thi\'ean 
+Hạ 
+Triệu 
+Gia 
+Vạn 
+Đại 
+Trường 
+Tồn — 
+Đo\'e0n 
+Kết, 
+Tr\'ed 
+Tuệ, 
+Hưng 
+Thịnh."
+
+
+
+
+
+●Gia
+ huấn
+ 
+Họ 
+Đ\'ecnh:
+ "
+C\'e1 
+ch\'e9p 
+vượt 
+vũ 
+m\'f4n 
+h\'f3a 
+rồng — 
+Đặng 
+gia 
+s\'f3ng 
+dữ, 
+nước 
+chảy 
+tiến 
+về."
+
+
+
+
+
+●T\'e2m
+ niệm
+ 
+Hứa 
+Vũ 
+Đại:
+ "
+Muốn 
+đứng 
+tr\'ean 
+đầu 
+thi\'ean 
+hạ, 
+trước 
+hết 
+phải 
+d\'e1m 
+giẫm 
+n\'e1t 
+kẻ 
+đ\'e3 
+cưu 
+mang 
+m\'ecnh."
+
+
+
+BẢNG
+ V\'c0NG
+ NH\'c2N
+ VẬT
+ & ĐẠI
+ THẾ
+ LỰC
+ ĐẠI
+ LỤC
+
+
+
+
+
+
+
+
+Thế
+ gia
+ / Phe
+ ph\'e1i
+	
+
+Nh\'e2n
+ vật
+	
+
+Vai
+ vế
+ / Định
+ vị
+	
+
+Đặc
+ điểm
+ & Vũ
+ kh\'ed
+ nhận
+ diện
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+HỌ
+ PH\'d3
+
+
+
+
+
+
+
+(Đế
+ Chế
+ C\'f4ng
+ Nghệ
+ Thượng
+ Hải
+ - Th\'e2m
+ Quyến
+)	
+
+
+Ph\'f3 
+Mộc 
+Đăng	
+
+
+Chủ 
+Gia 
+Tộc 
+Đời 
+Thứ 4
+	
+
+K\'ednh
+ cận
+ tr\'ed
+ thức
+, \'e1nh
+ mắt
+ sắc
+ như
+ dao
+ cạo
+; thống
+ lĩnh
+ tổ
+ hợp
+ thuật
+ to\'e1n
+ AI
+ v\'e0
+ m\'e1y
+ chủ
+ lượng
+ tử
+ bẻ
+ g\'e3y
+ mọi
+ li\'ean
+ minh
+ kinh
+ tế
+.	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Ph\'f3 
+Văn 
+Anh	
+
+
+Anh 
+Hai — 
+Hậu 
+Phương 
+Th\'e9p	
+
+
+X\'ec 
+g\'e0 
+Habana, 
+ly 
+whisky 
+kh\'f3i; 
+nắm 
+giữ 
+kho 
+v\'e0ng 
+dự 
+trữ, 
+qu\'e2n 
+đo\'e0n 
+l\'ednh 
+đ\'e1nh 
+thu\'ea 
+v\'e0 
+tuyến 
+vận 
+tải 
+ngầm 
+xuy\'ean 
+lục 
+địa.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Ph\'f3 
+Tiến 
+Đăng	
+
+
+Anh 
+Ba — 
+Ti\'ean 
+Phong 
+T\'e1c 
+Chiến	
+
+
+Bản 
+lĩnh 
+phong 
+trần, 
+bậc 
+thầy 
+th\'e2u 
+t\'f3m 
+M&
+A 
+quốc 
+tế; 
+chuy\'ean 
+đ\'e8 
+bẹp 
+c\'e1c 
+tập 
+đo\'e0n 
+th\'f9 
+địch 
+tr\'ean 
+b\'e0n 
+đ\'e0m 
+ph\'e1n.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Ng\'f4 
+Văn 
+Vượng	
+
+
+Quản 
+Gia 
+Đại 
+Đường	
+
+
+\'c2u 
+phục 
+đen, 
+găng 
+tay 
+trắng; 
+trung 
+th\'e0nh 
+tuyệt 
+đối, 
+nắm 
+giữ 
+ch\'eca 
+kh\'f3a 
+mạng 
+lưới 
+ph\'f2ng 
+thủ 
+mật 
+của 
+tổ 
+đ\'ecnh 
+họ 
+Ph\'f3.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Ph\'f3 
+Đặng 
+Ho\'e0ng 
+Anh	
+
+
+Thần 
+Binh 
+Đại 
+Ng\'e0n 
+(Thập
+ Vạn
+ Đại
+ Sơn
+)	
+
+
+Ẩn 
+sĩ 
+tr\'ean 
+d\'e3y 
+Thập 
+Vạn 
+Đại 
+Sơn 
+bi\'ean 
+giới 
+T\'e2y 
+Nam; 
+sở 
+hữu 
+c\'e2y 
+cuốc 
+sắt 
+nguy\'ean 
+khối 38
+kg, 
+truyền 
+nh\'e2n 
+Th\'e1i 
+Cực 
+B\'e1t 
+Qu\'e1i 
+Cước, 
+thủ 
+hộ 
+mạch 
+kho\'e1ng 
+sản 
+chiến 
+lược.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Ph\'f3 
+Dung 
+Hải	
+
+
+Kẻ 
+Bị 
+Khai 
+Trừ / 
+Lưu 
+Đ\'e0y	
+
+
+Anh 
+em 
+họ 
+phản 
+trắc; 
+\'f4m 
+hận 
+th\'f9 
+sau 7 
+năm 
+lưu 
+đ\'e0y 
+v\'f9ng 
+tuyết 
+phủ 
+Hắc 
+Long 
+Giang, 
+l\'e0m 
+nội 
+gi\'e1n 
+cho 
+kẻ 
+th\'f9.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+HỌ
+ NG\'d4
+
+
+
+
+
+
+
+(Thế
+ Lực
+ Ẩn
+ Dật
+ Cực
+ Hạn
+ — K\'ecnh
+ Địch
+ Sinh
+ Tử
+)	
+
+
+Ng\'f4 
+Giang 
+Mạnh	
+
+
+Chủ 
+Gia 
+Tộc 
+Họ 
+Ng\'f4 
+(Đại
+ K\'ecnh
+ Địch
+ Mộc
+ Đăng
+)	
+
+
+Vest 
+x\'e1m 
+may 
+đo 
+thủ 
+c\'f4ng, 
+đồng 
+hồ 
+Tourbillon 
+bạch 
+kim; 
+từng 
+l\'e0 
+huynh 
+đệ 
+kết 
+nghĩa 
+v\'e0o 
+sinh 
+ra 
+tử 
+của 
+Mộc 
+Đăng. 
+V\'ec 
+mối 
+nhục 
+Mộc 
+Đăng 
+ve 
+v\'e3n 
+người 
+y\'eau 
+thanh 
+mai 
+tr\'fac 
+m\'e3, 
+thậm 
+ch\'ed 
+trong 
+cơn 
+say 
+bu\'f4ng 
+lời 
+buột 
+miệng 
+đ\'f2i 
+quan 
+hệ 
+th\'e2n 
+thể 
+với 
+n\'e0ng 
+m\'e0 
+căm 
+hận 
+thấu 
+xương, 
+thề 
+dốc 
+to\'e0n 
+bộ 
+gia 
+tộc 
+lật 
+đổ 
+ngai 
+v\'e0ng 
+họ 
+Ph\'f3.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+HỌ
+ TRIỆU
+
+
+
+
+
+
+
+(Cựu
+ Ho\'e0ng
+ Tộc
+ Phong
+ Kiến
+ — Bắc
+ Kinh
+)	
+
+
+Triệu 
+Vinh 
+T\'e2m	
+
+
+Chủ 
+Gia 
+Tộc 
+Triệu 
+Gia	
+
+
+\'c1o 
+b\'e0o 
+rồng 
+v\'e0ng 
+th\'eau 
+chỉ 
+kim 
+tuyến, 
+chuỗi 
+tr\'e0ng 
+hạt 
+phỉ 
+th\'fay; 
+ngạo 
+mạn 
+hung 
+bạo, 
+mưu 
+đồ 
+xưng 
+b\'e1 
+to\'e0n 
+c\'f5i 
+Trung 
+Nguy\'ean.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Triệu 
+Đ\'ecnh 
+An	
+
+
+Nhị 
+Gia — 
+Thiết 
+Huyết 
+Hộ 
+Vệ	
+
+
+Em 
+ruột 
+Vinh 
+T\'e2m, 
+nắm 
+to\'e0n 
+bộ 
+v\'f5 
+biền 
+v\'e0 
+an 
+ninh 
+Triệu 
+gia; 
+trung 
+th\'e0nh 
+m\'f9 
+qu\'e1ng 
+với 
+anh 
+trai 
+d\'f9 
+biết 
+anh 
+t\'e0n 
+bạo.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Triệu 
+Ho\'e0ng 
+Ch\'e2u	
+
+
+Điệp 
+Vi\'ean 
+B\'f3ng 
+Tối	
+
+
+Gi\'e1n 
+điệp 
+c\'e0i 
+cắm 
+tiếp 
+cận 
+Ph\'f3 
+Tiến 
+Đăng; 
+tự 
+huyễn 
+hoặc 
+bản 
+th\'e2n 
+l\'e0 
+cao 
+thủ 
+thao 
+t\'fang 
+nhưng 
+thực 
+chất 
+bị 
+dắt 
+mũi 
+ngược.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Triệu 
+Đại 
+Lực	
+
+
+Tam 
+C\'f4ng 
+Tử 
+Tr\'e1c 
+T\'e1ng	
+
+
+Bộ 
+\'f3c 
+rửa 
+tiền 
+bẩn 
+của 
+Triệu 
+gia; 
+nghiện 
+ngập 
+anime 18+ 
+VIP 
+v\'e0 
+c\'e1c 
+ph\'f2ng 
+livestream 
+ngầm, 
+lập 
+server 
+triệu 
+đ\'f4 
+thỏa 
+m\'e3n 
+th\'fa 
+t\'ednh.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Cao 
+Thủy 
+Chi	
+
+
+Mẫu 
+Hậu / 
+Nguồn 
+Cội 
+Huyết 
+Thư	
+
+
+Th\'e2n 
+mẫu 
+Triệu 
+Vinh 
+T\'e2m; 
+gh\'ea 
+tởm 
+d\'e3 
+t\'e2m 
+của 
+con 
+trai 
+n\'ean 
+trốn 
+chạy 
+l\'ean 
+Thập 
+Vạn 
+Đại 
+Sơn, 
+được 
+Ho\'e0ng 
+Anh 
+cưu 
+mang, 
+để 
+lại 
+huyết 
+thư 
+phế 
+truất 
+Vinh 
+T\'e2m.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+HỌ
+ Đ\'ccNH
+
+
+
+
+
+
+
+(T\'e2y
+ Hồ
+ H\'e0ng
+ Ch\'e2u
+ — Trại
+ C\'e1
+ Phong
+ Thủy
+)	
+
+
+Đ\'ecnh 
+Danh 
+Thuận	
+
+
+Chủ 
+Gia 
+Tộc 
+Họ 
+Đ\'ecnh	
+
+
+Tr\'f9m 
+trang 
+trại 
+c\'e1 
+Koi "
+Thi\'ean 
+Tr\'ec 
+Thủy 
+C\'e1c" 
+b\'ean 
+bờ 
+T\'e2y 
+Hồ; 
+nho 
+nh\'e3 
+th\'e2m 
+trầm, 
+giữ 
+thế 
+trung 
+lập 
+kiếm 
+lợi 
+h\'e0ng 
+tỷ 
+tệ.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Đ\'ecnh 
+B\'edch 
+L\'e2m	
+
+
+Nhị 
+Gia 
+Lưu 
+Manh	
+
+
+Em 
+trai 
+Thuận; 
+lưng 
+xăm 
+rồng 
+vượt 
+s\'f3ng, 
+nghiện 
+manga 
+giấy 
+cổ 
+điển, 
+bạn 
+sinh 
+tử 
+của 
+Ph\'f3 
+Văn 
+Anh; 
+cực 
+kỳ 
+khinh 
+gh\'e9t 
+lũ 
+tiểu 
+nh\'e2n.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+HẮC
+ ĐẠO
+ & B\'c8
+ LŨ
+ K\'dd
+ SINH
+	
+
+Hứa
+ Vũ
+ Đại
+	
+
+Tr\'f9m
+ K\'fd
+ Sinh
+ & Thao
+ T\'fang
+ Ngầm
+	
+
+Xuất
+ th\'e2n
+ m\'f3c
+ t\'fai
+ ở
+ bến
+ xe
+ Quảng
+ Ch\'e2u
+; d\'f9ng
+ thủ
+ đoạn
+ quay
+ l\'e9n
+, hối
+ lộ
+ để
+ leo
+ l\'ean
+ đỉnh
+ cao
+ quyền
+ lực
+ ngầm
+; bản
+ t\'ednh
+ trộm
+ cắp
+ vặt
+, đa
+ nghi
+ kh\'f4ng
+ vợ
+ con
+.	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+Ng\'f4 
+Nhất 
+Nghị	
+
+
+Đồ 
+Tể 
+Số 1 
+Dưới 
+Trướng 
+Hứa 
+Vũ 
+Đại	
+
+
+Hung 
+thần 
+hộ 
+mệnh 
+của 
+Hứa 
+Vũ 
+Đại. 
+Gốc 
+Việt 
+vượt 
+bi\'ean, 
+thi\'ean 
+t\'e0i 
+v\'f5 
+học 
+qu\'e1i 
+kiệt, 
+bậc 
+thầy 
+s\'e1t 
+thủ 
+tinh 
+th\'f4ng 
+v\'f5 
+thuật 
+Vovinam (
+c\'e1c 
+đ\'f2n 
+kẹp 
+cổ 
+phi 
+th\'e2n 
+trứ 
+danh, 
+cận 
+chiến 
+dao 
+găm 
+t\'e0n 
+khốc).
+	
+
+
+
+
+
+
+
+
+MỞ
+ ĐẦU
+: ĐẠI
+ LỤC
+ PH\'c2N
+ TRANH
+ & HẠCH
+ T\'c2M
+ BẢO
+ MẬT
+
+
+
+Tại
+ Trung
+ Nguy\'ean
+ thế
+ kỷ
+ 21, cục
+ diện
+ ngầm
+ chia
+ l\'e0m
+ ba
+ cực
+:
+
+
+
+
+1.
+Họ 
+Triệu 
+Bắc 
+Kinh:
+ Nắm
+ giữ
+ hệ
+ thống
+ ng\'e2n
+ h\'e0ng
+ truyền
+ thống
+, mỏ
+ than
+ đ\'e1
+ phương
+ Bắc
+ v\'e0
+ mạng
+ lưới
+ s\'e1t
+ thủ
+ ho\'e0ng
+ tộc
+ cổ
+.
+
+
+
+
+2.
+Họ 
+Ph\'f3 
+Thượng 
+Hải:
+ Thống
+ lĩnh
+ c\'f4ng
+ nghệ
+ vi
+ mạch
+, t\'e0i
+ ch\'ednh
+ định
+ lượng
+, mạng
+ lưới
+ điện
+ to\'e1n
+ đ\'e1m
+ m\'e2y
+ Lục
+ Gia
+ Chủy
+.
+
+
+
+
+3.
+Họ 
+Ng\'f4 
+T\'f4 
+Ch\'e2u:
+ Thế
+ lực
+ b\'f3ng
+ ma
+ t\'e0i
+ ch\'ednh
+ ngầm
+, điều
+ h\'e0nh
+ c\'e1c
+ quỹ
+ đầu
+ cơ
+ xuy\'ean
+ bi\'ean
+ giới
+ v\'e0
+ mạng
+ lưới
+ t\'ecnh
+ b\'e1o
+ c\'f4ng
+ nghệ
+ cao
+.
+
+
+
+M\'e2u 
+thuẫn 
+kh\'f4ng 
+c\'f2n 
+dừng 
+lại 
+ở 
+một 
+vi\'ean 
+ngọc 
+ấn 
+tầm 
+thường. 
+Thứ 
+ch\'e2m 
+ng\'f2i 
+cho 
+trận 
+đại 
+chiến 
+sinh 
+tử 
+l\'e0: 
+"Hạch
+ T\'e2m
+ Lượng
+ Tử
+ X\'edch
+ Huyết
+" — 
+bản 
+vẽ 
+kiến 
+tr\'fac 
+si\'eau 
+chip 
+lượng 
+tử 
+kết 
+hợp 
+quyền 
+khai 
+th\'e1c 
+độc 
+quyền 
+Mạch 
+Đất 
+Hiếm 
+Cấp 
+Qu\'e2n 
+Sự 
+ẩn 
+s\'e2u 
+trong 
+l\'f2ng 
+d\'e3y 
+Thập 
+Vạn 
+Đại 
+Sơn (
+v\'f9ng 
+bi\'ean 
+viễn 
+hiểm 
+trở 
+gi\'e1p 
+Việt - 
+Trung).
+
+
+
+Ai
+ kiểm
+ so\'e1t
+ được
+ hạch
+ t\'e2m
+ n\'e0y
+, kẻ
+ đ\'f3
+ sẽ
+ nắm
+ giữ
+ yết
+ hầu
+ năng
+ lượng
+ v\'e0
+ thuật
+ to\'e1n
+ thao
+ t\'fang
+ to\'e0n
+ bộ
+ hệ
+ thống
+ t\'e0i
+ ch\'ednh
+ \'c1
+ Ch\'e2u
+.
+
+
+
+HỒI 1: 
+TỨ 
+TRỤ 
+HO\'c0NG 
+KIM & 
+ĐẾ 
+CHẾ 
+LỤC 
+GIA 
+CHỦY
+
+
+
+Tr\'ean 
+tầng 88 
+của 
+t\'f2a 
+th\'e1p 
+t\'e0i 
+ch\'ednh 
+chọc 
+trời 
+nh\'ecn 
+xuống 
+bến 
+Thượng 
+Hải, 
+tổ 
+hợp 
+Ph\'f3 
+Gia 
+vận 
+h\'e0nh 
+như 
+một 
+cỗ 
+m\'e1y 
+th\'e9p:
+
+
+
+
+
+●Ph\'f3
+ Mộc
+ 
+Đăng:
+ Ngồi
+ b\'ean
+ d\'e0n
+ m\'e1y
+ chủ
+ lượng
+ tử
+, g\'f5
+ nhẹ
+ ng\'f3n
+ tay
+ l\'ean
+ b\'e0n
+ ph\'edm
+. Cặp
+ k\'ednh
+ cận
+ phản
+ chiếu
+ đồ
+ thị
+ ngh\'ecn
+ tỷ
+ Nh\'e2n
+ d\'e2n
+ tệ
+. Chỉ
+ bằng
+ ba
+ thuật
+ to\'e1n
+ AI
+ tự
+ ph\'e1t
+ triển
+, Mộc
+ Đăng
+ đ\'e3
+ đ\'e1nh
+ sập
+ 12 quỹ
+ đầu
+ cơ
+ b\'e1n
+ khống
+ nhắm
+ v\'e0o
+ tập
+ đo\'e0n
+.
+
+
+
+
+●
+Ph\'f3 
+Văn 
+Anh:
+ Nhả
+ kh\'f3i
+ x\'ec
+ g\'e0
+ Habana
+, nhấp
+ ngụm
+ whisky
+ đơn
+ mạch
+ nha
+: "
+Mộc 
+Đăng, 
+em 
+cứ 
+việc 
+điều 
+khiển 
+d\'f2ng 
+tiền 
+thế 
+giới. 
+Mặt 
+đất 
+đầy 
+b\'f9n 
+gai 
+v\'e0 
+m\'e1u 
+me 
+ph\'eda 
+sau, 
+đ\'e3 
+c\'f3 
+anh 
+hai 
+g\'e1c 
+s\'fang."
+
+
+
+
+
+●Ph\'f3
+ Tiến
+ 
+Đăng:
+ Vừa
+ kết
+ th\'fac
+ thương
+ vụ
+ th\'e2u
+ t\'f3m
+ cảng
+ biển
+ nước
+ s\'e2u
+ tại
+ Ninh
+ Ba
+, tuy\'ean
+ bố
+ d\'f5ng
+ dạc
+ trước
+ hội
+ đồng
+ cổ
+ đ\'f4ng
+: "
+Kh\'f4ng 
+chỉ 
+l\'e0 
+anh 
+em 
+m\'e0 
+l\'e0 
+huyền 
+thoại!"
+
+
+
+
+
+●Ng\'f4
+ Văn
+ 
+Vượng:
+ C\'fai
+ đầu
+ k\'ednh
+ cẩn
+, găng
+ tay
+ trắng
+ tinh
+ tươm
+ r\'f3t
+ tr\'e0
+ Long
+ Tỉnh
+ thượng
+ hạng
+, kiểm
+ tra
+ từng
+ lớp
+ qu\'e9t
+ v\'f5ng
+ mạc
+ bảo
+ vệ
+ đại
+ bản
+ doanh
+.
+
+
+
+HỒI 2: 
+ĐOẠN 
+NGHĨA 
+Đ\'c0I 
+T\'d4 
+CH\'c2U & 
+VẾT 
+NHƠ 
+CUỘC 
+RƯỢU 
+ĐOẠN 
+T\'ccNH
+
+
+
+B\'ean 
+ngo\'e0i 
+\'e1nh 
+đ\'e8n 
+hoa 
+lệ 
+của 
+Thượng 
+Hải, 
+b\'f3ng 
+đen 
+nguy 
+hiểm 
+nhất 
+kh\'f4ng 
+đến 
+từ 
+Triệu 
+gia, 
+m\'e0 
+ẩn 
+m\'ecnh 
+tại 
+c\'e1c 
+hoa 
+vi\'ean 
+cổ 
+k\'ednh 
+ở 
+T\'f4 
+Ch\'e2u: 
+Chủ 
+gia 
+tộc 
+Họ 
+Ng\'f4 — 
+Ng\'f4 
+Giang 
+Mạnh.
+
+
+
+Năm
+ xưa
+, Ph\'f3
+ Mộc
+ Đăng
+ v\'e0
+ Ng\'f4
+ Giang
+ Mạnh
+ từng
+ l\'e0
+ tri
+ kỷ
+ kết
+ b\'e1i
+ bến
+ Thượng
+ Hải
+, c\'f9ng
+ chia
+ nhau
+ từng
+ d\'f2ng
+ code
+, từng
+ điếu
+ thuốc
+ thời
+ lập
+ nghiệp
+. Thế
+ nhưng
+, t\'ecnh
+ anh
+ em
+ bằng
+ sắt
+ đ\'e1
+ đ\'e3
+ vỡ
+ tan
+ th\'e0nh
+ tro
+ bụi
+ bắt
+ nguồn
+ từ
+ một
+ b\'f3ng
+ hồng
+:
+
+
+
+
+●
+Hạ 
+Thanh 
+Lam — 
+thi\'ean 
+kim 
+tiểu 
+thư 
+d\'f2ng 
+d\'f5i 
+thư 
+hương 
+T\'f4 
+Ch\'e2u, 
+vị 
+h\'f4n 
+th\'ea 
+thanh 
+mai 
+tr\'fac 
+m\'e3 
+m\'e0 
+Ng\'f4 
+Giang 
+Mạnh 
+tr\'e2n 
+qu\'fd 
+hơn 
+cả 
+sinh 
+mạng.
+
+
+
+
+
+●Mộc
+ Đăng
+, 
+khi 
+ấy 
+đang 
+tr\'ean 
+đỉnh 
+cao 
+danh 
+vọng 
+ban 
+đầu, 
+ỷ 
+v\'e0o 
+t\'e0i 
+tr\'ed 
+v\'f4 
+song 
+v\'e0 
+kh\'ed 
+chất 
+ngạo 
+mạn 
+ng\'fat 
+trời, 
+đ\'e3 
+kh\'f4ng 
+ki\'eang 
+d\'e8 
+m\'e0 
+li\'ean 
+tục 
+ve 
+v\'e3n, 
+bu\'f4ng 
+lời 
+t\'e1n 
+tỉnh 
+Thanh 
+Lam 
+ngay 
+trước 
+mặt 
+Giang 
+Mạnh. 
+Mạnh 
+nhiều 
+lần 
+nuốt 
+giận 
+v\'ec 
+t\'ecnh 
+anh 
+em, 
+khuy\'ean 
+bạn 
+dừng 
+bước.
+
+
+
+
+
+●Bi
+ kịch
+ 
+b\'f9ng 
+nổ 
+trong 
+một 
+đ\'eam 
+tiệc 
+ri\'eang 
+b\'ean 
+hồ 
+Kim 
+K\'ea. 
+Dưới 
+men 
+rượu 
+bốc 
+đồng 
+v\'e0 
+th\'f3i 
+tự 
+t\'f4n 
+ngạo 
+nghễ 
+coi 
+thi\'ean 
+hạ 
+bằng 
+vung, 
+Ph\'f3 
+Mộc 
+Đăng 
+đ\'e3 
+cười 
+nhạt, 
+buột 
+miệng 
+thốt 
+ra 
+một 
+c\'e2u 
+c\'e0n 
+rỡ 
+v\'f4 
+li\'eam 
+sỉ: 
+hắn 
+đ\'f2i 
+qua 
+đ\'eam, 
+muốn 
+c\'f3 
+được 
+quan 
+hệ 
+th\'e2n 
+x\'e1c 
+với 
+Hạ 
+Thanh 
+Lam 
+để 
+thử 
+th\'e1ch 
+bản 
+lĩnh 
+đ\'e0n 
+\'f4ng.
+
+
+
+Đối
+ với
+ một
+ kẻ
+ xem
+ trọng
+ cốt
+ c\'e1ch
+ qu\'fd
+ tộc
+ v\'e0
+ danh
+ dự
+ như
+ Ng\'f4
+ Giang
+ Mạnh
+, c\'e2u
+ n\'f3i
+ đ\'f3
+ kh\'f4ng
+ c\'f2n
+ l\'e0
+ sự
+ tr\'eau
+ đ\'f9a
+ hay
+ cạnh
+ tranh
+ b\'ecnh
+ thường
+, m\'e0
+ l\'e0
+ một
+ nh\'e1t
+ dao
+ tẩm
+ độc
+ cắm
+ thẳng
+ v\'e0o
+ t\'f4n
+ nghi\'eam
+ người
+ phụ
+ nữ
+ hắn
+ y\'eau
+ v\'e0
+ ch\'e0
+ đạp
+ l\'ean
+ chữ
+ "Nghĩa
+" huynh
+ đệ
+.
+
+
+
+Tại 
+Đoạn 
+Nghĩa 
+Đ\'e0i 
+trong 
+đ\'eam 
+mưa 
+b\'e3o 
+gầm 
+x\'e9, 
+Ng\'f4 
+Giang 
+Mạnh 
+đập 
+vỡ 
+ly 
+rượu, 
+r\'fat 
+đoản 
+kiếm 
+bẻ 
+g\'e3y 
+l\'e0m 
+đ\'f4i, 
+mắt 
+đỏ 
+ngầu 
+gằn 
+từng 
+chữ:
+
+
+
+"
+Ph\'f3 
+Mộc 
+Đăng! 
+M\'e0y 
+ỷ 
+t\'e0i 
+khinh 
+thế, 
+d\'e1m 
+mở 
+mồm 
+th\'e8m 
+kh\'e1t 
+th\'e2n 
+x\'e1c 
+vợ 
+sắp 
+cưới 
+của 
+tao! 
+Sự 
+sỉ 
+nhục 
+n\'e0y, 
+đời 
+n\'e0y 
+kiếp 
+n\'e0y 
+Ng\'f4 
+Giang 
+Mạnh 
+tao 
+kh\'f4ng 
+rửa 
+bằng 
+m\'e1u 
+th\'ec 
+thề 
+kh\'f4ng 
+l\'e0m 
+người! 
+Từ 
+nay 
+về 
+sau, 
+nơi 
+n\'e0o 
+c\'f3 
+b\'f3ng 
+cờ 
+Họ 
+Ph\'f3, 
+Họ 
+Ng\'f4 
+tao 
+sẽ 
+l\'e0 
+lưỡi 
+h\'e1i 
+b\'f3ng 
+ma 
+k\'e9o 
+sập 
+ngai 
+v\'e0ng 
+của 
+m\'e0y!"
+
+
+
+Giang
+ Mạnh
+ triệt
+ tho\'e1i
+ to\'e0n
+ bộ
+ t\'e0i
+ lực
+, đưa
+ họ
+ Ng\'f4
+ ẩn
+ m\'ecnh
+ v\'e0o
+ b\'f3ng
+ tối
+, biến
+ th\'e0nh
+ một
+ thế
+ lực
+ t\'e0i
+ ch\'ednh
+ ngầm
+ chuy\'ean
+ r\'ecnh
+ rập
+ cắn
+ n\'e1t
+ mọi
+ huyết
+ mạch
+ kinh
+ tế
+ của
+ Mộc
+ Đăng
+.
+
+
+
+HỒI 3: 
+HẮC 
+ĐẠO 
+HỨA 
+VŨ 
+ĐẠI & 
+S\'c1T 
+THẦN 
+VOVINAM 
+NG\'d4 
+NHẤT 
+NGHỊ
+
+
+
+Khi 
+ngọn 
+lửa 
+giữa 
+Ph\'f3 
+gia 
+v\'e0 
+Ng\'f4 
+gia 
+\'e2m 
+ỉ, 
+thế 
+lực 
+hắc 
+đạo 
+bẩn 
+thỉu 
+nhất 
+phương 
+Nam 
+trỗi 
+dậy:
+
+
+
+1. 
+Hứa 
+Vũ 
+Đại — 
+Kẻ 
+Đục 
+Nước 
+B\'e9o 
+C\'f2
+
+
+
+Khởi 
+nghiệp 
+từ 
+một 
+t\'ean 
+trộm 
+vặt 
+tại 
+c\'e1c 
+khu 
+chợ 
+đen 
+bến 
+xe 
+Quảng 
+Ch\'e2u, 
+Hứa 
+Vũ 
+Đại 
+d\'f9ng 
+thủ 
+đoạn 
+quay 
+l\'e9n 
+giường 
+chiếu, 
+tống 
+tiền 
+quan 
+chức 
+để 
+th\'e2u 
+t\'f3m 
+c\'e1c 
+dự 
+\'e1n 
+hạ 
+tầng 
+ngầm.
+
+
+
+
+
+●Hắn
+ cực
+ 
+kỳ 
+gi\'e0u 
+nhưng 
+bản 
+t\'ednh 
+bần 
+tiện 
+ăn 
+s\'e2u 
+v\'e0o 
+tủy: 
+đi 
+dự 
+tiệc 
+h\'e0o 
+m\'f4n 
+ở 
+Thượng 
+Hải 
+vẫn 
+l\'e9n 
+nh\'e9t 
+gạt 
+t\'e0n 
+mạ 
+v\'e0ng 
+hay 
+dao 
+th\'eca 
+bạc 
+v\'e0o 
+t\'fai 
+vest.
+
+
+
+
+
+●Đa
+ nghi
+ 
+đến 
+bệnh 
+hoạn: 
+Kh\'f4ng 
+vợ, 
+kh\'f4ng 
+con, 
+ngủ 
+trong 
+biệt 
+thự 
+c\'f3 9 
+lớp 
+m\'e3 
+số 
+sinh 
+trắc 
+học, 
+tay 
+lu\'f4n 
+\'f4m 
+s\'fang 
+ngắn 
+v\'ec 
+sợ 
+người 
+kh\'e1c 
+đầu 
+độc 
+đoạt 
+t\'e0i 
+sản.
+
+
+
+2. 
+Ng\'f4 
+Nhất 
+Nghị — 
+Cỗ 
+M\'e1y 
+Giết 
+Người 
+Độc 
+Nhất 
+V\'f4 
+Nhị
+
+
+
+B\'ean 
+cạnh 
+kẻ 
+đa 
+nghi 
+như 
+Hứa 
+Vũ 
+Đại 
+chỉ 
+c\'f3 
+một 
+người 
+được 
+hắn 
+tin 
+cậy 
+tuyệt 
+đối: 
+Ng\'f4 
+Nhất 
+Nghị.
+
+
+
+
+
+●Nghị
+ l\'e0
+ 
+một 
+s\'e1t 
+thủ 
+gốc 
+Việt 
+vượt 
+bi\'ean, 
+từng 
+lăn 
+lộn 
+qua 
+c\'e1c 
+v\'f5 
+đ\'e0i 
+sinh 
+tử 
+ngầm 
+Đ\'f4ng 
+Nam 
+\'c1 
+trước 
+khi 
+về 
+dưới 
+trướng 
+họ 
+Hứa.
+
+
+
+
+
+●V\'f5
+ c\'f4ng
+ 
+tuyệt 
+đỉnh:
+ Ng\'f4
+ Nhất
+ Nghị
+ l\'e0
+ qu\'e1i
+ kiệt
+ thượng
+ thừa
+ của
+ m\'f4n
+ ph\'e1i
+ Vovinam
+ — Việt
+ V\'f5
+ Đạo
+. Với
+ th\'e2n
+ ph\'e1p
+ nhẹ
+ tựa
+ l\'f4ng
+ hồng
+ nhưng
+ s\'e1t
+ thương
+ nặng
+ tựa
+ th\'e1i
+ sơn
+, Nghị
+ nổi
+ danh
+ với
+ ng\'f3n
+ đ\'f2n
+:
+
+
+
+
+○
+Hệ 
+thống 21 
+đ\'f2n 
+ch\'e2n 
+triệt 
+hạ (
+Kẹp 
+cổ 
+bay 
+người):
+ Chuy\'ean
+ phi
+ th\'e2n
+ tr\'ean
+ kh\'f4ng
+ trung
+, d\'f9ng
+ hai
+ ch\'e2n
+ kẹp
+ g\'e3y
+ cổ
+ đối
+ phương
+ trong
+ chớp
+ mắt
+.
+
+
+
+
+○
+Song 
+đao 
+cận 
+chiến & 
+Nhập 
+nội 
+chỏ 
+gối:
+ Biến
+ mọi
+ kh\'f4ng
+ gian
+ hẹp
+ th\'e0nh
+ l\'f2
+ s\'e1t
+ sinh
+ đẫm
+ m\'e1u
+.
+
+
+
+
+●
+Ch\'ednh 
+nhờ 
+lưỡi 
+đao 
+v\'e0 
+những 
+c\'fa 
+kẹp 
+cổ 
+kinh 
+ho\'e0ng 
+của 
+Ng\'f4 
+Nhất 
+Nghị, 
+Hứa 
+Vũ 
+Đại 
+mới 
+thanh 
+trừng 
+được 
+h\'e0ng 
+chục 
+đối 
+thủ 
+cản 
+đường 
+để 
+ngồi 
+l\'ean 
+ghế 
+tr\'f9m 
+ngầm.
+
+
+
+HỒI
+ 4: HUYẾT
+ THƯ
+ THẬP
+ VẠN
+ ĐẠI
+ SƠN
+ & NGUỒN
+ CỘI
+ HO\'c0NG
+ ANH
+
+
+
+Một
+ ẩn
+ số
+ lớn
+ kh\'e1c
+ nằm
+ ở
+ bi\'ean
+ viễn
+ T\'e2y
+ Nam
+: D\'e3y
+ Thập
+ Vạn
+ Đại
+ Sơn
+ quanh
+ năm
+ m\'e2y
+ m\'f9
+ bao
+ phủ
+. Nơi
+ đ\'e2y
+ cất
+ giấu
+ tọa
+ độ
+ mạch
+ đất
+ hiếm
+ chiến
+ lược
+ v\'e0
+ ch\'eca
+ kh\'f3a
+ thuật
+ to\'e1n
+ lượng
+ tử
+ tối
+ mật
+ do
+ B\'e0
+ Cao
+ Thủy
+ Chi
+ — mẹ
+ ruột
+ Triệu
+ Vinh
+ T\'e2m
+ nắm
+ giữ
+.
+
+
+
+Ba 
+mươi 
+năm 
+trước, 
+kh\'f4ng 
+chịu 
+nổi 
+sự 
+t\'e0n 
+bạo 
+bất 
+nh\'e2n 
+của 
+chồng 
+v\'e0 
+con 
+trai 
+Triệu 
+Vinh 
+T\'e2m, 
+b\'e0 
+Thủy 
+Chi 
+\'f4m 
+t\'e0i 
+liệu 
+mật 
+trốn 
+chạy 
+về 
+Thập 
+Vạn 
+Đại 
+Sơn. 
+Tại 
+đ\'e2y, 
+b\'e0 
+kiệt 
+sức 
+v\'e0 
+được 
+gia 
+đ\'ecnh 
+người 
+thợ 
+rừng 
+Ph\'f3 
+Đặng 
+Ho\'e0ng 
+Anh 
+cưu 
+mang 
+cứu 
+sống.
+
+
+
+B\'e0
+ sống
+ những
+ năm
+ cuối
+ đời
+ thanh
+ bần
+, coi
+ Ho\'e0ng
+ Anh
+ như
+ con
+ ruột
+, c\'f9ng
+ anh
+ gieo
+ ng\'f4
+, luyện
+ v\'f5
+. Trước
+ khi
+ nhắm
+ mắt
+, b\'e0
+ Thủy
+ Chi
+ để
+ lại
+ huyết
+ thư
+:
+
+
+
+"Nghịch
+ tử
+ Triệu
+ Vinh
+ T\'e2m
+ l\'f2ng
+ dạ
+ lang
+ s\'f3i
+, c\'e2u
+ kết
+ hắc
+ đạo
+. Nay
+ ta
+ trao
+ to\'e0n
+ bộ
+ quyền
+ kiểm
+ so\'e1t
+ mỏ
+ t\'e0i
+ nguy\'ean
+ chiến
+ lược
+ v\'e0
+ huyết
+ thư
+ vạch
+ trần
+ tội
+ \'e1c
+ Triệu
+ gia
+ cho
+ Ho\'e0ng
+ Anh
+. Ng\'e0y
+ n\'e0o
+ Triệu
+ Vinh
+ T\'e2m
+ chưa
+ quỳ
+ s\'e1m
+ hối
+ trước
+ b\'e1ch
+ t\'ednh
+ th\'ec
+ vĩnh
+ viễn
+ kh\'f4ng
+ được
+ b\'e9n
+ mảng
+ đến
+ mộ
+ phần
+ ta
+!"
+
+
+
+Triệu 
+Vinh 
+T\'e2m 
+coi 
+việc 
+mẹ 
+ruột 
+truyền 
+trao 
+cơ 
+mật 
+quốc 
+gia 
+cho 
+một "
+thằng 
+tiều 
+phu 
+Thập 
+Vạn 
+Đại 
+Sơn" 
+l\'e0 
+sự 
+sỉ 
+nhục 
+gia 
+tộc 
+lớn 
+nhất, 
+thề 
+ph\'e1i 
+đại 
+qu\'e2n 
+san 
+phẳng 
+đỉnh 
+n\'fai.
+
+
+
+HỒI
+ 5: HUYẾT
+ CHIẾN
+ THẬP
+ VẠN
+ ĐẠI
+ SƠN
+ — CUỐC
+ SẮT
+ ĐỐI
+ ĐẦU
+ Đ\'d2N
+ KẸP
+ CỔ
+ VOVINAM
+
+
+
+Được
+ kẻ
+ phản
+ đồ
+ Ph\'f3
+ Dung
+ Hải
+ dẫn
+ đường
+, Triệu
+ Vinh
+ T\'e2m
+ thu\'ea
+ trực
+ thăng
+ vũ
+ trang
+ kết
+ hợp
+ c\'f9ng
+ Hứa
+ Vũ
+ Đại
+ v\'e0
+ s\'e1t
+ thủ
+ Ng\'f4
+ Nhất
+ Nghị
+ ồ
+ ạt
+ tấn
+ c\'f4ng
+ Thập
+ Vạn
+ Đại
+ Sơn
+ h\'f2ng
+ đoạt
+ hạch
+ t\'e2m
+ đất
+ hiếm
+.
+
+
+
+Giữa 
+đ\'eam 
+mưa 
+b\'e3o 
+tuyết 
+rơi 
+trắng 
+x\'f3a 
+rừng 
+gi\'e0, 
+một 
+cuộc 
+huyết 
+chiến 
+kinh 
+thi\'ean 
+động 
+địa 
+b\'f9ng 
+nổ:
+
+
+
+
+
+●S\'e1t
+ Thần
+ 
+Vovinam 
+Xuất 
+Chi\'eau:
+ Ng\'f4
+ Nhất
+ Nghị
+ dẫn
+ đầu
+ to\'e1n
+ l\'ednh
+ đ\'e1nh
+ thu\'ea
+ lao
+ l\'ean
+ đỉnh
+ dốc
+. Đối
+ mặt
+ với
+ cận
+ vệ
+ địa
+ phương
+, Nghị
+ thi
+ triển
+ tuyệt
+ kỹ
+ Vovinam
+: phi
+ th\'e2n
+ đạp
+ tường
+, tung
+ người
+ l\'ean
+ cao
+ 3 m\'e9t
+ thực
+ hiện
+ đ\'f2n
+ kẹp
+ cổ
+ số
+ 7 bẻ
+ g\'e3y
+ cổ
+ hai
+ tay
+ s\'fang
+ trong
+ tiếng
+ rắc
+ rợn
+ người
+! Lưỡi
+ dao
+ găm
+ trong
+ tay
+ hắn
+ vạch
+ th\'e0nh
+ những
+ đường
+ cung
+ chết
+ ch\'f3c
+, nhuộm
+ đỏ
+ tuyết
+ trắng
+.
+
+
+
+
+●
+Thần 
+Binh 
+Ho\'e0ng 
+Anh 
+Trấn 
+Sơn:
+ Đ\'fang
+ l\'fac
+ Nghị
+ chuẩn
+ bị
+ ph\'e1
+ cổng
+ hầm
+ mỏ
+, Ph\'f3
+ Đặng
+ Ho\'e0ng
+ Anh
+ xuất
+ hiện
+. Tr\'ean
+ tay
+ anh
+ l\'e0
+ c\'e2y
+ cuốc
+ sắt
+ đặc
+ chế
+ nặng
+ 38kg
+.
+
+
+
+
+●
+Đại 
+Chiến 
+Đỉnh 
+Cao:
+
+
+
+
+
+○Ng\'f4
+ Nhất
+ Nghị
+ đảo
+ bộ
+ thoăn
+ thoắt
+, lộn
+ người
+ tung
+ đ\'f2n
+ ch\'e2n
+ kẹp
+ cổ
+ số
+ 11 nhắm
+ thẳng
+ v\'e0o
+ đầu
+ Ho\'e0ng
+ Anh
+!
+
+
+
+
+○
+Th\'e2n 
+ph\'e1p 
+Ho\'e0ng 
+Anh 
+vững 
+như 
+b\'e0n 
+thạch. 
+Vận 
+dụng 
+b\'ed 
+kỹ 
+Th\'e1i 
+Cực 
+B\'e1t 
+Qu\'e1i 
+Cước 
+N\'f4ng 
+Nghiệp, 
+Ho\'e0ng 
+Anh 
+kh\'f4ng 
+l\'f9i 
+m\'e0 
+tiến, 
+mượn 
+đ\'e0 
+xoay 
+trục, 
+vung 
+c\'e1n 
+cuốc 
+sắt 38
+kg 
+qu\'e9t 
+ngang 
+như 
+sấm 
+s\'e9t!
+
+
+
+
+
+○B\'d9NG
+! 
+C\'fa 
+va
+ chạm
+ giữa
+ mũi
+ gi\'e0y
+ th\'e9p
+ của
+ s\'e1t
+ thủ
+ Vovinam
+ v\'e0
+ c\'e1n
+ cuốc
+ đặc
+ th\'e9p
+ tạo
+ n\'ean
+ \'e2m
+ thanh
+ ch\'e1t
+ ch\'faa
+ l\'e0m
+ rung
+ chuyển
+ cả
+ v\'e1ch
+ đ\'e1
+.
+
+
+
+
+○
+Ng\'f4 
+Nhất 
+Nghị 
+bị 
+lực 
+chấn 
+kinh 
+hồn 
+đ\'e1nh 
+dội 
+ngược 
+ra 
+sau, 
+g\'e3y 
+hai 
+xương 
+sườn, 
+hộc 
+m\'e1u 
+mồm. 
+Nhận 
+ra 
+kh\'f4ng 
+thể 
+d\'f9ng 
+đ\'f2n 
+thế 
+cận 
+chiến 
+đ\'e8 
+bẹp 
+được 
+sức 
+mạnh 
+khai 
+sơn 
+ph\'e1 
+thạch 
+của 
+c\'e2y 
+cuốc 
+sắt, 
+Nghị 
+buộc 
+phải 
+\'f4m 
+ngực, 
+tung 
+lựu 
+đạn 
+kh\'f3i 
+r\'fat 
+lui 
+trong 
+cay 
+đắng.
+
+
+
+
+
+●Ph\'f3
+ Dung
+ 
+Hải 
+toan 
+\'e1m 
+to\'e1n 
+l\'e9n 
+l\'fat 
+th\'ec 
+bị 
+Ho\'e0ng 
+Anh 
+gạt 
+phăng 
+một 
+c\'e1n 
+cuốc 
+g\'e3y 
+l\'eca 
+bả 
+vai, 
+b\'f2 
+lết 
+van 
+xin.
+
+
+
+Rạng
+ s\'e1ng
+, đo\'e0n
+ xe
+ thiết
+ gi\'e1p
+ của
+ ba
+ anh
+ em
+ Ph\'f3
+ Mộc
+ Đăng
+, Ph\'f3
+ Văn
+ Anh
+, Ph\'f3
+ Tiến
+ Đăng
+ đ\'edch
+ th\'e2n
+ tiến
+ v\'e0o
+ n\'fai
+. Mộc
+ Đăng
+ bước
+ xuống
+ xe
+, c\'fai
+ đầu
+ k\'ednh
+ cẩn
+ trước
+ người
+ anh
+ họ
+ ng\'e0n
+ dặm
+:
+
+
+
+"Em
+ ch\'e0o
+ anh
+ Ho\'e0ng
+ Anh
+. Ch\'fang
+ em
+ l\'ean
+ đ\'f3n
+ anh
+ mang
+ Hạch
+ T\'e2m
+ Lượng
+ Tử
+ v\'e0
+ di
+ nguyện
+ của
+ B\'e1c
+ Chi
+ về
+ Thượng
+ Hải
+ định
+ đoạt
+ thi\'ean
+ hạ
+!"
+
+
+
+Ho\'e0ng 
+Anh 
+v\'e1c 
+cuốc 
+sắt 
+l\'ean 
+vai, 
+cười 
+vang 
+r\'fang 
+động 
+n\'fai 
+rừng:
+
+
+
+"
+Được! 
+Tao 
+đợi 
+ch\'fang 
+m\'e0y 
+l\'e2u 
+rồi! 
+Thằng 
+T\'e2m 
+d\'e1m 
+xua 
+ch\'f3 
+săn 
+l\'ean 
+đ\'e0o 
+mả 
+mẹ 
+Chi, 
+c\'f2n 
+lũ 
+trộm 
+cướp 
+Hứa 
+Vũ 
+Đại 
+d\'e1m 
+th\'f2 
+tay 
+bẩn 
+v\'e0o 
+đ\'e2y, 
+c\'e1i 
+cuốc 
+sắt 
+n\'e0y 
+sẽ 
+nện 
+n\'e1t 
+sọ 
+từng 
+thằng!"
+
+
+
+HỒI
+ 6: NƯỚC
+ CỜ
+ BẪY
+ NGƯỢC
+ TẠI
+ TRẠI
+ C\'c1
+ T\'c2Y
+ HỒ
+ & HẦM
+ NGẦM
+ MA
+ CAO
+
+
+
+Trở
+ về
+ đồng
+ bằng
+, trận
+ thế
+ chuyển
+ sang
+ H\'e0ng
+ Ch\'e2u
+ v\'e0
+ đặc
+ khu
+ Ma
+ Cao
+:
+
+
+
+
+1.
+Vạch 
+Mặt 
+Gi\'e1n 
+Điệp:
+ Tại
+ Trại
+ c\'e1
+ Koi
+ T\'e2y
+ Hồ
+ của
+ họ
+ Đ\'ecnh
+, Triệu
+ Ho\'e0ng
+ Ch\'e2u
+ l\'e9n
+ gặp
+ Ph\'f3
+ Tiến
+ Đăng
+ định
+ tuồn
+ tin
+ t\'ecnh
+ b\'e1o
+ giả
+ nhằm
+ đ\'e1nh
+ lạc
+ hướng
+. Tiến
+ Đăng
+ thong
+ thả
+ đặt
+ l\'ean
+ b\'e0n
+ tập
+ hồ
+ sơ
+ sao
+ k\'ea
+ to\'e0n
+ bộ
+ giao
+ dịch
+ ngầm
+ của
+ Ch\'e2u
+, mỉm
+ cười
+: "
+Cậu 
+nghĩ 
+cậu 
+đang 
+dắt 
+mũi 
+t\'f4i 
+sao, 
+Ho\'e0ng 
+Ch\'e2u? 
+Mọi 
+dữ 
+liệu 
+cậu 
+c\'f3 
+đều 
+l\'e0 
+thứ 
+t\'f4i 
+muốn 
+Triệu 
+Vinh 
+T\'e2m 
+nuốt 
+chửng."
+ Ch\'e2u
+ ng\'e3
+ quỵ
+ run
+ rẩy
+.
+
+
+
+
+2.
+Đột 
+K\'edch 
+Động 
+Quỷ 
+Ma 
+Cao:
+
+
+
+
+
+○Nhờ
+ mật
+ b\'e1o
+ chuẩn
+ x\'e1c
+ từ
+ Quản
+ gia
+ Vượng
+, Đ\'ecnh
+ B\'edch
+ L\'e2m
+ c\'f9ng
+ Ph\'f3
+ Văn
+ Anh
+ dẫn
+ theo
+ biệt
+ đội
+ th\'e2m
+ nhập
+ thẳng
+ v\'e0o
+ hầm
+ m\'e1y
+ chủ
+ ngầm
+ của
+ Triệu
+ Đại
+ Lực
+ ở
+ Ma
+ Cao
+.
+
+
+
+
+○
+Tại 
+hiện 
+trường, 
+Triệu 
+Đại 
+Lực 
+đang 
+tr\'f9m 
+chăn 
+xem 
+anime 18+ 
+VIP 
+trong 
+trạng 
+th\'e1i 
+ph\'ea 
+thuốc, 
+trong 
+khi 
+Hứa 
+Vũ 
+Đại 
+đang 
+l\'e9n 
+l\'fat 
+cạy 
+k\'e9t 
+sắt 
+của 
+Đại 
+Lực 
+để 
+ăn 
+cắp 
+chiếc 
+USB 
+chứa 200 
+triệu 
+USD 
+tiền 
+ảo 
+định 
+tẩu 
+tho\'e1t 
+một 
+m\'ecnh!
+
+
+
+
+
+○Đ\'ecnh
+ B\'edch
+ 
+L\'e2m 
+t\'e1ng 
+cho 
+Triệu 
+Đại 
+Lực 
+một 
+bạt 
+tai 
+trời 
+gi\'e1ng 
+tịch 
+thu 
+to\'e0n 
+bộ 
+ổ 
+cứng. 
+Ph\'f3 
+Văn 
+Anh 
+r\'fat 
+s\'fang 
+lục 
+n\'e9n 
+giảm 
+thanh 
+g\'ed 
+thẳng 
+v\'e0o 
+tr\'e1n 
+Hứa 
+Vũ 
+Đại: 
+"M\'e0y
+ quen
+ th\'f3i
+ m\'f3c
+ t\'fai
+ từ
+ bến
+ xe
+ đến
+ tận
+ s\'e0o
+ huyệt
+ đồng
+ bọn
+ hả
+ Vũ
+ Đại
+? H\'f4m
+ nay
+ tao
+ cắt
+ đứt
+ b\'e0n
+ tay
+ trộm
+ cắp
+ bẩn
+ thỉu
+ của
+ m\'e0y
+!"
+
+
+
+HỒI 7: 
+TỔNG 
+PHẢN 
+C\'d4NG 
+BẾN 
+THƯỢNG 
+HẢI & 
+TỬ 
+CẤM 
+TH\'c0NH
+
+
+
+Cuộc 
+tổng 
+phản 
+c\'f4ng 
+lịch 
+sử 
+nổ 
+ra 
+l\'e0m 
+rung 
+chuyển 
+to\'e0n 
+bộ 
+giới 
+t\'e0i 
+phiệt 
+Trung 
+Nguy\'ean:
+
+
+
+1. 
+Mặt 
+Trận 
+Lượng 
+Tử & 
+T\'e0i 
+Ch\'ednh
+
+
+
+Ph\'f3 
+Mộc 
+Đăng 
+giải 
+m\'e3 
+th\'e0nh 
+c\'f4ng 
+bản 
+đồ 
+phong 
+ấn 
+tr\'ean 
+hạch 
+t\'e2m 
+m\'e0 
+Ho\'e0ng 
+Anh 
+mang 
+về, 
+t\'edch 
+hợp 
+v\'e0o 
+si\'eau 
+m\'e1y 
+chủ 
+AI. 
+Trong 
+t\'edch 
+tắc, 
+to\'e0n 
+bộ 
+cổ 
+phiếu 
+v\'e0 
+hệ 
+thống 
+thanh 
+to\'e1n 
+của 
+Triệu 
+Gia 
+sụp 
+đổ 
+d\'e2y 
+chuyền. 
+To\'e0n 
+bộ 
+t\'e0i 
+sản 
+tham 
+nhũng 
+bẩn 
+thỉu 
+của 
+Hứa 
+Vũ 
+Đại 
+bị 
+cơ 
+quan 
+thanh 
+tra 
+quốc 
+tế 
+đ\'f3ng 
+băng 
+triệt 
+để.
+
+
+
+2. 
+Sự 
+Can 
+Thiệp 
+Bất 
+Ngờ 
+Của 
+Ng\'f4 
+Giang 
+Mạnh
+
+
+
+Khi 
+Triệu 
+gia 
+sụp 
+đổ, 
+Ng\'f4 
+Giang 
+Mạnh 
+xuất 
+hiện 
+tr\'ean 
+du 
+thuyền 
+đen 
+giữa 
+s\'f4ng 
+Ho\'e0ng 
+Phố. 
+Triệu 
+Vinh 
+T\'e2m 
+van 
+xin 
+Giang 
+Mạnh 
+hợp 
+lực 
+cứu 
+v\'e3n, 
+nhưng 
+Giang 
+Mạnh 
+lạnh 
+l\'f9ng 
+quay 
+lưng:
+
+
+
+"
+Triệu 
+gia 
+c\'e1c 
+người 
+chỉ 
+l\'e0 
+lũ 
+gi\'f2i 
+bọ 
+phong 
+kiến 
+hết 
+thời. 
+Mối 
+th\'f9 
+giữa 
+tao 
+v\'e0 
+Ph\'f3 
+Mộc 
+Đăng 
+l\'e0 
+chuyện 
+t\'f4n 
+nghi\'eam 
+của 
+những 
+kẻ 
+c\'f3 
+thực 
+lực, 
+tao 
+kh\'f4ng 
+bao 
+giờ 
+chung 
+xuồng 
+với 
+lũ 
+cặn 
+b\'e3 
+như 
+m\'e0y."
+
+
+
+Giang
+ Mạnh
+ ra
+ lệnh
+ b\'e1n
+ th\'e1o
+ to\'e0n
+ bộ
+ tr\'e1i
+ phiếu
+ Triệu
+ gia
+, tự
+ tay
+ bồi
+ th\'eam
+ một
+ nh\'e1t
+ dao
+ kết
+ liễu
+ ho\'e0n
+ to\'e0n
+ gia
+ tộc
+ họ
+ Triệu
+.
+
+
+
+3. Mặt
+ Trận
+ Ch\'ednh
+ Điện
+: Sụp
+ Đổ
+ Của
+ Ho\'e0ng
+ Tộc
+ Ng\'f4ng
+ Cuồng
+
+
+
+Tại
+ đại
+ điện
+ Triệu
+ gia
+ ở
+ Bắc
+ Kinh
+, Triệu
+ Đ\'ecnh
+ An
+ vung
+ đại
+ đao
+ tử
+ thủ
+ bảo
+ vệ
+ anh
+ trai
+ Triệu
+ Vinh
+ T\'e2m
+. Nhưng
+ trước
+ uy
+ lực
+ hoang
+ d\'e3
+ của
+ c\'e2y
+ cuốc
+ sắt
+ 38kg
+ từ
+ Ph\'f3
+ Đặng
+ Ho\'e0ng
+ Anh
+, thanh
+ đại
+ đao
+ của
+ Đ\'ecnh
+ An
+ bị
+ đ\'e1nh
+ g\'e3y
+ l\'e0m
+ đ\'f4i
+, Đ\'ecnh
+ An
+ hộc
+ m\'e1u
+ gục
+ xuống
+ s\'e0n
+.
+
+
+
+Triệu 
+Vinh 
+T\'e2m 
+ng\'e3 
+quỵ 
+dưới 
+ngai 
+rồng, 
+\'e1o 
+th\'eau 
+kim 
+tuyến 
+r\'e1ch 
+tơi 
+tả, 
+chuỗi 
+phỉ 
+th\'fay 
+đứt 
+tung 
+t\'f3e.
+
+
+
+Ho\'e0ng
+ Anh
+ bước
+ tới
+, đặt
+ chiếc
+ hộp
+ gỗ
+ chứa
+ bức
+ huyết
+ thư
+ v\'e0
+ chiếc
+ khăn
+ tay
+ th\'eau
+ hoa
+ của
+ b\'e0
+ Cao
+ Thủy
+ Chi
+ trước
+ mặt
+ hắn
+:
+
+
+
+"Mẹ
+ Chi
+ trước
+ l\'fac
+ mất
+ kh\'f4ng
+ th\'f9
+ gh\'e9t
+ m\'e0y
+, b\'e0
+ chỉ
+ kh\'f3c
+ v\'ec
+ đẻ
+ ra
+ một
+ con
+ quỷ
+ lang
+ s\'f3i
+. M\'e0y
+ muốn
+ hạch
+ t\'e2m
+, muốn
+ mỏ
+ đất
+ hiếm
+, c\'e2u
+ kết
+ với
+ thằng
+ trộm
+ cắp
+ Hứa
+ Vũ
+ Đại
+, nhưng
+ m\'e0y
+ đ\'e3
+ đ\'e1nh
+ mất
+ thứ
+ lớn
+ nhất
+ tr\'ean
+ đời
+ l\'e0
+ t\'ecnh
+ mẫu
+ tử
+ v\'e0
+ đạo
+ l\'e0m
+ người
+!"
+
+
+
+Triệu 
+Vinh 
+T\'e2m 
+run 
+rẩy 
+\'f4m 
+lấy 
+mảnh 
+khăn 
+của 
+mẹ, 
+gục 
+đầu 
+bật 
+kh\'f3c 
+trong 
+\'e2n 
+hận 
+tột 
+c\'f9ng. 
+Triệu 
+Đ\'ecnh 
+An 
+gắng 
+gượng 
+đỡ 
+anh 
+trai 
+dậy, 
+c\'fai 
+đầu 
+tạ 
+tội 
+trước 
+họ 
+Ph\'f3, 
+chấp 
+nhận 
+bu\'f4ng 
+vũ 
+kh\'ed 
+quy 
+h\'e0ng 
+để 
+giữ 
+lại 
+giọt 
+m\'e1u 
+cuối 
+c\'f9ng 
+cho 
+d\'f2ng 
+họ 
+Triệu.
+
+
+
+Hứa
+ Vũ
+ Đại
+ trốn
+ chạy
+ qua
+ cống
+ ngầm
+ Thượng
+ Hải
+ th\'ec
+ bị
+ cảnh
+ s\'e1t
+ t\'f3m
+ gọn
+ c\'f9ng
+ đống
+ đồng
+ hồ
+ v\'e0ng
+ th\'f3
+ trộm
+ từ
+ c\'e1c
+ bữa
+ tiệc
+; Ng\'f4
+ Nhất
+ Nghị
+ t\'e0n
+ phế
+ trốn
+ biệt
+ t\'edch
+; Ph\'f3
+ Dung
+ Hải
+ bị
+ đ\'e0y
+ ngược
+ l\'ean
+ Thập
+ Vạn
+ Đại
+ Sơn
+ cuốc
+ đất
+ trồng
+ ng\'f4
+ 10 năm
+ chuộc
+ tội
+.
+
+
+
+HỒI 
+CUỐI: 
+ĐỈNH 
+LỤC 
+GIA 
+CHỦY — 
+CUỘC 
+ĐỐI 
+THOẠI 
+CỦA 
+HAI 
+THI\'caN 
+T\'c0I
+
+
+
+Đ\'eam 
+xuống 
+tr\'ean 
+n\'f3c 
+t\'f2a 
+th\'e1p 
+t\'e0i 
+ch\'ednh 
+cao 
+nhất 
+Thượng 
+Hải, 
+gi\'f3 
+r\'edt 
+qua 
+lan 
+can 
+k\'ednh.
+
+
+
+Ph\'f3
+ Mộc
+ Đăng
+ đứng
+ đ\'f3
+, một
+ m\'ecnh
+. Ph\'eda
+ sau
+ lưng
+, c\'e1nh
+ cửa
+ k\'ednh
+ trượt
+ mở
+. Ng\'f4
+ Giang
+ Mạnh
+ bước
+ ra
+, ch\'e2m
+ một
+ điếu
+ thuốc
+ l\'e1
+, \'e1nh
+ mắt
+ vẫn
+ lạnh
+ l\'f9ng
+ v\'e0
+ ghim
+ s\'e2u
+ sự
+ căm
+ hận
+ như
+ đ\'eam
+ chia
+ tay
+ ở
+ T\'f4
+ Ch\'e2u
+.
+
+
+
+"M\'e0y
+ đ\'e3
+ thắng
+ Triệu
+ gia
+, dẹp
+ tan
+ Hứa
+ Vũ
+ Đại
+, nắm
+ trọn
+ hạch
+ t\'e2m
+ lượng
+ tử
+ đất
+ hiếm
+," 
+Ng\'f4 
+Giang 
+Mạnh 
+nhạt 
+giọng.
+
+
+
+Mộc
+ Đăng
+ kh\'f4ng
+ quay
+ đầu
+ lại
+, nh\'ecn
+ d\'f2ng
+ xe
+ như
+ những
+ vệt
+ s\'e1ng
+ b\'ean
+ dưới
+:
+
+
+
+"Thanh
+ Lam
+ hiện
+ sống
+ rất
+ tốt
+ ở
+ Thụy
+ Sĩ
+. C\'f4
+ ấy
+ m\'e3i
+ m\'e3i
+ giữ
+ trọn
+ sự
+ trong
+ sạch
+, v\'e0
+ tao
+ chưa
+ từng
+ một
+ lần
+ vượt
+ qua
+ giới
+ hạn
+ thể
+ x\'e1c
+ với
+ c\'f4
+ ấy
+... Đ\'eam
+ rượu
+ năm
+ xưa
+ tại
+ T\'f4
+ Ch\'e2u
+, sự
+ ng\'f4ng
+ cuồng
+ tự
+ m\'e3n
+ thời
+ trẻ
+ đ\'e3
+ khiến
+ tao
+ buột
+ miệng
+ thốt
+ ra
+ c\'e2u
+ n\'f3i
+ d\'e2m
+ dật
+, sỉ
+ nhục
+ danh
+ dự
+ của
+ Thanh
+ Lam
+ v\'e0
+ giẫm
+ đạp
+ l\'ean
+ t\'ecnh
+ anh
+ em
+ của
+ ch\'fang
+ ta
+. Chuyện
+ năm
+ đ\'f3
+... l\'e0
+ tao
+ nợ
+ m\'e0y
+ v\'e0
+ c\'f4
+ ấy
+ một
+ lời
+ tạ
+ tội
+ suốt
+ đời
+, Giang
+ Mạnh
+."
+
+
+
+B\'e0n 
+tay 
+cầm 
+đồng 
+hồ 
+Tourbillon 
+của 
+Ng\'f4 
+Giang 
+Mạnh 
+siết 
+chặt 
+đến 
+trắng 
+bệch, 
+khớp 
+ng\'f3n 
+tay 
+k\'eau 
+răng 
+rắc, 
+rồi 
+từ 
+từ 
+thả 
+lỏng. 
+Giang 
+Mạnh 
+phả 
+kh\'f3i 
+v\'e0o 
+b\'f3ng 
+đ\'eam:
+
+
+
+"
+Một 
+c\'e2u 
+buột 
+miệng 
+trong 
+cơn 
+say 
+của 
+m\'e0y 
+đ\'e3 
+vĩnh 
+viễn 
+giết 
+chết 
+người 
+anh 
+em 
+ch\'ed 
+cốt 
+của 
+tao, 
+v\'e0 
+x\'fac 
+phạm 
+người 
+con 
+g\'e1i 
+tao 
+xem 
+như 
+b\'e1u 
+vật. 
+Một 
+lời 
+xin 
+lỗi 
+kh\'f4ng 
+bao 
+giờ 
+x\'f3a 
+được 
+Đoạn 
+Nghĩa 
+Đ\'e0i. 
+Họ 
+Ng\'f4 
+tao 
+sẽ 
+tiếp 
+tục 
+lớn 
+mạnh 
+ở 
+b\'f3ng 
+tối. 
+Nếu 
+một 
+ng\'e0y 
+n\'e0o 
+đ\'f3 
+họ 
+Ph\'f3 
+của 
+m\'e0y 
+lơ 
+l\'e0, 
+tao 
+sẽ 
+đ\'edch 
+th\'e2n 
+k\'e9o 
+m\'e0y 
+xuống 
+khỏi 
+đỉnh 
+cao 
+n\'e0y!"
+
+
+
+Giang
+ Mạnh
+ quay
+ lưng
+ bước
+ đi
+ dứt
+ kho\'e1t
+, để
+ lại
+ b\'f3ng
+ lưng
+ c\'f4
+ độc
+ của
+ hai
+ người
+ đ\'e0n
+ \'f4ng
+ từng
+ coi
+ nhau
+ l\'e0
+ sinh
+ mạng
+.
+
+
+
+VĨ 
+THANH: 
+KHẢI 
+HO\'c0N 
+CA 
+BẤT 
+DIỆT
+
+
+
+Rượu 
+mừng 
+r\'f3t 
+tr\'e0n 
+ly 
+tr\'ean 
+tầng 88:
+
+
+
+
+
+●Ph\'f3
+ Mộc
+ 
+Đăng 
+c\'f9ng 
+c\'e1c 
+kỹ 
+sư 
+h\'e0ng 
+đầu 
+k\'edch 
+hoạt 
+mạng 
+lưới 
+vệ 
+tinh 
+lượng 
+tử 
+bảo 
+vệ 
+to\'e0n 
+vẹn 
+nguồn 
+t\'e0i 
+nguy\'ean 
+đất 
+hiếm 
+của 
+đất 
+nước.
+
+
+
+
+
+●Ph\'f3
+ Văn
+ 
+Anh 
+mỉm 
+cười 
+nhả 
+kh\'f3i 
+x\'ec 
+g\'e0, 
+b\'ean 
+cạnh 
+l\'e0 
+Đ\'ecnh 
+B\'edch 
+L\'e2m 
+vừa 
+uống 
+rượu 
+vừa 
+b\'e0n 
+luận 
+về 
+một 
+cuốn 
+manga 
+mới 
+sưu 
+tầm.
+
+
+
+
+
+●Ph\'f3
+ Tiến
+ 
+Đăng 
+chuẩn 
+bị 
+cho 
+chuyến 
+bay 
+sang 
+ch\'e2u 
+\'c2u 
+mở 
+rộng 
+li\'ean 
+minh 
+hậu 
+cần 
+quốc 
+tế.
+
+
+
+
+
+●Ng\'f4
+ Văn
+ 
+Vượng 
+mỉm 
+cười 
+tự 
+h\'e0o 
+lật 
+mở 
+trang 
+mới 
+của 
+cuốn 
+gia 
+phả 
+ho\'e0ng 
+kim.
+
+
+
+
+
+●Ph\'f3
+ Đặng
+ 
+Ho\'e0ng 
+Anh 
+n\'e2ng 
+b\'e1t 
+rượu 
+ng\'f4 
+ch\'e0o 
+c\'e1c 
+em. 
+M\'f9a 
+thu 
+n\'e0y, 
+anh 
+sẽ 
+trở 
+về 
+d\'e3y 
+Thập 
+Vạn 
+Đại 
+Sơn 
+chăm 
+lo 
+phần 
+mộ 
+của 
+mẹ 
+Cao 
+Thủy 
+Chi, 
+biết 
+rằng 
+từ 
+nay 
+gia 
+tộc 
+họ 
+Ph\'f3 
+v\'e0 
+họ 
+Đ\'ecnh 
+m\'e3i 
+l\'e0 
+bức 
+tường 
+th\'e0nh 
+vững 
+chắc 
+nhất 
+thi\'ean 
+hạ.
+
+
+
+Lời
+ thề
+ tổ
+ truyền
+ ng\'e0n
+ năm
+ của
+ Gia
+ Tộc
+ Họ
+ Ph\'f3
+ rực
+ s\'e1ng
+ tr\'ean
+ bức
+ tường
+ cẩm
+ thạch
+ bến
+ Thượng
+ Hải
+:
+
+
+
+"HUYẾT
+ THỐNG
+ — TR\'cd
+ TUỆ
+ — ĐO\'c0N
+ KẾT
+ — VƯƠN
+ TẦM
+ THẾ
+ GIỚI
+."
+
+\*Normal;heading 1;heading 2;heading 3;
+heading 4;heading 5;heading 6;heading 7;heading 8;
+heading 9;caption;Title;Subtitle;Strong;Emphasis;Placeholder Text;No Spacing;
+Light Shading;Light List;Light Grid;Medium Shading 1;Medium Shading 2;Medium List 1;Medium List 2;Medium Grid 1;Medium Grid 2;
+Medium Grid 3;Dark List;Colorful Shading;Colorful List;Colorful Grid;Light Shading Accent 1;Light List Accent 1;Light Grid Accent 1;Medium Shading 1 Accent 1;
+Medium Shading 2 Accent 1;Medium List 1 Accent 1;Revision;List Paragraph;Quote;Intense Quote;Medium List 2 Accent 1;
+Medium Grid 1 Accent 1;Medium Grid 2 Accent 1;Medium Grid 3 Accent 1;Dark List Accent 1;Colorful Shading Accent 1;Colorful List Accent 1;Colorful Grid Accent 1;
+Light Shading Accent 2;Light List Accent 2;Light Grid Accent 2;Medium Shading 1 Accent 2;Medium Shading 2 Accent 2;Medium List 1 Accent 2;Medium List 2 Accent 2;
+Medium Grid 1 Accent 2;Medium Grid 2 Accent 2;Medium Grid 3 Accent 2;Dark List Accent 2;Colorful Shading Accent 2;Colorful List Accent 2;Colorful Grid Accent 2;
+Light Shading Accent 3;Light List Accent 3;Light Grid Accent 3;Medium Shading 1 Accent 3;Medium Shading 2 Accent 3;Medium List 1 Accent 3;Medium List 2 Accent 3;
+Medium Grid 1 Accent 3;Medium Grid 2 Accent 3;Medium Grid 3 Accent 3;Dark List Accent 3;Colorful Shading Accent 3;Colorful List Accent 3;Colorful Grid Accent 3;
+Light Shading Accent 4;Light List Accent 4;Light Grid Accent 4;Medium Shading 1 Accent 4;Medium Shading 2 Accent 4;Medium List 1 Accent 4;Medium List 2 Accent 4;
+Medium Grid 1 Accent 4;Medium Grid 2 Accent 4;Medium Grid 3 Accent 4;Dark List Accent 4;Colorful Shading Accent 4;Colorful List Accent 4;Colorful Grid Accent 4;
+Light Shading Accent 5;Light List Accent 5;Light Grid Accent 5;Medium Shading 1 Accent 5;Medium Shading 2 Accent 5;Medium List 1 Accent 5;Medium List 2 Accent 5;
+Medium Grid 1 Accent 5;Medium Grid 2 Accent 5;Medium Grid 3 Accent 5;Dark List Accent 5;Colorful Shading Accent 5;Colorful List Accent 5;Colorful Grid Accent 5;
+Light Shading Accent 6;Light List Accent 6;Light Grid Accent 6;Medium Shading 1 Accent 6;Medium Shading 2 Accent 6;Medium List 1 Accent 6;Medium List 2 Accent 6;
+Medium Grid 1 Accent 6;Medium Grid 2 Accent 6;Medium Grid 3 Accent 6;Dark List Accent 6;Colorful Shading Accent 6;Colorful List Accent 6;Colorful Grid Accent 6;
+Subtle Emphasis;Intense Emphasis;Subtle Reference;Intense Reference;Book Title;Bibliography;
+TOC Heading;
