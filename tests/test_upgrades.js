@@ -102,6 +102,9 @@ require('../js/ui/training.js');
 require('../js/features/deduction.js');
 require('../js/features/bossRush.js');
 require('../js/entities/allySystem.js');
+require('../js/ui/tutorial/tutorialDummy.js');
+require('../js/ui/tutorial/tutorialManagerBase.js');
+require('../js/ui/tutorial/tutorialManagerOverlay.js');
 require('../js/ui/tutorial.js');
 
 
