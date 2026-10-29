@@ -236,6 +236,9 @@ console.log('\n[5. Linh Hoạt Chọn Nhân Vật Trong Chiến Dịch]');
 
 test('Chiến dịch cho phép chọn nhân vật trừ màn có forcedCharacter', () => {
   require('../js/combat/props.js');
+  require('../js/entities/enemy/baseEnemy.js');
+  require('../js/entities/enemy/enemyVariants.js');
+  require('../js/entities/enemy/enemyBosses.js');
   require('../js/entities/enemy.js');
   require('../js/entities/bosses2.js');
   require('../js/data/stages.js');
