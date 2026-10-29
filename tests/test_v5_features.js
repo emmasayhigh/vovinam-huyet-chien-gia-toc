@@ -260,6 +260,9 @@ test('Chiến dịch cho phép chọn nhân vật trừ màn có forcedCharacter
 console.log('\n[6. Biểu Diễn Đòn Thế Võ Thuật (Move Showcase & Choreography)]');
 require('../js/ui/menu/charSlots.js');
 require('../js/ui/menu/menuBase.js');
+require('../js/ui/menu/charselect/charSelectCore.js');
+require('../js/ui/menu/charselect/charSelectDemo.js');
+require('../js/ui/menu/charselect/charSelectDeployment.js');
 require('../js/ui/menu/charSelect.js');
 require('../js/ui/menu/collections.js');
 require('../js/ui/menu/settings.js');

@@ -5,6 +5,9 @@
  * Thu tu load bat buoc:
  *   js/ui/menu/charSlots.js
  *   js/ui/menu/menuBase.js
+ *   js/ui/menu/charselect/charSelectCore.js
+ *   js/ui/menu/charselect/charSelectDemo.js
+ *   js/ui/menu/charselect/charSelectDeployment.js
  *   js/ui/menu/charSelect.js
  *   js/ui/menu/collections.js
  *   js/ui/menu/settings.js
