@@ -16,6 +16,12 @@ global.document = {
 // Load modules in order
 require('../js/core/effects.js');
 require('../js/entities/roster.js');
+require('../js/entities/animation/animationData.js');
+require('../js/entities/animation/animationBase.js');
+require('../js/entities/animation/animationPose.js');
+require('../js/entities/animation/animationRenderBase.js');
+require('../js/entities/animation/animationWeapon.js');
+require('../js/entities/animation/animationBody.js');
 require('../js/entities/animation.js');
 require('../js/combat/props.js');
 require('../js/entities/enemy.js');

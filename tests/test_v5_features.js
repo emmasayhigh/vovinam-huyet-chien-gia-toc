@@ -313,6 +313,11 @@ test('toggleCsStageView chuyển đổi qua lại giữa Võ Đài 3D và Tranh 
 
 // [7. VO DUONG FULL 7 NHAN VAT LUYEN VO]
 console.log('\n[7. Võ Đường Full 7 Nhân Vật Luyện Võ]');
+require('../js/data/training.js');
+require('../js/ui/training/trainingDummy.js');
+require('../js/ui/training/trainingManagerBase.js');
+require('../js/ui/training/trainingModes.js');
+require('../js/ui/training/trainingManagerOverlay.js');
 require('../js/ui/training.js');
 
 test('Võ Đường có đầy đủ toàn bộ 7 võ sĩ có thể chơi được', () => {

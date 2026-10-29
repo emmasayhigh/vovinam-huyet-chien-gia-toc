@@ -66,6 +66,12 @@ global.document = {
 };
 
 // Load dependencies
+require('../js/entities/animation/animationData.js');
+require('../js/entities/animation/animationBase.js');
+require('../js/entities/animation/animationPose.js');
+require('../js/entities/animation/animationRenderBase.js');
+require('../js/entities/animation/animationWeapon.js');
+require('../js/entities/animation/animationBody.js');
 require('../js/entities/animation.js');
 require('../js/combat/props.js');
 require('../js/entities/enemy.js');
@@ -80,6 +86,11 @@ require('../js/world/stageRenderer.js');
 require('../js/world/stages.js');
 require('../js/core/save.js');
 require('../js/ui/ranking.js');
+require('../js/data/training.js');
+require('../js/ui/training/trainingDummy.js');
+require('../js/ui/training/trainingManagerBase.js');
+require('../js/ui/training/trainingModes.js');
+require('../js/ui/training/trainingManagerOverlay.js');
 require('../js/ui/training.js');
 require('../js/features/deduction.js');
 require('../js/features/bossRush.js');
