@@ -24,7 +24,16 @@ require('../js/entities/bosses2.js');
 require('../js/core/input.js');
 require('../js/combat/combat.js');
 require('../js/entities/player.js');
+require('../js/data/stages.js');
+require('../js/world/stageManager.js');
+require('../js/world/stageRenderer.js');
 require('../js/world/stages.js');
+require('../js/core/gameBase.js');
+require('../js/core/gameWave.js');
+require('../js/core/gameCamera.js');
+require('../js/core/gameFlow.js');
+require('../js/core/gameStory.js');
+require('../js/core/gameRender.js');
 require('../js/core/game.js');
 
 let passedTests = 0;

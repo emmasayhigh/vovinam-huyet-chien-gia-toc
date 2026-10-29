@@ -1,0 +1,10 @@
+{
+  "name": "vovinam-huyet-chien-gia-toc",
+  "version": "5.8.0",
+  "private": true,
+  "description": "Game hành động võ thuật HTML5 Canvas 2D — Vovinam: Huyết Chiến Gia Tộc",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tests/test_combat.js && node tests/test_upgrades.js && node tests/test_v5_features.js"
+  }
+}

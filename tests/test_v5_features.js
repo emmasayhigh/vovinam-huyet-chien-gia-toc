@@ -238,6 +238,9 @@ test('Chiến dịch cho phép chọn nhân vật trừ màn có forcedCharacter
   require('../js/combat/props.js');
   require('../js/entities/enemy.js');
   require('../js/entities/bosses2.js');
+  require('../js/data/stages.js');
+  require('../js/world/stageManager.js');
+  require('../js/world/stageRenderer.js');
   require('../js/world/stages.js');
   const stageMgr = new global.StageManager();
   const stages = stageMgr.stages;
@@ -255,6 +258,12 @@ test('Chiến dịch cho phép chọn nhân vật trừ màn có forcedCharacter
 
 // [6. DEMO MARTIAL ARTS MOVES SHOWCASE]
 console.log('\n[6. Biểu Diễn Đòn Thế Võ Thuật (Move Showcase & Choreography)]');
+require('../js/ui/menu/charSlots.js');
+require('../js/ui/menu/menuBase.js');
+require('../js/ui/menu/charSelect.js');
+require('../js/ui/menu/collections.js');
+require('../js/ui/menu/settings.js');
+require('../js/ui/menu/chronicles.js');
 require('../js/ui/menu.js');
 const MenuManager = global.MenuManager;
 
@@ -389,4 +398,5 @@ test('Hiển thị hồ sơ chi tiết Triệu Vinh Tâm không bị lỗi undef
 console.log('====================================================');
 console.log(`KẾT QUẢ KIỂM THỬ: ${passCount} / ${passCount + failCount} BÀI THÀNH CÔNG!`);
 console.log('====================================================');
-if (failCount > 0) process.exit(1);
+// AudioManager giữ timer/interval sống sau khi test xong; thoát tường minh để CI không bị treo.
+process.exit(failCount > 0 ? 1 : 0);
