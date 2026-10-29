@@ -41,10 +41,15 @@ js/
     game.js           Entry point của game engine
     main.js           Nối sự kiện UI với game
     input.js, save.js, audio.js, effects.js
-  data/
-    stages.js         Dữ liệu 11 màn chơi (wave, boss, thoại, palette)
   entities/
-    player.js, enemy.js, bosses2.js, roster.js, animation.js, allySystem.js
+    player.js           Entry point nhân vật; logic nằm trong player/
+    player/             playerBase, playerDamage, playerUltimate, playerInput
+    enemy.js            Entry point hệ thống địch; logic nằm trong enemy/
+    enemy/              baseEnemy, enemyVariants, enemyBosses
+    animation.js        Entry point render xương; logic nằm trong animation/
+    animation/          animationData, animationBase, animationPose,
+                        animationRenderBase, animationWeapon, animationBody
+    bosses2.js, roster.js, allySystem.js
   combat/
     combat.js, weapons.js, props.js
   world/
@@ -56,12 +61,21 @@ js/
     menu/
       charSlots.js    Dữ liệu 12 ô nhân vật
       menuBase.js     Constructor, wire sự kiện, campaign hub
-      charSelect.js   Chọn nhân vật, skin, demo võ đài, deployment
+      charSelect.js   Entry point màn chọn nhân vật
+      charselect/     charSelectCore, charSelectDemo, charSelectDeployment
       collections.js  Hồ sơ, bộ sưu tập, thành tích
       settings.js     Phím bấm, cài đặt
       chronicles.js   Biên niên sử, tài liệu, quyền nắm giữ bằng chứng
     menu.js           Entry point của menu
-    ui.js, training.js, tutorial.js, ranking.js
+    training.js       Entry point Võ Đường
+    training/         trainingDummy, trainingManagerBase, trainingModes,
+                      trainingManagerOverlay
+    tutorial.js       Entry point tutorial
+    tutorial/         tutorialDummy, tutorialManagerBase, tutorialManagerOverlay
+    ui.js, ranking.js
+  data/
+    stages.js         Dữ liệu 11 màn chơi (wave, boss, thoại, palette)
+    training.js       Dữ liệu 7 võ sĩ và 7 bài khảo hạch
   features/           investigation, deduction, confrontation, flashback, bossRush
 tests/                Kiểm thử bằng Node
 docs/                 Tài liệu cốt truyện và ghi chú
@@ -74,10 +88,22 @@ Các file JS là script thường (không phải ES module) và dùng biến to�
 class kế thừa nối tiếp, nên phải nạp đúng thứ tự:
 
 - `js/data/stages.js` → `stageManager.js` → `stageRenderer.js` → `world/stages.js`
-- `js/ui/menu/charSlots.js` → `menuBase.js` → `charSelect.js` → `collections.js`
-  → `settings.js` → `chronicles.js` → `js/ui/menu.js`
+- `js/ui/menu/charSlots.js` → `menuBase.js` → `charselect/charSelectCore.js`
+  → `charSelectDemo.js` → `charSelectDeployment.js` → `charSelect.js`
+  → `collections.js` → `settings.js` → `chronicles.js` → `js/ui/menu.js`
 - `js/core/gameBase.js` → `gameWave.js` → `gameCamera.js` → `gameFlow.js`
   → `gameStory.js` → `gameRender.js` → `game.js`
+- `js/entities/player/playerBase.js` → `playerDamage.js` → `playerUltimate.js`
+  → `playerInput.js` → `entities/player.js`
+- `js/entities/enemy/baseEnemy.js` → `enemyVariants.js` → `enemyBosses.js`
+  → `entities/enemy.js`
+- `js/entities/animation/animationData.js` → `animationBase.js` → `animationPose.js`
+  → `animationRenderBase.js` → `animationWeapon.js` → `animationBody.js`
+  → `entities/animation.js`
+- `js/data/training.js` → `training/trainingDummy.js` → `trainingManagerBase.js`
+  → `trainingModes.js` → `trainingManagerOverlay.js` → `ui/training.js`
+- `js/ui/tutorial/tutorialDummy.js` → `tutorialManagerBase.js`
+  → `tutorialManagerOverlay.js` → `ui/tutorial.js`
 
 Khi thêm file mới, thêm thẻ `<script>` đúng vị trí trong chuỗi tương ứng và tăng
 số `?v=` để trình duyệt nạp bản mới. Dữ liệu lưu nằm trong `localStorage`
