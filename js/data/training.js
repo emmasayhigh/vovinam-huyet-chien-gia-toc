@@ -12,6 +12,7 @@ const TRAINING_CHARACTERS = [
   {
     id: 'nghi',
     name: 'Ngô Nhất Nghị',
+    shortName: 'Nghị',
     title: 'Sát Thần Việt Võ Đạo',
     faction: 'Vovinam',
     badge: '★ VOVINAM',
@@ -23,6 +24,7 @@ const TRAINING_CHARACTERS = [
   {
     id: 'dinhan',
     name: 'Triệu Đình An',
+    shortName: 'Đình An',
     title: 'Thiết Bích Cận Vệ',
     faction: 'Họ Triệu',
     badge: '♛ TRIỆU GIA',
@@ -34,6 +36,7 @@ const TRAINING_CHARACTERS = [
   {
     id: 'hoanganh',
     name: 'Phó Đặng Hoàng Anh',
+    shortName: 'Hoàng Anh',
     title: 'Trấn Thủ Đại Sơn',
     faction: 'Họ Phó',
     badge: '⬡ PHÓ GIA',
@@ -45,6 +48,7 @@ const TRAINING_CHARACTERS = [
   {
     id: 'bichlam',
     name: 'Đình Bích Lâm',
+    shortName: 'Bích Lâm',
     title: 'Đồng Minh Ngang Tàng',
     faction: 'Du Hiệp',
     badge: '✧ DU HIỆP',
@@ -56,6 +60,7 @@ const TRAINING_CHARACTERS = [
   {
     id: 'dunghai',
     name: 'Phó Dung Hải',
+    shortName: 'Dung Hải',
     title: 'Kẻ Bị Khai Trừ',
     faction: 'Độc Hành',
     badge: '⬡ ĐỘC HÀNH',
@@ -67,6 +72,7 @@ const TRAINING_CHARACTERS = [
   {
     id: 'huavudai',
     name: 'Hứa Vũ Đại',
+    shortName: 'Vũ Đại',
     title: 'Ông Trùm Mạng Lưới Ngầm',
     faction: 'Hứa Gia',
     badge: '◈ HỨA GIA',
@@ -78,6 +84,7 @@ const TRAINING_CHARACTERS = [
   {
     id: 'giangmanh',
     name: 'Ngô Giang Mạnh',
+    shortName: 'Giang Mạnh',
     title: 'Gia Chủ Bóng Tối',
     faction: 'Họ Ngô',
     badge: '◆ NGÔ GIA',
@@ -85,10 +92,57 @@ const TRAINING_CHARACTERS = [
     color: '#38bdf8',
     image: 'assets/images/characters/char_giangmanh.png',
     desc: 'Thiết sa chưởng, kiếm khí băng hàn, phản công trừng phạt'
+  },
+  {
+    id: 'vananh',
+    name: 'Phó Văn Anh',
+    shortName: 'Văn Anh',
+    title: 'Anh Hai — Hậu Phương Thép',
+    faction: 'Họ Phó',
+    badge: '⬡ PHÓ GIA',
+    icon: '🪙',
+    color: '#f59e0b',
+    image: 'assets/images/characters/char_vananh.png',
+    desc: 'Thiết quyền Habana, gác súng giảm thanh, giáp hậu phương thép'
+  },
+  {
+    id: 'tiendang',
+    name: 'Phó Tiến Đăng',
+    shortName: 'Tiến Đăng',
+    title: 'Anh Ba — Tiên Phong Tác Chiến',
+    faction: 'Họ Phó',
+    badge: '⬡ PHÓ GIA',
+    icon: '💎',
+    color: '#38bdf8',
+    image: 'assets/images/characters/char_tiendang.png',
+    desc: 'Combo 5 nhịp tốc độ cao, lướt xuyên lưng, bẫy ngược phản gián'
+  },
+  {
+    id: 'thienkhanh',
+    name: 'Châu Ngọc Thiên Khánh',
+    shortName: 'Thiên Khánh',
+    title: 'Tà Sư Bùa Ngải — Kiếm Xu Thiêu Hồn',
+    faction: 'Triệu Gia / Phản Đồ',
+    badge: '🔥 TÀ ĐẠO',
+    icon: '🔥',
+    color: '#dc2626',
+    image: 'assets/images/characters/char_thienkhanh.png',
+    desc: 'Múa Kiếm Xu rực lửa, triệu hồi Hỏa Âm Binh, khắc hiệu ứng Thiêu Đốt'
   }
 ];
+
+// Bảo đảm không bao giờ bị trùng lặp ID võ sĩ (Unique Deduplication)
+const _dedupMap = new Map();
+for (const c of TRAINING_CHARACTERS) {
+  if (!_dedupMap.has(c.id)) _dedupMap.set(c.id, c);
+}
+const UNIQUE_TRAINING_CHARACTERS = Array.from(_dedupMap.values());
+
 if (typeof window !== 'undefined') {
-  window.TRAINING_CHARACTERS = TRAINING_CHARACTERS;
+  window.TRAINING_CHARACTERS = UNIQUE_TRAINING_CHARACTERS;
+}
+if (typeof global !== 'undefined') {
+  global.TRAINING_CHARACTERS = UNIQUE_TRAINING_CHARACTERS;
 }
 
 const TRAINING_DRILLS = [

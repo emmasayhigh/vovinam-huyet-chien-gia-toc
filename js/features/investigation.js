@@ -107,8 +107,8 @@ Hứa Vũ Đại và Mộc Đăng đã bắt tay từ 7 năm trước để hấ
     type: 'minutes',
     typeName: 'Biên Bản Nội Bộ',
     title: 'BIÊN BẢN HỎI CUNG THẨM MẬT',
-    timeFound: 'Bến Cảng Hạ Tầng — Màn 6 (Hòm hồ sơ container)',
-    stageOrigin: 6,
+    timeFound: 'Trại Cá Koi Thiên Trì — Màn 7 (Hòm hồ sơ bên bờ Tây Hồ)',
+    stageOrigin: 7,
     pickupX: 1650,
     shortDesc: 'Lời khai mâu thuẫn sâu sắc giữa cận vệ họ Triệu và nhân chứng đêm xảy ra huyết án.',
     content: `[BIÊN BẢN LỜI KHAI NỘI BỘ — HỒ SƠ 88]
@@ -136,8 +136,8 @@ Mộc Đăng đã kích động mối thù giữa Ngô Giang Mạnh và các phe
     type: 'audio',
     typeName: 'Ghi Âm Phó Mộc Đăng',
     title: 'ĐOẠN GHI ÂM TẦNG SỐ RIÊNG',
-    timeFound: 'Trạm Sát Thủ Ngầm — Màn 7 (Bộ đàm giấu trong tủ điện)',
-    stageOrigin: 7,
+    timeFound: 'Hành Lang Máy Chủ Lục Gia Chủy — Màn 11 (Bộ đàm giấu trong tủ điện)',
+    stageOrigin: 11,
     pickupX: 1850,
     shortDesc: 'Đoạn băng ban đầu là chỉ dẫn đường đi, phần sau ghi lại cuộc trò chuyện giấu kín của Mộc Đăng.',
     content: `[BĂNG GHI ÂM MẬT: BĂNG TẦN 142.8 MHz]
@@ -163,8 +163,8 @@ Chiến dịch "giải cứu" và "truy tìm phản trắc" chỉ là nước c�
     type: 'resource',
     typeName: 'Hồ Sơ Mạch Đất Hiếm',
     title: 'BẢN ĐỒ CHIẾN LƯỢC THẬP VẠN ĐẠI SƠN',
-    timeFound: 'Thập Vạn Đại Sơn — Màn 8 (Bệ thờ cổ trên đỉnh vách đá)',
-    stageOrigin: 8,
+    timeFound: 'Thôn Cổ Sơn Cước — Màn 15 (Bệ thờ cổ trên đỉnh vách đá)',
+    stageOrigin: 15,
     pickupX: 1800,
     shortDesc: 'Bản đồ địa chất quân sự và di chúc của cựu gia chủ trao quyền bảo vệ cho Hoàng Anh.',
     content: `[HỒ SƠ KHẢO SÁT ĐỊA CHẤT & DI CHÚC TỘC TRƯỞNG KHẮC NGHIỆP]
@@ -190,8 +190,8 @@ Hoàng Anh không cố chấp giữ núi vì tiền. Anh đang thi hành di nguy
     type: 'cipher',
     typeName: 'Hạch Tâm Mật Mã',
     title: 'HẠCH TÂM LƯỢNG TỬ XÍCH HUYẾT — PHẦN GỐC',
-    timeFound: 'Đại Điện Triệu Gia — Màn 10 (Hộp tráp dát vàng của Vinh Tâm)',
-    stageOrigin: 10,
+    timeFound: 'Đại Điện Triệu Gia — Màn 17 (Hộp tráp dát vàng của Vinh Tâm)',
+    stageOrigin: 17,
     pickupX: 1750,
     shortDesc: 'Nửa mảnh vi mạch gốc còn lại, chứng minh Triệu gia chỉ là kẻ mua lại thông tin từ kẻ phản bội thực sự.',
     content: `[VẬT CHỨNG: BẢN THẢO THIẾT KẾ VI MẠCH XÍCH HUYẾT]

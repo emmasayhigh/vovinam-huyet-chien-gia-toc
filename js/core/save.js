@@ -69,7 +69,8 @@ class SaveManager {
         mocdang: false,
         bichlam: false,
         dinhan: false,
-        huavudai: false
+        huavudai: false,
+        giangmanh: false
       },
       selectedAlly: 'auto',       // Đồng minh viện trợ đang chọn ('auto' hoặc charId)
       flashbackChoices: [],       // Quyết định trong hồi ức Dung Hải
@@ -87,7 +88,10 @@ class SaveManager {
       trainingDrillsCompleted: [],// Các bài tập luyện võ đã hoàn thành
       trainingFreeUnlocked: false,// Đã mở khóa chế độ Luyện tự do
       equippedSkins: {},          // { [charId]: 'default' | 'vovinam' }
-      customKeybindings: null     // Tùy chỉnh phím điều khiển
+      customKeybindings: null,    // Tùy chỉnh phím điều khiển
+      gold: 600,                  // Tiền tệ Vàng (🪙) dùng trong Cửa Hàng Gia Tộc
+      diamonds: 25,               // Tiền tệ Kim Cương (💎) dùng trong Cửa Hàng Gia Tộc
+      shopPurchases: []           // Danh sách vật phẩm / nhân vật đã mua trong Shop
     };
   }
 
@@ -101,7 +105,7 @@ class SaveManager {
 
     out.version = SAVE_VERSION;
     out.createdAt = typeof raw.createdAt === 'number' ? raw.createdAt : def.createdAt;
-    out.currentStage = this.clampInt(raw.currentStage, 1, 99, 1);
+    out.currentStage = this.clampInt(raw.currentStage, 1, 20, 1);
     out.selectedCharacter = typeof raw.selectedCharacter === 'string' ? raw.selectedCharacter : 'nghi';
 
     out.completedStages = this.cleanArray(raw.completedStages, 'number');
@@ -133,9 +137,55 @@ class SaveManager {
     }
     if (raw.allyAvailability && typeof raw.allyAvailability === 'object') {
       out.allyAvailability = Object.assign({}, def.allyAvailability, raw.allyAvailability);
+    } else {
+      out.allyAvailability = Object.assign({}, def.allyAvailability);
     }
 
     if (!out.unlockedCharacters.includes('nghi')) out.unlockedCharacters.unshift('nghi');
+
+    // Tự động khôi phục mở khóa nhân vật & đồng minh dựa trên màn đã hoàn thành hoặc boss đã hạ
+    const addUnlock = (id) => {
+      if (id && !out.unlockedCharacters.includes(id)) out.unlockedCharacters.push(id);
+      if (id && out.allyAvailability) out.allyAvailability[id] = true;
+    };
+    if (out.completedStages.includes(20) || out.completedStages.includes(11) || out.bossesDefeated.includes('giangmanh') || out.achievements.includes('beat_giangmanh')) {
+      addUnlock('giangmanh');
+    }
+    if (out.completedStages.includes(4) || out.completedStages.includes(5) || out.bossesDefeated.includes('longvuong') || out.bossesDefeated.includes('huavudai')) {
+      addUnlock('huavudai');
+    }
+    if (out.completedStages.includes(9) || out.bossesDefeated.includes('bichlam')) {
+      addUnlock('bichlam');
+    }
+    if (out.completedStages.includes(13) || out.bossesDefeated.includes('dunghai')) {
+      addUnlock('dunghai');
+    }
+    if (out.completedStages.includes(15) || out.bossesDefeated.includes('hoanganh')) {
+      addUnlock('hoanganh');
+    }
+    if (out.completedStages.includes(16) || out.bossesDefeated.includes('dinhan')) {
+      addUnlock('dinhan');
+    }
+
+    // Đồng bộ 2 chiều giữa mở khóa nhân vật và mở khóa đồng minh (chỉ áp dụng cho 7 đồng minh chính thức)
+    const ALLY_KEYS = ['hoanganh', 'dunghai', 'mocdang', 'bichlam', 'dinhan', 'huavudai', 'giangmanh'];
+    out.unlockedCharacters.forEach((cId) => {
+      if (cId && ALLY_KEYS.includes(cId) && out.allyAvailability) out.allyAvailability[cId] = true;
+    });
+    if (out.allyAvailability) {
+      Object.keys(out.allyAvailability).forEach((k) => {
+        if (!ALLY_KEYS.includes(k)) delete out.allyAvailability[k];
+      });
+    }
+    Object.keys(out.allyAvailability).forEach((aId) => {
+      if (out.allyAvailability[aId] && aId !== 'mocdang' && !out.unlockedCharacters.includes(aId)) {
+        out.unlockedCharacters.push(aId);
+      }
+    });
+    // Mộc Đăng là quân sư / đồng minh hỗ trợ gia tộc từ Màn 2 hoặc khi đã vượt Màn 1
+    if ((out.completedStages && out.completedStages.length > 0) || out.currentStage >= 2) {
+      out.allyAvailability.mocdang = true;
+    }
 
     if (raw.choices && typeof raw.choices === 'object') {
       ['rescue', 'mountain', 'danghai'].forEach((k) => {
@@ -177,6 +227,24 @@ class SaveManager {
       out.customKeybindings = Object.assign({}, raw.customKeybindings);
     }
 
+    out.shopPurchases = this.cleanArray(raw.shopPurchases, 'string');
+    out.shopPurchases.forEach((pId) => {
+      if (pId && !pId.startsWith('skin_') && pId !== 'namcheo' && !out.unlockedCharacters.includes(pId)) {
+        out.unlockedCharacters.push(pId);
+      }
+    });
+
+    if (typeof raw.gold === 'number' && isFinite(raw.gold)) {
+      out.gold = this.clampInt(raw.gold, 0, 1e9, def.gold);
+    } else {
+      out.gold = def.gold + (out.completedStages.length * 450) + (out.bossesDefeated.length * 150);
+    }
+    if (typeof raw.diamonds === 'number' && isFinite(raw.diamonds)) {
+      out.diamonds = this.clampInt(raw.diamonds, 0, 1e9, def.diamonds);
+    } else {
+      out.diamonds = def.diamonds + (out.completedStages.length * 20) + (out.bossesDefeated.length * 10);
+    }
+
     return out;
   }
 
@@ -209,10 +277,13 @@ class SaveManager {
     }
   }
 
-  persist() {
+  persist(skipCloud = false) {
     try {
       this.data.version = SAVE_VERSION;
       localStorage.setItem(this.key, JSON.stringify(this.data));
+      if (!skipCloud && typeof window !== 'undefined' && window.accountManager && typeof window.accountManager.scheduleCloudSync === 'function') {
+        window.accountManager.scheduleCloudSync();
+      }
     } catch (e) {
       console.warn('[Save] Không thể ghi localStorage:', e && e.message);
     }
@@ -223,6 +294,10 @@ class SaveManager {
     const keepSettings = Object.assign({}, this.data.settings);
     this.data = this.createDefaults();
     this.data.settings = keepSettings;
+    this.data.tutorialCompleted = false;
+    this.data.tutorialSkipped = false;
+    this.data.currentStage = 1;
+    this.data.completedStages = [];
     this.persist();
   }
 
@@ -246,15 +321,27 @@ class SaveManager {
 
   completeStage(stageId) {
     const id = Number(stageId);
+    if (!isFinite(id) || id < 1) return;
     if (!this.data.completedStages.includes(id)) {
       this.data.completedStages.push(id);
       this.data.stats.stagesCleared++;
     }
-    const meta = window.STORY_META && window.STORY_META.stages[id];
-    if (meta && meta.next) {
-      this.data.currentStage = Math.max(this.data.currentStage, meta.next);
+    const meta = window.STORY_META && window.STORY_META.stages && window.STORY_META.stages[id];
+    const isSide = !!(window.STORY_META && window.STORY_META.sideOf && window.STORY_META.sideOf[id]) || id === 5;
+    if (!isSide) {
+      let nextMain = id;
+      if (meta && meta.next) {
+        nextMain = Math.min(20, meta.next);
+      } else if (id === 4) {
+        nextMain = 6;
+      } else if (id < 20) {
+        nextMain = id + 1;
+      } else {
+        nextMain = 20;
+      }
+      this.data.currentStage = Math.min(20, Math.max(this.data.currentStage || 1, nextMain));
     } else {
-      this.data.currentStage = Math.max(this.data.currentStage, id + 1);
+      this.data.currentStage = this.clampInt(this.data.currentStage, 1, 20, 1);
     }
     this.persist();
   }
@@ -275,9 +362,49 @@ class SaveManager {
   }
 
   unlockCharacter(id) {
-    if (!id || this.data.unlockedCharacters.includes(id)) return false;
-    this.data.unlockedCharacters.push(id);
-    this.persist();
+    if (!id) return false;
+    let changed = false;
+    if (!this.data.unlockedCharacters.includes(id)) {
+      this.data.unlockedCharacters.push(id);
+      changed = true;
+    }
+    // Mở khóa nhân vật đồng thời mở khóa đồng minh tương ứng (nếu thuộc nhóm 7 đồng minh)
+    const ALLY_KEYS = ['hoanganh', 'dunghai', 'mocdang', 'bichlam', 'dinhan', 'huavudai', 'giangmanh'];
+    if (!this.data.allyAvailability) this.data.allyAvailability = {};
+    if (ALLY_KEYS.includes(id) && !this.data.allyAvailability[id]) {
+      this.data.allyAvailability[id] = true;
+      changed = true;
+    }
+    if (changed) this.persist();
+    return true;
+  }
+
+  isAllyUnlocked(id) {
+    if (!id || id === 'auto' || id === 'none') return true;
+    if (id === 'mocdang') {
+      return !!(this.data.allyAvailability && this.data.allyAvailability.mocdang) ||
+             (this.data.completedStages && this.data.completedStages.length > 0) ||
+             (this.data.currentStage >= 2);
+    }
+    const charUnlocked = this.isCharacterUnlocked(id);
+    const allyUnlocked = !!(this.data.allyAvailability && this.data.allyAvailability[id]);
+    return charUnlocked || allyUnlocked;
+  }
+
+  unlockAlly(id) {
+    if (!id) return false;
+    let changed = false;
+    if (!this.data.allyAvailability) this.data.allyAvailability = {};
+    if (!this.data.allyAvailability[id]) {
+      this.data.allyAvailability[id] = true;
+      changed = true;
+    }
+    // Mở khóa đồng minh đồng thời mở khóa nhân vật (nếu không phải chỉ là trợ thủ như Mộc Đăng)
+    if (id !== 'mocdang' && !this.data.unlockedCharacters.includes(id)) {
+      this.data.unlockedCharacters.push(id);
+      changed = true;
+    }
+    if (changed) this.persist();
     return true;
   }
 
@@ -438,7 +565,10 @@ class SaveManager {
   }
 
   isTutorialNeeded() {
-    return !this.data.tutorialCompleted && !this.data.tutorialSkipped;
+    if (!this.data) return false;
+    if (this.data.tutorialCompleted || this.data.tutorialSkipped) return false;
+    if (this.data.completedStages && this.data.completedStages.length > 0) return false;
+    return true;
   }
 
   recordTrainingDrill(drillId) {
@@ -454,21 +584,125 @@ class SaveManager {
     this.persist();
   }
 
+  getEquippedSkin(charId) {
+    if (!charId || charId === 'nghi') return 'default';
+    if (!this.data || !this.data.equippedSkins) return 'default';
+    return this.data.equippedSkins[charId] || 'default';
+  }
+
   isSkinEquipped(charId, skinName) {
-    if (charId === 'nghi') return skinName === 'default';
-    if (!this.data.equippedSkins) return skinName === 'default';
-    return (this.data.equippedSkins[charId] || 'default') === skinName;
+    return this.getEquippedSkin(charId) === skinName;
+  }
+
+  isSkinUnlocked(charId, skinName) {
+    if (!skinName || skinName === 'default' || skinName === 'vovinam') return true;
+    const purchases = (this.data && Array.isArray(this.data.shopPurchases)) ? this.data.shopPurchases : [];
+    const purchaseKey = `skin_${charId}_${skinName}`;
+    return purchases.includes(purchaseKey) || purchases.includes(skinName);
   }
 
   setSkinEquipped(charId, skinName) {
     if (!this.data.equippedSkins) this.data.equippedSkins = {};
-    this.data.equippedSkins[charId] = charId === 'nghi' ? 'default' : skinName;
+    this.data.equippedSkins[charId] = charId === 'nghi' ? 'default' : (skinName || 'default');
     this.persist();
+  }
+
+  buyShopSkin(skinPurchaseId, charId, skinId, currency, price) {
+    if (!skinPurchaseId || !charId || !skinId) return { ok: false, reason: 'invalid_id' };
+    if (this.isSkinUnlocked(charId, skinId)) {
+      return { ok: false, reason: 'already_unlocked' };
+    }
+    const cost = Math.max(0, Math.round(Number(price) || 0));
+    const isDiamond = currency === 'diamond' || currency === 'diamonds';
+    if (isDiamond) {
+      if (!this.spendDiamonds(cost)) {
+        return { ok: false, reason: 'insufficient_diamonds' };
+      }
+    } else {
+      if (!this.spendGold(cost)) {
+        return { ok: false, reason: 'insufficient_gold' };
+      }
+    }
+    if (!Array.isArray(this.data.shopPurchases)) this.data.shopPurchases = [];
+    if (!this.data.shopPurchases.includes(skinPurchaseId)) {
+      this.data.shopPurchases.push(skinPurchaseId);
+    }
+    this.setSkinEquipped(charId, skinId);
+    this.persist();
+    return { ok: true, skinPurchaseId, charId, skinId, currency: isDiamond ? 'diamond' : 'gold', price: cost };
   }
 
   setSelectedAlly(allyId) {
     this.data.selectedAlly = allyId || 'auto';
     this.persist();
+  }
+
+  // =========================================================================
+  // HỆ THỐNG TIỀN TỆ (VÀNG 🪙 & KIM CƯƠNG 💎) & CỬA HÀNG GIA TỘC
+  // =========================================================================
+  getGold() {
+    return typeof this.data.gold === 'number' && isFinite(this.data.gold) ? this.data.gold : 0;
+  }
+
+  getDiamonds() {
+    return typeof this.data.diamonds === 'number' && isFinite(this.data.diamonds) ? this.data.diamonds : 0;
+  }
+
+  addGold(amount) {
+    const n = Math.max(0, Math.round(Number(amount) || 0));
+    if (n <= 0) return this.getGold();
+    this.data.gold = this.clampInt(this.getGold() + n, 0, 1e9, 0);
+    this.persist();
+    return this.data.gold;
+  }
+
+  addDiamonds(amount) {
+    const n = Math.max(0, Math.round(Number(amount) || 0));
+    if (n <= 0) return this.getDiamonds();
+    this.data.diamonds = this.clampInt(this.getDiamonds() + n, 0, 1e9, 0);
+    this.persist();
+    return this.data.diamonds;
+  }
+
+  spendGold(amount) {
+    const n = Math.max(0, Math.round(Number(amount) || 0));
+    if (this.getGold() < n) return false;
+    this.data.gold = this.getGold() - n;
+    this.persist();
+    return true;
+  }
+
+  spendDiamonds(amount) {
+    const n = Math.max(0, Math.round(Number(amount) || 0));
+    if (this.getDiamonds() < n) return false;
+    this.data.diamonds = this.getDiamonds() - n;
+    this.persist();
+    return true;
+  }
+
+  buyShopCharacter(charId, currency, price) {
+    if (!charId) return { ok: false, reason: 'invalid_id' };
+    if (this.isCharacterUnlocked(charId)) {
+      return { ok: false, reason: 'already_unlocked' };
+    }
+    const cost = Math.max(0, Math.round(Number(price) || 0));
+    const isDiamond = currency === 'diamond' || currency === 'diamonds';
+    if (isDiamond) {
+      if (!this.spendDiamonds(cost)) {
+        return { ok: false, reason: 'insufficient_diamonds' };
+      }
+    } else {
+      if (!this.spendGold(cost)) {
+        return { ok: false, reason: 'insufficient_gold' };
+      }
+    }
+    if (!Array.isArray(this.data.shopPurchases)) this.data.shopPurchases = [];
+    if (!this.data.shopPurchases.includes(charId)) {
+      this.data.shopPurchases.push(charId);
+    }
+    this.unlockCharacter(charId);
+    this.persist();
+    return { ok: true, charId, currency: isDiamond ? 'diamond' : 'gold', price: cost };
   }
 }
 

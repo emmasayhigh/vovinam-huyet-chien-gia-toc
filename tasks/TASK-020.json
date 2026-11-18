@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-020",
+  "title": "Commercial Redesign of Võ Đường Character Select (Hero/Skin/Support/Loadout) & Online Multiplayer Platform",
+  "author": "Antigravity Senior Game UI & Multiplayer Systems Engineer",
+  "date": "2026-11-18",
+  "objective": "Nâng cấp toàn diện hai hệ thống giao diện cốt lõi: (1) Võ Đường Character Select tích hợp trọn vẹn Nhân vật, Trang phục (Skin), Nhân vật Hỗ trợ (Trợ Chiến), xem trước kết hợp & thanh Loadout tổng kết; (2) Online Multiplayer Menu gồm Sảnh chính, Chế độ chơi trực quan, Tìm trận nhanh đa trạng thái (kèm bộ đếm và Hủy tìm trận), Tạo phòng (Tên phòng, Riêng tư/Mật khẩu), Danh sách phòng & Phòng chờ độc lập (Sẵn sàng/Chưa sẵn sàng, Đổi Loadout trực tiếp trong phòng, Mời người chơi online thời gian thực).",
+  "requestedBehavior": "1. Võ Đường Character Select (#char-select-modal & #ally-select-modal): Bổ sung Tab Trợ Chiến trong #char-select-modal, Thẻ xem trước đồng hành trên sân khấu, thanh tổng kết Loadout (Võ sĩ + Skin + Trợ chiến) & validation, đồng thời đồng bộ 2 chiều với #ally-select-modal. 2. Online Multiplayer (#online-modal + server.js): Sảnh chọn chế độ 1v1/Co-op, Quick Match 8 trạng thái với timer & cancel_quick_match, Tạo phòng công khai/riêng tư (mật khẩu), Danh sách phòng hiển thị trạng thái/khóa, Phòng chờ độc lập với toggle_ready, in-room loadout switcher và lời mời người chơi online thời gian thực.",
+  "allowedFiles": [
+    "index.html",
+    "js/ui/menu/charselect/charSelectCore.js",
+    "js/ui/menu/charselect/charSelectDeployment.js",
+    "js/ui/training/trainingManagerOverlay.js",
+    "js/ui/training/trainingManagerBase.js",
+    "js/core/game.js",
+    "js/core/gameFlow.js",
+    "js/core/input.js",
+    "js/core/main.js",
+    "js/core/account.js",
+    "js/entities/player/playerBase.js",
+    "js/entities/player/playerDamage.js",
+    "js/entities/characters/characterRegistry.js",
+    "js/entities/characters/giangmanh.js",
+    "js/entities/characters/thienkhanh.js",
+    "js/entities/characters/vananh.js",
+    "js/combat/combat.js",
+    "server.js",
+    "vercel.json",
+    ".vercelignore",
+    "css/char-select.css",
+    "css/ally-select.css",
+    "css/campaign-hub.css",
+    "css/training.css",
+    "css/ui-overhaul.css",
+    "js/ui/menu/menuBase.js",
+    "tests/test_online_multiplayer.js",
+    "tests/test_ally_select_screen.js",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "Dockerfile",
+    ".dockerignore",
+    "tasks/TASK-020.json"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-UI-001",
+    "FEAT-ONL-001"
+  ],
+  "dependencies": [
+    "MenuManagerCharSelectCore",
+    "MenuManagerCharSelectDeployment",
+    "OnlineManager",
+    "SkinRegistry",
+    "SaveManager",
+    "AllyManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 150,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "tests/test_ally_select_screen.js",
+    "tests/test_campaign_and_ally_ui.js",
+    "tests/test_char_select_passives_and_ally_title.js",
+    "tests/test_online_multiplayer.js",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tests/test_ui_overhaul_3.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "Võ Đường Character Select cho phép chọn Võ sĩ, Trang phục (Skin), Trợ chiến và xem trước đội hình cùng thanh tổng kết Loadout",
+    "Tất cả Skin chỉ hiển thị theo đúng nhân vật đang chọn và thay đổi trực tiếp trên nhân vật xem trước",
+    "Lựa chọn Trợ chiến lưu đúng vào SaveManager và AllyManager",
+    "Online Multiplayer hỗ trợ Quick Match đa trạng thái kèm Hủy tìm trận, Tạo phòng Công khai/Riêng tư (mật khẩu), Danh sách phòng thật, Phòng chờ độc lập có Ready/Not Ready, In-room Loadout Switcher và Mời bạn Online",
+    "Tất cả 27/27 bộ test regression và headless Chromium smoke test đạt PASS 0 console error"
+  ]
+}

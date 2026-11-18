@@ -454,250 +454,760 @@
 }
 
 /* ==========================================================================
-   2. MÀN XẾP HẠNG CUỐI MÀN CHI TIẾT (STAGE RANKING MODAL)
+   2. MÀN XẾP HẠNG CUỐI MÀN CHI TIẾT (STAGE RANKING MODAL — VOVINAM CINEMATIC)
    ========================================================================== */
+#stage-clear-modal .victory-card {
+  position: relative;
+  max-width: 850px;
+  width: 94%;
+  max-height: 92vh;
+  padding: 22px 28px 24px;
+  border-radius: 16px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(56, 189, 248, 0.14) 0%, rgba(15, 23, 42, 0) 62%),
+    linear-gradient(168deg, rgba(14, 23, 42, 0.98) 0%, rgba(7, 11, 22, 0.99) 100%);
+  border: 1px solid rgba(250, 204, 21, 0.42);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.82),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 1px 0 rgba(253, 224, 71, 0.35) inset;
+  overflow-y: auto;
+}
+
+#stage-clear-modal .victory-card.rank-theme-s {
+  background:
+    radial-gradient(120% 75% at 50% 0%, rgba(250, 204, 21, 0.20) 0%, rgba(15, 23, 42, 0) 65%),
+    linear-gradient(168deg, rgba(20, 24, 42, 0.98) 0%, rgba(8, 11, 20, 0.99) 100%);
+  border-color: rgba(250, 204, 21, 0.65);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.85),
+    0 0 38px rgba(234, 179, 8, 0.22),
+    0 0 0 1px rgba(250, 204, 21, 0.18) inset;
+}
+
+#stage-clear-modal .victory-card.rank-theme-a {
+  background:
+    radial-gradient(120% 75% at 50% 0%, rgba(56, 189, 248, 0.18) 0%, rgba(15, 23, 42, 0) 65%),
+    linear-gradient(168deg, rgba(13, 25, 45, 0.98) 0%, rgba(7, 12, 24, 0.99) 100%);
+  border-color: rgba(56, 189, 248, 0.52);
+}
+
+#stage-clear-modal .victory-card.rank-theme-b {
+  background:
+    radial-gradient(120% 75% at 50% 0%, rgba(245, 158, 11, 0.16) 0%, rgba(15, 23, 42, 0) 65%),
+    linear-gradient(168deg, rgba(22, 22, 38, 0.98) 0%, rgba(8, 11, 21, 0.99) 100%);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+#stage-clear-modal .victory-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#stage-clear-modal .victory-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 14px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  color: #fde047;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+}
+
+/* Dùng font hỗ trợ đầy đủ dấu Tiếng Việt (Đ, Ư, Ơ) thay vì Cinzel bị vỡ glyph */
+#stage-clear-modal #victory-stage-name.victory-title {
+  font-family: 'Montserrat', 'Noto Serif', sans-serif;
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: 0.6px;
+  margin: 2px 0 0;
+  color: #f8fafc;
+  background: linear-gradient(180deg, #ffffff 0%, #bae6fd 55%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 10px rgba(56, 189, 248, 0.28));
+}
+
+#stage-clear-modal .victory-card.rank-theme-s #victory-stage-name.victory-title {
+  background: linear-gradient(180deg, #ffffff 0%, #fef08a 52%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 12px rgba(250, 204, 21, 0.35));
+}
+
 .detailed-ranking-wrap {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin: 12px 0 16px 0;
+  gap: 11px;
+  margin: 12px 0 14px;
   width: 100%;
+  text-align: left;
 }
 
+/* HERO ROW: HẠNG + TỔNG ĐIỂM + TIẾN TRÌNH MỐC HẠNG */
 .ranking-hero-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr 225px;
   align-items: center;
-  gap: 20px;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
-  border: 1px solid rgba(229, 169, 60, 0.35);
-  border-radius: 8px;
-  padding: 14px 20px;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+  gap: 18px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(19, 32, 58, 0.78) 55%, rgba(12, 19, 36, 0.95) 100%);
+  border: 1px solid rgba(250, 204, 21, 0.32);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 22px rgba(0, 0, 0, 0.4);
+}
+
+.ranking-hero-row.medal-silver {
+  border-color: rgba(56, 189, 248, 0.42);
+}
+
+.ranking-hero-row.medal-bronze {
+  border-color: rgba(245, 158, 11, 0.42);
+}
+
+.ranking-hero-row.medal-iron {
+  border-color: rgba(148, 163, 184, 0.32);
 }
 
 .ranking-grade-box {
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
+  position: relative;
+  width: 84px;
+  height: 84px;
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ffd700;
-  box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
-  background: radial-gradient(circle, rgba(234, 179, 8, 0.25) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 26px rgba(250, 204, 21, 0.45), inset 0 0 18px rgba(250, 204, 21, 0.2);
+  background: radial-gradient(circle at 50% 35%, rgba(250, 204, 21, 0.32) 0%, rgba(15, 23, 42, 0.96) 78%);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.rank-crest-ring {
+  position: absolute;
+  inset: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  pointer-events: none;
 }
 
 .ranking-grade-box.medal-gold {
-  border-color: #ffd700;
-  box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
-  background: radial-gradient(circle, rgba(234, 179, 8, 0.3) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border-color: #fbbf24;
+  box-shadow: 0 0 28px rgba(250, 204, 21, 0.55), inset 0 0 20px rgba(250, 204, 21, 0.25);
+  background: radial-gradient(circle at 50% 35%, rgba(250, 204, 21, 0.36) 0%, rgba(23, 18, 10, 0.96) 80%);
 }
 
 .ranking-grade-box.medal-silver {
-  border-color: #cbd5e1;
-  box-shadow: 0 0 20px rgba(203, 213, 225, 0.5);
-  background: radial-gradient(circle, rgba(148, 163, 184, 0.3) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border-color: #38bdf8;
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.42), inset 0 0 18px rgba(56, 189, 248, 0.2);
+  background: radial-gradient(circle at 50% 35%, rgba(56, 189, 248, 0.30) 0%, rgba(12, 22, 38, 0.96) 80%);
+}
+
+.ranking-grade-box.medal-silver .rank-title {
+  color: #7dd3fc;
 }
 
 .ranking-grade-box.medal-bronze {
-  border-color: #f97316;
-  box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
-  background: radial-gradient(circle, rgba(194, 65, 12, 0.3) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border-color: #f59e0b;
+  box-shadow: 0 0 22px rgba(245, 158, 11, 0.38), inset 0 0 16px rgba(245, 158, 11, 0.18);
+  background: radial-gradient(circle at 50% 35%, rgba(245, 158, 11, 0.28) 0%, rgba(24, 16, 12, 0.96) 80%);
+}
+
+.ranking-grade-box.medal-bronze .rank-title {
+  color: #fcd34d;
 }
 
 .ranking-grade-box.medal-iron {
   border-color: #64748b;
-  box-shadow: none;
-  background: rgba(30, 41, 59, 0.8);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  background: radial-gradient(circle at 50% 35%, rgba(148, 163, 184, 0.22) 0%, rgba(15, 23, 42, 0.96) 80%);
+}
+
+.ranking-grade-box.medal-iron .rank-title {
+  color: #cbd5e1;
 }
 
 .rank-letter {
-  font-family: var(--font-display);
+  font-family: 'Montserrat', sans-serif;
   font-size: 42px;
   font-weight: 900;
   line-height: 1;
-  color: #fff;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.85);
 }
 
 .rank-title {
-  font-size: 9px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: #ffd700;
+  color: #fde047;
   text-transform: uppercase;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .ranking-score-box {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
+}
+
+.score-label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .score-label {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 800;
   color: #94a3b8;
-  letter-spacing: 1px;
-}
-
-.score-number {
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 900;
-  color: #ffd700;
-  text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-  line-height: 1.1;
-}
-
-.medal-tag {
-  font-size: 11px;
-  font-weight: 800;
-  color: #38bdf8;
-  margin-top: 2px;
-}
-
-.ranking-grid-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.rstat-card {
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.rstat-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 0.5px;
-}
-
-.rstat-val {
-  font-size: 14px;
-  font-weight: 800;
-  color: #f8fafc;
-}
-
-.rstat-sub {
-  font-size: 10px;
-  font-weight: 700;
-  color: #10b981;
-}
-
-.ranking-side-goal {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 8px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-}
-
-.ranking-side-goal.done {
-  border-color: rgba(16, 185, 129, 0.4);
-  background: rgba(16, 185, 129, 0.08);
-}
-
-.ranking-side-goal.done .side-status {
-  color: #34d399;
-  font-weight: 800;
-}
-
-.ranking-side-goal .side-status {
-  color: #94a3b8;
-}
-
-.rewards-wrap {
-  background: rgba(245, 158, 11, 0.06);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 6px;
-  padding: 10px 14px;
-}
-
-.rewards-head {
-  font-size: 11px;
-  font-weight: 800;
-  color: #ffd700;
-  letter-spacing: 1px;
-  margin-bottom: 6px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
 }
 
-.rewards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.new-best-pill,
+.base-pts-pill {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
 }
 
-.reward-item {
-  font-size: 11px;
+.new-best-pill {
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.28), rgba(245, 158, 11, 0.18));
+  border: 1px solid rgba(250, 204, 21, 0.65);
   color: #fef08a;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.25);
+}
+
+.base-pts-pill {
+  background: rgba(51, 65, 85, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+}
+
+.score-number-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.score-number {
+  font-family: 'Montserrat', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 34px;
+  font-weight: 900;
+  color: #fbbf24;
+  text-shadow: 0 0 18px rgba(251, 191, 36, 0.38);
+  line-height: 1.05;
+}
+
+.score-unit {
+  font-size: 11px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 1px;
+}
+
+.medal-tag {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #7dd3fc;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* CỘT PHẢI HERO: THANH TIẾN ĐỘ HẠNG */
+.ranking-progress-box {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rank-tier-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.rank-tier-pip {
+  flex: 1;
+  text-align: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 0;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #64748b;
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.rank-tier-pip.passed {
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.3);
+  background: rgba(51, 65, 85, 0.55);
+}
+
+.rank-tier-pip.current {
+  color: #0f172a;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fde047, #f59e0b);
+  border-color: #fef08a;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.45);
+}
+
+.rank-progress-bar {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.rank-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8 0%, #fbbf24 100%);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.45);
+  transition: width 0.45s ease;
+}
+
+.rank-progress-note {
+  font-size: 10.5px;
+  color: #cbd5e1;
+  line-height: 1.3;
+}
+
+.rank-progress-note strong {
+  color: #fde047;
+  font-weight: 800;
+}
+
+/* LƯỚI 3x2 CHỈ SỐ CHIẾN ĐẤU */
+.ranking-grid-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.rstat-card {
+  background: linear-gradient(145deg, rgba(17, 27, 48, 0.86), rgba(11, 18, 34, 0.92));
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.rstat-card:hover {
+  border-color: rgba(56, 189, 248, 0.38);
+  transform: translateY(-1px);
+}
+
+.rstat-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  color: #7dd3fc;
+}
+
+.rstat-card.tone-rose .rstat-icon {
+  background: rgba(244, 63, 94, 0.13);
+  border-color: rgba(244, 63, 94, 0.3);
+  color: #fda4af;
+}
+
+.rstat-card.tone-amber .rstat-icon {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.32);
+  color: #fde047;
+}
+
+.rstat-card.tone-indigo .rstat-icon {
+  background: rgba(129, 140, 248, 0.14);
+  border-color: rgba(129, 140, 248, 0.32);
+  color: #c7d2fe;
+}
+
+.rstat-card.tone-emerald .rstat-icon {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.32);
+  color: #6ee7b7;
+}
+
+.rstat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rstat-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rstat-val {
+  font-family: 'Montserrat', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 900;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.rstat-sub {
+  font-family: 'Montserrat', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.rstat-sub.has-pts {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.rstat-sub.zero-pts {
+  color: #64748b;
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+/* MỤC TIÊU PHỤ */
+.ranking-side-row,
+.ranking-side-goal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.ranking-side-row.done,
+.ranking-side-goal.done {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.85));
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.side-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.side-badge {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  background: rgba(100, 116, 139, 0.25);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.ranking-side-row.done .side-badge {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: rgba(52, 211, 153, 0.55);
+  color: #6ee7b7;
+}
+
+.side-desc {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.side-score {
+  font-family: 'Montserrat', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  font-weight: 900;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.ranking-side-row.done .side-score {
+  color: #34d399;
+}
+
+/* CHIẾN LỢI PHẨM & TIẾN ĐỘ CHIẾN DỊCH */
+.ranking-rewards-row,
+.rewards-wrap {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.86) 100%);
+  border: 1px solid rgba(250, 204, 21, 0.28);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rewards-head {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #fde047;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.rewards-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px;
+}
+
+.reward-pill {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 0;
+}
+
+.reward-pill.char {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.18), rgba(15, 23, 42, 0.9));
+  border-color: rgba(192, 132, 252, 0.45);
+}
+
+.reward-pill.story {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(15, 23, 42, 0.9));
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.reward-pill.clue {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(15, 23, 42, 0.9));
+  border-color: rgba(251, 191, 36, 0.38);
+}
+
+.reward-pill.ach {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.22), rgba(15, 23, 42, 0.92));
+  border-color: rgba(250, 204, 21, 0.55);
+}
+
+.reward-pill-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.reward-pill-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.reward-pill-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.reward-pill.char .reward-pill-label { color: #d8b4fe; }
+.reward-pill.story .reward-pill-label { color: #7dd3fc; }
+.reward-pill.clue .reward-pill-label { color: #fcd34d; }
+.reward-pill.ach .reward-pill-label { color: #fef08a; }
+
+.reward-pill-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.3;
+}
+
+/* CÔNG THỨC TÍNH ĐIỂM & NÚT HÀNH ĐỘNG */
+.ranking-formula-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .formula-toggle-btn,
 .btn-formula-info {
-  background: rgba(30, 41, 59, 0.85);
-  border: 1px solid rgba(229, 169, 60, 0.45);
-  border-radius: 6px;
-  color: #38bdf8;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+  color: #93c5fd;
   font-family: inherit;
   font-size: 11px;
   font-weight: 700;
-  padding: 6px 14px;
+  padding: 5px 15px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
-  margin: 6px auto 0;
+  margin: 0 auto;
 }
 
 .formula-toggle-btn:hover,
 .btn-formula-info:hover {
-  background: rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.16);
   border-color: #38bdf8;
   color: #ffffff;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
 }
 
 .formula-breakdown-box,
 .formula-detail-box {
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  width: 100%;
+  background: rgba(9, 14, 28, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
   padding: 10px 14px;
   margin-top: 8px;
   font-size: 11px;
   color: #cbd5e1;
-  line-height: 1.6;
+  line-height: 1.55;
   text-align: left;
-  box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
 }
 
 .formula-breakdown-box p,
 .formula-detail-box p {
-  margin: 4px 0;
+  margin: 3px 0;
 }
 
 .formula-breakdown-box strong,
 .formula-detail-box strong {
-  color: #ffd700;
+  color: #fde047;
+}
+
+#stage-clear-modal .modal-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#stage-clear-modal #btn-next-stage {
+  min-width: 270px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 55%, #0369a1 100%);
+  border: 1px solid rgba(125, 211, 252, 0.65);
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+#stage-clear-modal #btn-next-stage:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px rgba(56, 189, 248, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+#stage-clear-modal #btn-victory-replay {
+  min-width: 145px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  background: rgba(30, 41, 59, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #e2e8f0;
+}
+
+#stage-clear-modal #btn-victory-replay:hover {
+  background: rgba(51, 65, 85, 0.92);
+  border-color: rgba(250, 204, 21, 0.55);
+  color: #fef08a;
+}
+
+@media (max-width: 760px) {
+  #stage-clear-modal .victory-card {
+    padding: 18px 16px;
+  }
+  .ranking-hero-row {
+    grid-template-columns: auto 1fr;
+  }
+  .ranking-progress-box {
+    grid-column: 1 / -1;
+    padding-left: 0;
+    padding-top: 10px;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .ranking-grid-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #stage-clear-modal .modal-actions {
+    flex-direction: column;
+  }
+  #stage-clear-modal #btn-next-stage,
+  #stage-clear-modal #btn-victory-replay {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 /* Badge hạng trên bản đồ chương */
@@ -1360,3 +1870,15 @@
     transform: translate(-50%, -60%) scale(1.1);
   }
 }
+
+
+/* ===== RESTORED SHARED MODAL / CHRONICLES / HUD-CONTROL STYLES ===== */
+
+
+/* ===== Confrontation: bổ sung style còn thiếu ===== */
+.confrontation-header { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(234,179,8,0.25); }
+.confrontation-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+.hint-text, .empty-hint { color: #94a3b8; font-style: italic; font-size: 13px; padding: 18px; border: 1px dashed rgba(148,163,184,0.35); border-radius: 8px; background: rgba(15,23,42,0.5); }
+.conf-doc-item { font-family: 'Montserrat', sans-serif; cursor: pointer; }
+.conf-doc-item strong { color: #f8fafc; font-size: 12.5px; display: block; }
+.conf-doc-item small { color: #fbbf24; font-size: 10.5px; }

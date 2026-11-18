@@ -70,6 +70,7 @@ class TrainingManagerModes extends window.TrainingManagerBase {
       this.dummy.attackMode = 'free';
     }
     if (window.uiManager) {
+      window.uiManager.setObjective('⚡ VÕ ĐƯỜNG VOVINAM — LUYỆN TẬP TỰ DO');
       window.uiManager.showAlertBanner('TỐT NGHIỆP LUYỆN VÕ — MỞ KHÓA LUYỆN TỰ DO!');
     }
     this.updateOverlayUI();
@@ -94,8 +95,14 @@ class TrainingManagerModes extends window.TrainingManagerBase {
     if (window.allyManager && typeof window.allyManager.reset === 'function') {
       window.allyManager.reset();
     }
+    if (window.effectManager && typeof window.effectManager.clearCombatEffects === 'function') {
+      window.effectManager.clearCombatEffects();
+    }
     this.hideOverlay();
     const game = window.game;
+    if (game && game.player) {
+      game.player._summonedFiends = [];
+    }
     if (game) {
       if (typeof game.returnToMenu === 'function') {
         game.returnToMenu();

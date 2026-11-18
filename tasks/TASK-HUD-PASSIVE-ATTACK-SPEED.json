@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-20261117-HUD-PASSIVE-ATTACK-SPEED",
+  "title": "Character-Specific Move Callouts, Heavy-Weapon Attack Speed & HUD Passive Status Widget",
+  "author": "Antigravity Engineer",
+  "date": "2026-11-17",
+  "objective": "Replace hardcoded Ngô Nhất Nghị attack and counter floating callouts with active character-specific move names from CharacterRegistry, slow down attack animations for heavy-weapon heroes (Triệu Đình An and Phó Đặng Hoàng Anh), and add a persistent HUD Passive & Stance [W+U] widget under the HP/Energy bars so players can track stacks and passive states clearly without relying on transient floating text.",
+  "requestedBehavior": [
+    "Resolve active character move labels via CharacterRegistry.getSkillMoveLabel(player, moveId, fallback) in playerInput.js and combat.js so each of the 9 heroes uses their own move/counter names (and Vovinam skin falls back to nghi).",
+    "Remove transient per-hit stack counting floating texts (Sao Kê 1/3..2/3 and Hàn Khí 1/4..3/4) while displaying live stack pips on the HUD Passive Widget under the HP/Energy bars.",
+    "Apply attackDurationMul (1.22 for dinhan, 1.26 for hoanganh) in PlayerBase.setCharacter and PlayerBase.startAttack when not wearing the Vovinam skin.",
+    "Render #hud-passive-widget and #badge-stance-wu in index.html / css/hud.css and synchronize them via CharacterRegistry.getPassiveHudStatus and UIManager.updateSkillCooldowns.",
+    "Display active debuffs and stacks (Bleed, Stun, Freeze, Blind, Slow, Guard Break, Exhaust, Stale, Sao Ke, Han Khi, Boss Weak) on Player HUD (#hud-debuffs-bar), Boss HUD (#boss-debuffs-bar), and entity overhead badges (animationRenderBase.js)."
+  ],
+  "allowedFiles": [
+    "index.html",
+    "css/hud.css",
+    "js/ui/ui.js",
+    "js/entities/characters/characterRegistry.js",
+    "js/entities/characters/dinhan.js",
+    "js/entities/characters/hoanganh.js",
+    "js/entities/characters/tiendang.js",
+    "js/entities/characters/giangmanh.js",
+    "js/entities/player/playerBase.js",
+    "js/entities/player/playerInput.js",
+    "js/combat/combat.js",
+    "js/entities/animation/animationRenderBase.js",
+    "tests/test_passives_real.js",
+    "tasks/TASK-HUD-PASSIVE-ATTACK-SPEED.json"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-CMB-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "CharacterRegistry",
+    "PlayerBase",
+    "PlayerInput",
+    "CombatSystem",
+    "UIManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 25,
+    "authorizedRemovals": [
+      "Per-hit stack count floating text spam in tiendang.js and giangmanh.js replaced by #hud-passive-widget",
+      "Hardcoded Ngô Nhất Nghị floating strings in playerInput.js and combat.js replaced by dynamic getSkillMoveLabel"
+    ]
+  },
+  "requiredTests": [
+    "tests/test_combat.js",
+    "tests/test_passives_real.js",
+    "tests/test_vovinam_skin_skills.js",
+    "tests/test_ui_overhaul_3.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "All 9 characters display their own uppercut/wk/elbow_strike/kick_sweep/counter move names instead of Ngô Nhất Nghị text",
+    "dinhan (1.22x) and hoanganh (1.26x) have slower attack stateDuration in PlayerBase.startAttack",
+    "#hud-passive-widget and #badge-stance-wu render cleanly under the HP/Energy bars and update dynamically per character",
+    "25/25 regression test suites pass and headless browser smoke test exits cleanly with 0 console errors"
+  ]
+}

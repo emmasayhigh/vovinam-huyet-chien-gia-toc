@@ -226,14 +226,14 @@ player.handlePlayerInput([]);
 
 assert(player.state === 'counter_hand_prep', 'U + J kích hoạt trạng thái counter_hand_prep');
 assert(player.counterHandCooldown === 2.5, 'Counter tay có cooldown 2.5s');
-assert(player.activeCounterWindow === 0.22, 'Cửa sổ counter tay mở đúng 0.22s');
+assert(player.activeCounterWindow === 0.32, 'Cửa sổ counter tay mở đúng 0.32s');
 
-// 1. Thử nghiệm Whiff (không có đòn nào đánh tới trong 0.22s)
+// 1. Thử nghiệm Whiff (không có đòn nào đánh tới trong 0.32s)
 player.activeCounterWindow = 0;
 player.counterSuccess = false;
 player.update(0.016, []);
 assert(player.state === 'counter_hand_recovery', 'Hết cửa sổ counter chuyển sang counter_hand_recovery');
-assert(player.stateDuration === 0.38, 'Counter tay whiff recovery là 0.38s');
+assert(player.stateDuration === 0.28, 'Counter tay whiff recovery là 0.28s');
 
 // 2. Thử nghiệm Counter đòn tay thành công
 player.state = 'counter_hand_prep';
@@ -254,7 +254,7 @@ assert(player.counterSuccess === true, 'Counter ghi nhận thành công');
 assert(player.state === 'counter_hand_strike', 'Player chuyển sang counter_hand_strike phản công');
 assert(punchEnemy.state === 'hurt', 'Địch bị khựng lại (hurt)');
 
-// 3. Thử nghiệm đòn nặng Uncounterable (phá counter)
+// 3. Thử nghiệm đòn nặng / uncounterable (Counter đỡ được mọi đòn theo yêu cầu người chơi)
 player.state = 'counter_hand_prep';
 player.activeCounterWindow = 0.20;
 player.counterSuccess = false;
@@ -264,8 +264,8 @@ const initialPlayerHp = player.hp;
 
 window.combatSystem.resolveHit(punchEnemy, player, heavyAttack);
 
-assert(player.counterSuccess === false, 'Đòn uncounterable không thể bị counter');
-assert(player.hp < initialPlayerHp, 'Player bị phá counter và nhận sát thương');
+assert(player.counterSuccess === true, 'Counter U+J đỡ và phản đòn thành công cả đòn uncounterable/nặng');
+assert(player.hp === initialPlayerHp, 'Player không bị mất máu khi counter đòn uncounterable');
 
 // ==========================================
 // TEST F: U + K (COUNTER CHÂN)
@@ -287,14 +287,14 @@ player.handlePlayerInput([]);
 
 assert(player.state === 'counter_leg_prep', 'U + K kích hoạt trạng thái counter_leg_prep dù bấm K trước U');
 assert(player.counterLegCooldown === 3.5, 'Counter chân có cooldown 3.5s');
-assert(player.activeCounterWindow === 0.22, 'Cửa sổ counter chân mở đúng 0.22s');
+assert(player.activeCounterWindow === 0.32, 'Cửa sổ counter chân mở đúng 0.32s');
 
 // 1. Thử nghiệm Whiff
 player.activeCounterWindow = 0;
 player.counterSuccess = false;
 player.update(0.016, []);
 assert(player.state === 'counter_leg_recovery', 'Hết cửa sổ counter chuyển sang counter_leg_recovery');
-assert(player.stateDuration === 0.46, 'Counter chân whiff recovery là 0.46s');
+assert(player.stateDuration === 0.32, 'Counter chân whiff recovery là 0.32s');
 
 // 2. Thử nghiệm Counter đòn chân thành công (quét ngã đối thủ)
 player.state = 'counter_leg_prep';
@@ -315,18 +315,18 @@ assert(player.counterSuccess === true, 'Counter chân thành công');
 assert(player.state === 'counter_leg_strike', 'Player chuyển sang counter_leg_strike');
 assert(kickEnemy.state === 'knockdown', 'Lính thường bị đòn counter chân quét quật ngã');
 
-// 3. Sai loại counter: Dùng Counter Chân đón đòn Đấm Tay
+// 3. Counter Chân đón đòn Đấm Tay thành công (Cả U+J và U+K đều đỡ được cả đấm lẫn đá)
 player.state = 'counter_leg_prep';
 player.activeCounterWindow = 0.20;
 player.counterSuccess = false;
 player.invincibleTimer = 0;
-const wrongAttack = { damage: 30, counterType: 'hand', isKick: false };
+const handAttack = { damage: 30, counterType: 'hand', isKick: false };
 const playerHpBefore = player.hp;
 
-window.combatSystem.resolveHit(kickEnemy, player, wrongAttack);
+window.combatSystem.resolveHit(kickEnemy, player, handAttack);
 
-assert(player.counterSuccess === false, 'Counter chân không bắt được đòn tay');
-assert(player.hp < playerHpBefore, 'Người chơi chịu sát thương do đoán sai thế võ');
+assert(player.counterSuccess === true, 'Counter chân đỡ thành công cả đòn tay');
+assert(player.hp === playerHpBefore, 'Người chơi không bị mất máu khi dùng Counter chân đỡ đòn tay');
 
 // ==========================================
 // TEST G: BOSS BALANCE, POISE & ANTI-LOOP

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="data:,">
+  <title>Bản Phác Thảo Trang Phục HTML5 Canvas — Vovinam: Huyết Chiến Gia Tộc</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #090d16;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding: 30px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-tag {
+      display: inline-block;
+      padding: 4px 14px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid #f59e0b;
+      border-radius: 999px;
+      color: #fbbf24;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 28px;
+      color: #ffffff;
+      text-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #94a3b8;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1560px;
+      margin: 0 auto;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 14px;
+    }
+    .toolbar label {
+      font-size: 12px;
+      color: #cbd5e1;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255,255,255,0.14);
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+    .toolbar select, .toolbar button {
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .char-card {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .char-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: var(--theme-color, #f59e0b);
+    }
+    .char-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .char-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .char-faction {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--theme-color, #f59e0b);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .comparison-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .col-half {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .col-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .art-img {
+      width: 140px;
+      height: 205px;
+      object-fit: cover;
+      object-position: top center;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #0f172a;
+    }
+    .canvas-box {
+      width: 140px;
+      height: 205px;
+      background: radial-gradient(circle at 50% 42%, #243247, #0b101b);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .silhouette-box {
+      width: 140px;
+      height: 205px;
+      background: #eef2f7;
+      border-radius: 6px;
+      border: 1px solid rgba(15, 23, 42, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    canvas {
+      display: block;
+    }
+    .costume-desc {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px;
+      border-radius: 6px;
+      border-left: 2px solid var(--theme-color, #f59e0b);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="badge-tag">KIỂM ĐỊNH TẠO HÌNH NHÂN VẬT HTML5 CANVAS — CONCEPT 2D vs CANVAS vs SILHOUETTE</div>
+    <h1>SO SÁNH ẢNH 2D, MÔ HÌNH CANVAS & ĐƯỜNG VIỀN ĐEN (SILHOUETTE)</h1>
+    <p class="subtitle">
+      Đối chiếu trực tiếp 9 nhân vật: Ảnh Concept Art 2D (trái) — Mô hình Skeleton Canvas In-Game (giữa) — Bóng Đen Thuần Túy 100% (phải).
+    </p>
+    <div class="toolbar">
+      <label>Tư thế (Pose):
+        <select id="poseSelect">
+          <option value="idle">idle (Thế thủ)</option>
+          <option value="walk">walk (Bước đi)</option>
+          <option value="run">run (Chạy nhanh)</option>
+          <option value="jump_up">jump_up (Nhảy lên)</option>
+          <option value="dodge">dodge (Né đòn)</option>
+          <option value="punch_straight">punch_straight (J - Đấm thẳng)</option>
+          <option value="punch_hook">punch_hook (J+J - Đấm móc)</option>
+          <option value="elbow_strike">elbow_strike (Chỏ cận chiến)</option>
+          <option value="uppercut">uppercut (Móc ngược)</option>
+          <option value="kick_roundhouse">kick_roundhouse (K - Đá vòng cầu)</option>
+          <option value="wk">wk (W+K - Tuyệt chiêu tiến)</option>
+          <option value="kick_sweep">kick_sweep (S+K - Quét trụ)</option>
+          <option value="guard">guard (Phòng thủ)</option>
+          <option value="hurt">hurt (Trúng đòn)</option>
+        </select>
+      </label>
+      <label>Phóng to (Zoom):
+        <select id="zoomSelect">
+          <option value="">Tất cả 9 nhân vật (3x3)</option>
+          <option value="nghi">Ngô Nhất Nghị</option>
+          <option value="vananh">Phó Văn Anh</option>
+          <option value="tiendang">Phó Tiến Đăng</option>
+          <option value="huavudai">Hứa Vũ Đại</option>
+          <option value="bichlam">Đình Bích Lâm</option>
+          <option value="dinhan">Triệu Đình An</option>
+          <option value="hoanganh">Phó Đặng Hoàng Anh</option>
+          <option value="dunghai">Phó Dung Hải</option>
+          <option value="giangmanh">Ngô Giang Mạnh</option>
+        </select>
+      </label>
+      <label>Chế độ soi:
+        <select id="viewSelect">
+          <option value="standard">Toàn thân (1.2x)</option>
+          <option value="closeup">Cận cảnh Mặt & Giáp (2.3x)</option>
+          <option value="ingame">Tỷ lệ thực tế In-Game (1.0x)</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="vovinamToggle"> Trang phục Võ Phục Vovinam</label>
+    </div>
+  </header>
+
+  <div class="preview-grid" id="grid">
+    <!-- Rendered dynamically -->
+  </div>
+
+  <!-- Nạp Hệ Thống Nhân Vật & Animation Core -->
+  <script src="../js/entities/characters/characterRegistry.js"></script>
+  <script src="../js/entities/characters/nghi.js"></script>
+  <script src="../js/entities/characters/huavudai.js"></script>
+  <script src="../js/entities/characters/vananh.js"></script>
+  <script src="../js/entities/characters/tiendang.js"></script>
+  <script src="../js/entities/characters/bichlam.js"></script>
+  <script src="../js/entities/characters/hoanganh.js"></script>
+  <script src="../js/entities/characters/dinhan.js"></script>
+  <script src="../js/entities/characters/dunghai.js"></script>
+  <script src="../js/entities/characters/giangmanh.js"></script>
+
+  <script src="../js/entities/animation/animationData.js"></script>
+  <script src="../js/entities/animation/animationBase.js"></script>
+  <script src="../js/entities/animation/animationPose.js"></script>
+  <script src="../js/entities/animation/animationRenderBase.js"></script>
+  <script src="../js/entities/animation/animationWeapon.js"></script>
+  <script src="../js/entities/animation/animationArchetypes.js"></script>
+  <script src="../js/entities/animation/animationBody.js"></script>
+  <script src="../js/entities/animation.js"></script>
+
+  <script>
+    const CHAR_SPECS = [
+      {
+        id: 'nghi',
+        name: 'Ngô Nhất Nghị',
+        faction: '★ Việt Võ Đạo Vovinam',
+        color: '#00d2ff',
+        image: '../assets/images/characters/char_hero_nghi.png',
+        styleType: 'player',
+        desc: 'Lam võ phục chàm đậm (#203764), cổ chữ V lộ cơ ngực, viền cổ tay đỏ thẫm, thẻ ngực + huy hiệu Âm Dương Vovinam, đai đen thêu chỉ vàng, họa tiết rồng vàng dọc quần.'
+      },
+      {
+        id: 'vananh',
+        name: 'Phó Văn Anh',
+        faction: '⬡ Tứ Trụ Họ Phó',
+        color: '#f59e0b',
+        image: '../assets/images/characters/char_vananh.png',
+        styleType: 'boss_vananh',
+        desc: 'Áo khoác măng-tô đen viền vàng khoác hờ trên vai + hai tay áo rủ, lớp lót đỏ thêu rồng, áo gile đỏ rượu vang 4 cúc, sơ mi đen, cà vạt vàng, xì gà.'
+      },
+      {
+        id: 'tiendang',
+        name: 'Phó Tiến Đăng',
+        faction: '⬡ Tứ Trụ Họ Phó',
+        color: '#38bdf8',
+        image: '../assets/images/characters/char_tiendang.png',
+        styleType: 'boss_tiendang',
+        desc: 'Áo trench coat cổ đứng cao viền bạc/cyan xẻ hai vạt dài bay sau, tóc bay ngược + mắt sáng cyan, giáp ngực dã chiến, găng tay Lượng Tử phát sáng, ủng cyber.'
+      },
+      {
+        id: 'huavudai',
+        name: 'Hứa Vũ Đại',
+        faction: '◈ Gia Tộc Họ Hứa',
+        color: '#ef4444',
+        image: '../assets/images/characters/char_huavudai.png',
+        styleType: 'npc_huavudai',
+        desc: 'Vóc dáng cao lớn bệ vệ, mặt cạo sạch râu + tóc muối tiêu thái dương, vest 3 mảnh kẻ sọc, áo khoác choàng vai lót đỏ tay áo thêu đỏ, ba-toong đầu rồng bạc.'
+      },
+      {
+        id: 'bichlam',
+        name: 'Đình Bích Lâm',
+        faction: '✧ Du Hiệp Đường Phố',
+        color: '#22c55e',
+        image: '../assets/images/characters/char_bichlam.png',
+        styleType: 'boss_bichlam',
+        desc: 'Áo thun bó đen + võ phục sát nách xanh lục viền đen dày (không khăn cổ), tóc gai vểnh tự nhiên, băng quấn sọc đen-lục cẳng tay, đai vải lục vạt dài, bốt chiến đấu.'
+      },
+      {
+        id: 'dinhan',
+        name: 'Triệu Đình An',
+        faction: '♛ Gia Tộc Họ Triệu',
+        color: '#d4a017',
+        image: '../assets/images/characters/char_dinhan.png',
+        styleType: 'boss_dinhan',
+        desc: 'Chiến tướng khổng lồ: mũ Phụng Hoàng đỏ-vàng có chùm lông đuôi ngựa đỏ bay dài, cầu vai sư tử hoàng kim, giáp vảy đùi đỏ-vàng, áo choàng đỏ, khiên lục giác & chùy gai.'
+      },
+      {
+        id: 'hoanganh',
+        name: 'Phó Đặng Hoàng Anh',
+        faction: '⬡ Trấn Thủ Đại Sơn',
+        color: '#f59e0b',
+        image: '../assets/images/characters/char_hoanganh.png',
+        styleType: 'boss_hoanganh',
+        desc: 'Vóc dáng vạm vỡ trọng tâm thấp, mặt sẹo dọc mắt trái, nón đan trúc tròn đeo sau lưng nối dây chéo ngực, áo rêu viền thổ cẩm vàng cát, đai đỏ, xà cạp + thiết cuốc.'
+      },
+      {
+        id: 'dunghai',
+        name: 'Phó Dung Hải',
+        faction: '⬡ Kẻ Bị Khai Trừ',
+        color: '#ef4444',
+        image: '../assets/images/characters/char_dunghai.png',
+        styleType: 'boss_dunghai',
+        desc: 'Không che mặt: tóc gai đen xù + nụ cười ngạo nghễ, khăn choàng đỏ huyết quấn dày quanh cổ với 2 vạt dài bay sau, giáp vai thép chia đốt, xà cạp + song đoản đao thép.'
+      },
+      {
+        id: 'giangmanh',
+        name: 'Ngô Giang Mạnh',
+        faction: '◆ Gia Tộc Họ Ngô',
+        color: '#38bdf8',
+        image: '../assets/images/characters/char_giangmanh.png',
+        styleType: 'boss_giangmanh',
+        desc: 'Búi tóc bạc đỉnh đầu cài trâm + đuôi tóc dài, ria & chòm râu bạc, cổ áo bào đứng cao + cầu vai mây bạc + tay áo bào xòe rộng, vạt áo ngọc bội + Hàn Băng Kiếm.'
+      }
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const renderer = window.skeletalRenderer;
+      const grid = document.getElementById('grid');
+      const poseSelect = document.getElementById('poseSelect');
+      const zoomSelect = document.getElementById('zoomSelect');
+      const viewSelect = document.getElementById('viewSelect');
+      const vovinamToggle = document.getElementById('vovinamToggle');
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('pose')) poseSelect.value = params.get('pose');
+      if (params.get('zoom')) zoomSelect.value = params.get('zoom');
+      if (params.get('view')) viewSelect.value = params.get('view');
+      if (params.get('vovinam') === '1') vovinamToggle.checked = true;
+      const isStatic = params.get('static') === '1';
+
+      const cards = [];
+
+      function buildCards() {
+        grid.innerHTML = '';
+        cards.length = 0;
+        const zoomId = zoomSelect.value;
+        const viewMode = viewSelect.value || 'standard';
+        const specs = zoomId ? CHAR_SPECS.filter(s => s.id === zoomId) : CHAR_SPECS;
+        grid.style.gridTemplateColumns = zoomId ? 'minmax(420px, 760px)' : 'repeat(3, 1fr)';
+
+        const cw = zoomId ? 220 : 140;
+        const ch = zoomId ? 310 : 205;
+        let scale = zoomId ? 1.8 : 1.18;
+        let yRatio = 0.87;
+        if (viewMode === 'closeup') {
+          scale = zoomId ? 2.85 : 2.25;
+          yRatio = 1.48;
+        } else if (viewMode === 'ingame') {
+          scale = 1.0;
+          yRatio = 0.86;
+        }
+
+        specs.forEach(spec => {
+          const card = document.createElement('div');
+          card.className = 'char-card';
+          card.style.setProperty('--theme-color', spec.color);
+
+          card.innerHTML = `
+            <div class="char-header">
+              <span class="char-name">${spec.name}</span>
+              <span class="char-faction">${spec.faction}</span>
+            </div>
+            <div class="comparison-row">
+              <div class="col-half">
+                <span class="col-label">CONCEPT 2D</span>
+                <img class="art-img" style="width:${cw}px;height:${ch}px" src="${spec.image}" alt="${spec.name}">
+              </div>
+              <div class="col-half">
+                <span class="col-label">CANVAS IN-GAME</span>
+                <div class="canvas-box" style="width:${cw}px;height:${ch}px">
+                  <canvas id="canvas-${spec.id}" width="${cw}" height="${ch}"></canvas>
+                </div>
+              </div>
+              <div class="col-half">
+                <span class="col-label">${viewMode === 'closeup' ? 'PORTRAIT HUD' : 'SILHOUETTE 100%'}</span>
+                <div class="silhouette-box" style="width:${cw}px;height:${ch}px">
+                  <canvas id="sil-${spec.id}" width="${cw}" height="${ch}"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="costume-desc">
+              <strong>Thiết kế:</strong> ${spec.desc}
+            </div>
+          `;
+          grid.appendChild(card);
+
+          const cvs = card.querySelector(`#canvas-${spec.id}`);
+          const silCvs = card.querySelector(`#sil-${spec.id}`);
+          cards.push({
+            spec,
+            cw,
+            ch,
+            scale,
+            yRatio,
+            viewMode,
+            ctx: cvs.getContext('2d'),
+            silCtx: silCvs.getContext('2d'),
+            silCanvas: silCvs
+          });
+        });
+      }
+
+      function getAnimPhase(pose) {
+        if (pose === 'idle') return isStatic ? 0.35 : (performance.now() * 0.001) % 2.0;
+        if (pose === 'walk' || pose === 'run' || pose === 'guard') return isStatic ? 0.45 : (performance.now() * 0.0015) % 2.0;
+        if (pose === 'hurt') return isStatic ? 0.25 : (performance.now() * 0.001) % 0.6;
+        return isStatic ? 0.24 : ((performance.now() * 0.0012) % 0.55);
+      }
+
+      function renderAll() {
+        const pose = poseSelect.value || 'idle';
+        const useVovinam = !!vovinamToggle.checked;
+        const animTime = getAnimPhase(pose);
+
+        cards.forEach(item => {
+          const { spec, cw, ch, scale, yRatio, viewMode, ctx, silCtx, silCanvas } = item;
+          const baseEntity = {
+            id: 'preview_' + spec.id + '_' + pose,
+            type: spec.styleType,
+            styleType: spec.styleType,
+            charId: spec.id,
+            characterId: spec.id,
+            vovinamSkin: useVovinam,
+            state: pose,
+            stateTimer: pose === 'punch_hook' || pose === 'kick_roundhouse' ? 0.22 : animTime,
+            stateDuration: 0.42,
+            animTime: animTime,
+            vx: pose === 'run' ? 220 : (pose === 'walk' ? 95 : 0),
+            facing: 1,
+            armed: true,
+            x: Math.round(cw * 0.5),
+            y: Math.round(ch * yRatio),
+            z: 0,
+            renderScale: scale
+          };
+
+          ctx.clearRect(0, 0, cw, ch);
+          renderer.render(ctx, baseEntity, { x: 0, y: 0 });
+
+          silCtx.clearRect(0, 0, cw, ch);
+          if (viewMode === 'closeup') {
+            renderer.drawPortrait(silCanvas, spec.styleType, false, useVovinam);
+          } else {
+            const silEntity = Object.assign({}, baseEntity, {
+              id: baseEntity.id + '_sil',
+              _silhouetteColor: '#000000'
+            });
+            renderer.render(silCtx, silEntity, { x: 0, y: 0 });
+          }
+        });
+
+        if (!isStatic) requestAnimationFrame(renderAll);
+      }
+
+      poseSelect.addEventListener('change', () => { if (isStatic) renderAll(); });
+      zoomSelect.addEventListener('change', () => { buildCards(); if (isStatic) renderAll(); });
+      viewSelect.addEventListener('change', () => { buildCards(); if (isStatic) renderAll(); });
+      vovinamToggle.addEventListener('change', () => { if (isStatic) renderAll(); });
+
+      buildCards();
+      renderAll();
+    });
+  </script>
+</body>
+</html>
+

@@ -4,6 +4,9 @@
  */
 
 (function () {
+if (!window.CharacterRegistry && typeof require === 'function') {
+  try { require('../characters/bootstrap.js'); } catch (_) {}
+}
 class PlayerBase {
   constructor(x = 150, y = 580) {
     this.id = 'player_nghi';
@@ -58,6 +61,16 @@ class PlayerBase {
     this.comboMax = 3;       // số đòn tối đa trong một chuỗi
     this.superArmor = false;
     this.armorThreshold = 55;
+
+    // ===== HỆ THỐNG 3 TẦNG GIÁP HÀO QUANG (3-TIER ARMOR AURAS) =====
+    // 'red'   = Bá Thể Cương Kình (không choáng, không ngã, có thể bị phá vỡ sau N đòn/ngưỡng HP)
+    // 'gold'  = Kim Cang Bất Khuất (không choáng, không ngã, giảm 35% DMG, BẤT KHẢ PHÁ)
+    // 'white' = Bất Hoại Thân Pháp (BẤT TỬ HOÀN TOÀN 0 DMG, miễn nhiễm khống chế)
+    this.auraArmor = null;
+    this.auraArmorTimer = 0;
+    this.auraArmorHp = 0;
+    this.auraArmorMaxHp = 0;
+    this.auraArmorHits = 0;
     this.damageReduction = 0;
     this.counterBonus = 1.85;  // hệ số sát thương Perfect Counter
     this.counterWindow = 1.8;  // thời gian cửa sổ phản đòn (giây)
@@ -115,18 +128,66 @@ class PlayerBase {
     this.guardRegenDelay = 0.9;       // trễ 0.9s sau đòn đánh cuối mới bắt đầu hồi
     this._lastGuardWarnAt = -99;
 
-    // ===== HIỆU ỨNG TRẠNG THÁI TỪ VŨ KHÍ =====
+    // ===== HIỆU ỨNG TRẠNG THÁI TỪ VŨ KHÍ & ĐỒNG MINH =====
     this.stunTimer = 0;               // Choáng váng từ Côn (khóa điều khiển)
     this.bleedTimer = 0;              // Xuất huyết từ Mã tấu
     this.bleedTickTimer = 0;
     this.bleedDmg = 0;
+    this.burnTimer = 0;
+    this.burnTickTimer = 0;
+    this.burnDmg = 0;
+    this.chillTimer = 0;
+    this.slowTimer = 0;
+    this.frozenTimer = 0;
+    this.blindTimer = 0;
+    this.armorBreakTimer = 0;
+    this._frostStacks = 0;
+    this.chillStacks = 0;
+    this._freezeImmunityUntil = 0;
+    this._pvpStunImmunityUntil = 0;
+    this.speedMul = 1.0;
+    this.shieldHp = 0;
+    this.allyDmgBuff = 1.0;
+    this.allyDmgReduction = 0;
+    this.allyEnergyRate = 1.0;
+    this.allyCounterBuff = 1.0;
+    this.nextHitCrit = false;
+    this.stanceSkillCooldown = 0;
+    this._dodgeFollowupTimer = 0;
+    this._prevComboBtn = null;
+    this._prevHitMove = null;
+    this._isCrossComboHit = false;
+    this._lastDamagedEnemy = null;
+    this.attackDurationMul = 1.0;
+    this._baseAttackDurationMul = 1.0;
+
+    this._baseSpeed = this.speed;
+    this._baseRunSpeed = this.runSpeed;
+    this._baseDmgMul = this.dmgMul;
+    this._baseReachMul = this.reachMul;
+    this._baseKbMul = this.kbMul;
+    this._baseComboMax = this.comboMax;
+    this._baseDamageReduction = this.damageReduction;
+    this._baseCounterBonus = this.counterBonus;
+    this.maxDodgeCooldown = 8.0;
+    this._baseMaxDodgeCooldown = this.maxDodgeCooldown;
+    this.noWhiffStun = false;
+    this.incomingDamageMul = 1.0;
+    this._summonedFiends = [];
+    this._fiendSummonCd = 0;
   }
 
   // ==========================================================================
   // CHỌN NHÂN VẬT CHƠI ĐƯỢC (mỗi nhân vật một bộ chỉ số & phong cách riêng)
   // ==========================================================================
   setCharacter(charId) {
-    const list = window.CHARACTERS || {};
+    this._summonedFiends = [];
+    this._fiendSummonCd = 0;
+    this.incomingDamageMul = 1.0;
+    this.passive_nghiepHoaKiemXu = false;
+    this.passive_trieuHoiAmBinh = false;
+    this.passive_taThuatPhanPhe = false;
+    const list = window.CHARACTERS || (window.CharacterRegistry ? window.CharacterRegistry.buildCharactersMap() : {});
     const c = list[charId] && list[charId].playable ? list[charId] : list.nghi;
     const combat = (c && c.combat) || (list.nghi && list.nghi.combat) || {};
 
@@ -136,6 +197,15 @@ class PlayerBase {
     this.name = (c && c.name) || 'Ngô Nhất Nghị';
     this.title = (c && c.title) || 'SÁT THẦN VIỆT VÕ ĐẠO';
     this.styleType = (c && c.styleType) || 'player';
+
+    // Trang phục (Võ Phục Vovinam / Skin đặc biệt): chỉ thay đổi ngoại hình, giữ nguyên toàn bộ bộ chiêu thức & chỉ số gốc của nhân vật
+    const equippedSkin = (this.charId === 'nghi')
+      ? 'default'
+      : ((window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
+        ? window.saveManager.getEquippedSkin(this.charId)
+        : ((window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(this.charId, 'vovinam')) ? 'vovinam' : 'default'));
+    this.equippedSkin = equippedSkin;
+    this.isVovinamSkin = (this.charId === 'nghi' || equippedSkin === 'vovinam');
 
     this.maxHp = combat.hp || 1000;
     this.hp = this.maxHp;
@@ -157,20 +227,52 @@ class PlayerBase {
     this.counterBonus = combat.counterBonus || 1.85;
     this.counterWindow = combat.counterWindow || 1.8;
     this.mechRiposte = (this.finisher === 'bash' || this.finisher === 'counter');
+    this.attackDurationMul = combat.attackDurationMul || 1.0;
+    this.maxKickCooldown = combat.maxKickCooldown || 0.28;
+    this.noWhiffStun = !!combat.noWhiffStun;
 
+    // Lưu mốc chỉ số cơ bản để applySelectedPassives() không bao giờ nhân chồng chỉ số khi gọi lặp
+    this._baseSpeed = this.speed;
+    this._baseRunSpeed = this.runSpeed;
+    this._baseDmgMul = this.dmgMul;
+    this._baseReachMul = this.reachMul;
+    this._baseKbMul = this.kbMul;
+    this._baseComboMax = this.comboMax;
+    this._baseDamageReduction = this.damageReduction;
+    this._baseCounterBonus = this.counterBonus;
+    this._baseAttackDurationMul = this.attackDurationMul;
+    this.maxDodgeCooldown = 8.0;
+    this._baseMaxDodgeCooldown = this.maxDodgeCooldown;
+    this._lastDamagedEnemy = null;
+
+    this.maxEnergy = 100;
     this.energy = 0;
     this.isDead = false;
+    this.invincibleTimer = 0;
     this.state = 'idle';
     this.stateTimer = 0;
     this.stateDuration = 0;
     this._finisherState = null;
     this._pose = null;
     this._trail = [];
+    this._summonedFiends = [];
+    this._fiendSummonCd = 0;
+
+    this.applySelectedPassives();
 
     if (window.uiManager) {
       window.uiManager.setCharacterHUD(this);
     }
     return this;
+  }
+
+  // ==========================================================================
+  // KÍCH HOẠT TOÀN DIỆN 4 NỘI TẠI VÕ THUẬT THEO TỪNG MODULE NHÂN VẬT
+  // ==========================================================================
+  applySelectedPassives() {
+    if (window.CharacterRegistry) {
+      window.CharacterRegistry.applyPassives(this);
+    }
   }
 
   reset(x = 150, y = 580) {
@@ -182,6 +284,7 @@ class PlayerBase {
     this.vz = 0;
     this.facing = 1;
     this.hp = this.maxHp;
+    this.maxEnergy = 100;
     this.energy = 0;
     this.isDead = false;
     this.invincibleTimer = 0;
@@ -194,8 +297,11 @@ class PlayerBase {
     this.hitTargets.clear();
     this.grabbedTarget = null;
     this.scissorHitDone = false;
+    this.clearAuraArmor();
     this._pose = null;
     this._trail = [];
+    this._summonedFiends = [];
+    this._fiendSummonCd = 0;
     // Nhịp ra đòn (chống spam): đánh dồn dập thì lực nhạt dần
     this.attackClock = 0;
     this.spamStack = 0;
@@ -216,12 +322,54 @@ class PlayerBase {
     this.activeCounterType = null;
     this.counterSuccess = false;
     this.guardGauge = this.maxGuardGauge;
-    this.guardBreakTimer = 0;
     this.lastGuardHitTime = -99;
+    this.clearAllDebuffs();
+    this._xichHuyetArmorTriggered = false;
+    this._thienKhanhHitSeq = 0;
+    this._fiendSummonFlashTimer = 0;
+    this._hapTinhHealCd = 0;
+    this._hacLongShieldUsed = false;
+    this._energyRegenTimer = 0;
+    this._pvpRageRegenAcc = 0;
+    this.shieldHp = 0;
+    this.allyDmgBuff = 1.0;
+    this.allyDmgReduction = 0;
+    this.allyEnergyRate = 1.0;
+    this.allyCounterBuff = 1.0;
+    this.nextHitCrit = false;
+    this.stanceSkillCooldown = 0;
+    this._dodgeFollowupTimer = 0;
+    this._prevComboBtn = null;
+    this._prevHitMove = null;
+    this._isCrossComboHit = false;
+    this._lastDamagedEnemy = null;
+    this.attackDurationMul = 1.0;
+    this._baseAttackDurationMul = 1.0;
+    this.superArmorTimer = 0;
+    this.superArmor = !!this._baseSuperArmor;
+  }
+
+  // Xóa sạch mọi hiệu ứng xấu & cờ trạng thái giữa các trận/hiệp
+  clearAllDebuffs() {
     this.stunTimer = 0;
     this.bleedTimer = 0;
     this.bleedTickTimer = 0;
     this.bleedDmg = 0;
+    this.burnTimer = 0;
+    this.burnTickTimer = 0;
+    this.burnDmg = 0;
+    this.chillTimer = 0;
+    this.slowTimer = 0;
+    this.frozenTimer = 0;
+    this.blindTimer = 0;
+    this.armorBreakTimer = 0;
+    this.guardBreakTimer = 0;
+    this.exhaustTimer = 0;
+    this.speedMul = 1.0;
+    this.hitJitterTimer = 0;
+    if (window.uiManager) {
+      window.uiManager._lastHudDebuffsSig = null;
+    }
   }
 
   // Tiêu hao thanh giữ thủ (Guard Gauge). Trả về true nếu bể thủ (Guard Break)
@@ -260,12 +408,21 @@ class PlayerBase {
   }
 
   addEnergy(amount) {
-    this.energy = Math.min(this.maxEnergy, this.energy + amount);
+    const safeAmt = (typeof amount === 'number' && Number.isFinite(amount)) ? amount : 0;
+    const rate = (typeof this.allyEnergyRate === 'number' && Number.isFinite(this.allyEnergyRate) && this.allyEnergyRate > 0) ? this.allyEnergyRate : 1;
+    const cur = (typeof this.energy === 'number' && Number.isFinite(this.energy)) ? this.energy : 0;
+    const max = (typeof this.maxEnergy === 'number' && Number.isFinite(this.maxEnergy) && this.maxEnergy >= 0) ? this.maxEnergy : 100;
+    this.maxEnergy = max;
+    this.energy = Math.max(0, Math.min(max, cur + safeAmt * rate));
     if (window.uiManager) window.uiManager.updatePlayerEnergy(this.energy, this.maxEnergy);
   }
 
   consumeEnergy(amount) {
-    this.energy = Math.max(0, this.energy - amount);
+    const safeAmt = (typeof amount === 'number' && Number.isFinite(amount)) ? amount : 0;
+    const cur = (typeof this.energy === 'number' && Number.isFinite(this.energy)) ? this.energy : 0;
+    const max = (typeof this.maxEnergy === 'number' && Number.isFinite(this.maxEnergy) && this.maxEnergy >= 0) ? this.maxEnergy : 100;
+    this.maxEnergy = max;
+    this.energy = Math.max(0, cur - safeAmt);
     if (window.uiManager) window.uiManager.updatePlayerEnergy(this.energy, this.maxEnergy);
   }
 
@@ -297,13 +454,19 @@ class PlayerBase {
     this.stateTimer = 0;
     this.stateDuration = duration;
     this.animTime = 0;
+    this._prevSkillP = -0.01;
+    this._moveVariant = null;
     this.hitTargets.clear();
     this._hitStopThisAttack = false;
     this._rhythmApplied = false; // mỗi cú vung chỉ tính nhịp 1 lần
-    if (newState === 'dodge') this.perfectDodgeDone = false;
+    if (newState === 'dodge') {
+      this.perfectDodgeDone = false;
+      this._dodgeFollowupTimer = 0.45;
+    }
   }
 
   // ==========================================================================
+  // UPDATE MỖI FRAME
   update(dt, enemies = []) {
     this.animTime += dt;
     this.attackClock += dt;
@@ -313,9 +476,43 @@ class PlayerBase {
     if (this.exhaustTimer > 0) this.exhaustTimer = Math.max(0, this.exhaustTimer - dt);
     if (this.kickCooldown > 0) this.kickCooldown = Math.max(0, this.kickCooldown - dt);
     if (this.dodgeCooldown > 0) this.dodgeCooldown = Math.max(0, this.dodgeCooldown - dt);
+    if (this.stanceSkillCooldown > 0) this.stanceSkillCooldown = Math.max(0, this.stanceSkillCooldown - dt);
+    if (this._dodgeFollowupTimer > 0) this._dodgeFollowupTimer = Math.max(0, this._dodgeFollowupTimer - dt);
     if (this.counterHandCooldown > 0) this.counterHandCooldown = Math.max(0, this.counterHandCooldown - dt);
     if (this.counterLegCooldown > 0) this.counterLegCooldown = Math.max(0, this.counterLegCooldown - dt);
     if (this.activeCounterWindow > 0) this.activeCounterWindow = Math.max(0, this.activeCounterWindow - dt);
+
+    // Cập nhật Hào Quang Giáp (3-Tier Armor Auras)
+    if (this.auraArmorTimer > 0) {
+      this.auraArmorTimer = Math.max(0, this.auraArmorTimer - dt);
+      if (this.auraArmorTimer <= 0) {
+        this.clearAuraArmor();
+      }
+    }
+
+    // Cập nhật đếm lùi Siêu Giáp (Super Armor) tạm thời từ Counter (Nghi)
+    if (this.superArmorTimer > 0) {
+      this.superArmorTimer = Math.max(0, this.superArmorTimer - dt);
+      if (this.superArmorTimer <= 0) {
+        this.superArmor = !!this._baseSuperArmor;
+      }
+    }
+
+    // Cập nhật nội tại định kỳ của nhân vật đang chơi (Mạng Lưới Chi Viện, Nham Thạch Hồi Phục...)
+    if (window.CharacterRegistry && !this.isDead) {
+      window.CharacterRegistry.updatePassives(this, dt, enemies);
+    }
+
+    // Hồi Nộ (Khí Phách Chiến Đấu) trong PvP 1v1 để bảo đảm người chơi kịp tích đủ Tuyệt Kỹ mỗi hiệp
+    if (!this.isDead && !this.isRemotePlayer && window.onlineManager && window.onlineManager.isActive &&
+        window.onlineManager.mode === 'pvp' && !window.onlineManager._roundOver && (window.onlineManager._introLockTimer || 0) <= 0) {
+      this._pvpRageRegenAcc = (this._pvpRageRegenAcc || 0) + 2.0 * dt;
+      if (this._pvpRageRegenAcc >= 0.5) {
+        const chunk = Math.floor(this._pvpRageRegenAcc * 2) / 2;
+        this._pvpRageRegenAcc -= chunk;
+        this.addEnergy(chunk);
+      }
+    }
 
     // Hồi thể lực khi ngừng ra đòn đủ 0.5s (nếu đang kiệt sức thì hồi chậm hơn)
     if (this.stamina < this.maxStamina && this.attackClock - this._lastAtkAt > 0.5) {
@@ -354,6 +551,9 @@ class PlayerBase {
       }
       if (this.stunTimer <= 0 && this.state === 'hurt') {
         this.setState('idle');
+        if (window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'pvp') {
+          this.invincibleTimer = Math.max(this.invincibleTimer || 0, 0.25);
+        }
       }
     }
 
@@ -379,6 +579,38 @@ class PlayerBase {
       }
     }
 
+    // Hiệu ứng Thiêu Đốt (Burn DoT từ PvP Online / Kiếm Xu)
+    if (this.burnTimer > 0 && !this.isDead) {
+      this.burnTimer = Math.max(0, this.burnTimer - dt);
+      this.burnTickTimer = (this.burnTickTimer || 0) - dt;
+      if (this.burnTickTimer <= 0) {
+        this.burnTickTimer = 0.7;
+        const tickDmg = this.burnDmg || 6;
+        this.hp = Math.max(0, this.hp - tickDmg);
+        if (window.effectManager) {
+          window.effectManager.addFloatingText(`-${tickDmg} 🔥`, this.x, (this.y || 580) + (this.z || 0) - 132, 'crit');
+          window.effectManager.createHitSparks(this.x, (this.y || 580) + (this.z || 0) - 70, 5, true);
+        }
+        if (window.uiManager) {
+          window.uiManager.updatePlayerHp(this.hp, this.maxHp);
+        }
+        if (this.hp <= 0) {
+          this.die(0);
+          return;
+        }
+      }
+    }
+
+    // Giảm dần các hiệu ứng bất lợi khác (Lạnh, Làm chậm, Đóng băng, Mù đòn, Phá giáp)
+    if (this.frozenTimer > 0) this.frozenTimer = Math.max(0, this.frozenTimer - dt);
+    if (this.blindTimer > 0) this.blindTimer = Math.max(0, this.blindTimer - dt);
+    if (this.armorBreakTimer > 0) this.armorBreakTimer = Math.max(0, this.armorBreakTimer - dt);
+    if (this.chillTimer > 0) this.chillTimer = Math.max(0, this.chillTimer - dt);
+    if (this.slowTimer > 0) this.slowTimer = Math.max(0, this.slowTimer - dt);
+    if ((this.slowTimer || 0) <= 0 && (this.chillTimer || 0) <= 0 && (this.frozenTimer || 0) <= 0) {
+      this.speedMul = 1.0;
+    }
+
     // Trọng lực (z âm = trên không)
     if (this.z < 0 || this.vz !== 0) {
       this.z -= this.vz * dt;
@@ -390,28 +622,26 @@ class PlayerBase {
         this.squashType = 'land';
         if (this.state === 'flying_kick' || (this.state === 'jump_fall' && this.lastAerialAttack === 'flying_kick')) {
           // STATE MACHINE TIẾP ĐẤT CHO ĐÁ BAY SPACE + K (CHỐNG SPAM)
-          // Đòn trúng đích: recovery chuẩn 0.55s.
-          // Đòn đánh hụt: phạt thêm +0.20s recovery = 0.75s!
-          const recDuration = this.kickHasHit ? 0.55 : 0.75;
+          // Đòn trúng đích: recovery chuẩn 0.55s; Ngô Nhất Nghị (noWhiffStun) tiếp đất nhẹ 0.08s không bị khựng khi hụt.
+          const recDuration = this.noWhiffStun ? 0.08 : (this.kickHasHit ? 0.55 : 0.75);
           this.vx *= 0.35; // Giảm đà lao về phía trước khi tiếp đất
           this.setState('landing', recDuration);
           if (window.effectManager) {
             window.effectManager.createDust(this.x, this.y, 10, 45);
-            if (!this.kickHasHit) {
+            if (!this.kickHasHit && !this.noWhiffStun) {
               window.effectManager.addFloatingText('HỤT ĐÒN — HỒI PHỤC!', this.x, this.y - 145, 'stale');
             }
           }
           this.lastAerialAttack = null;
         } else if (this.state === 'air_punch' || (this.state === 'jump_fall' && this.lastAerialAttack === 'air_punch')) {
           // STATE MACHINE TIẾP ĐẤT CHO PHI QUYỀN SPACE + J (CHỐNG SPAM)
-          // Đòn trúng đích: recovery 0.24s nhanh nhẹn.
-          // Đòn đánh hụt: phạt sơ hở 0.44s để đối thủ có cơ hội trừng phạt!
-          const recDuration = this.airPunchHasHit ? 0.24 : 0.44;
+          // Đòn trúng đích: recovery 0.24s nhanh nhẹn; Ngô Nhất Nghị (noWhiffStun) tiếp đất nhẹ 0.08s.
+          const recDuration = this.noWhiffStun ? 0.08 : (this.airPunchHasHit ? 0.24 : 0.44);
           this.vx *= 0.30;
           this.setState('landing', recDuration);
           if (window.effectManager) {
             window.effectManager.createDust(this.x, this.y, 8, 35);
-            if (!this.airPunchHasHit) {
+            if (!this.airPunchHasHit && !this.noWhiffStun) {
               window.effectManager.addFloatingText('HỤT ĐÒN — HỒI PHỤC!', this.x, this.y - 145, 'stale');
             }
           }
@@ -462,6 +692,15 @@ class PlayerBase {
     const st = this.state;
     const p = window.AnimUtil ? AnimUtil.progress(this) : 0;
 
+    // Điều khiển VFX theo 5 giai đoạn dựa trên tiến trình p của từng nhân vật (không phụ thuộc setTimeout)
+    if (window.CharacterRegistry && window.effectManager && st !== 'idle' && st !== 'walk' && st !== 'run' && st !== 'hurt' && st !== 'knockdown' && st !== 'getup') {
+      const prevP = typeof this._prevSkillP === 'number' ? this._prevSkillP : -0.01;
+      if (p >= prevP) {
+        window.CharacterRegistry.emitSkillVFX(this, st, prevP, p, window.effectManager, enemies);
+      }
+      this._prevSkillP = p;
+    }
+
     if (st === 'hurt') {
       if (this.stunTimer > 0) {
         this.vx = 0;
@@ -472,11 +711,17 @@ class PlayerBase {
       return;
     }
     if (st === 'knockdown') {
-      if (this.stateTimer >= this.stateDuration && this.z === 0) this.setState('getup', 0.4);
+      if (this.stateTimer >= this.stateDuration && (this.z || 0) === 0) {
+        this.setState('getup', 0.28);
+        this.invincibleTimer = 0.65; // Miễn nhiễm sát thương toàn diện khi đang đứng dậy
+      }
       return;
     }
     if (st === 'getup') {
-      if (this.stateTimer >= this.stateDuration) this.setState('idle');
+      if (this.stateTimer >= this.stateDuration) {
+        this.setState('idle');
+        this.invincibleTimer = Math.max(this.invincibleTimer || 0, 0.45); // Tặng thêm 0.45s i-frame Wake-Up an toàn tuyệt đối
+      }
       return;
     }
     if (st === 'guard_break') {
@@ -490,8 +735,8 @@ class PlayerBase {
 
     // Hồi phục sau khi tiếp đất (Landing Recovery của Space + K / Space + J)
     if (st === 'landing') {
-      // Đòn trúng đích (Hit-confirm): tiếp đất vững chãi sau 0.08s là có thể hồi về idle ngay
-      if ((this.kickHasHit || this.airPunchHasHit) && this.stateTimer >= 0.08) {
+      // Đòn trúng đích (Hit-confirm) hoặc Ngô Nhất Nghị (noWhiffStun): tiếp đất vững chãi sau 0.08s là có thể hồi về idle ngay
+      if ((this.kickHasHit || this.airPunchHasHit || this.noWhiffStun) && this.stateTimer >= 0.08) {
         this.kickHasHit = false;
         this.airPunchHasHit = false;
         this.setState('idle');
@@ -508,11 +753,15 @@ class PlayerBase {
     // Thủ thế Counter Vovinam U+J và U+K (Chờ đón đòn trong cửa sổ counter)
     if (st === 'counter_hand_prep' || st === 'counter_leg_prep') {
       if (this.activeCounterWindow <= 0 && !this.counterSuccess) {
-        // Hết thời gian cửa sổ mà không bắt được đòn -> Chịu phạt Whiff Recovery!
-        const isHand = (st === 'counter_hand_prep');
-        this.setState(isHand ? 'counter_hand_recovery' : 'counter_leg_recovery', isHand ? 0.38 : 0.46);
-        if (window.effectManager) {
-          window.effectManager.addFloatingText('HỤT COUNTER!', this.x, this.y - 150, 'stale');
+        if (this.noWhiffStun) {
+          this.setState('idle');
+        } else {
+          // Hết thời gian cửa sổ mà không bắt được đòn -> Chịu phạt Whiff Recovery!
+          const isHand = (st === 'counter_hand_prep');
+          this.setState(isHand ? 'counter_hand_recovery' : 'counter_leg_recovery', isHand ? 0.28 : 0.32);
+          if (window.effectManager) {
+            window.effectManager.addFloatingText('HỤT COUNTER!', this.x, this.y - 150, 'stale');
+          }
         }
       }
       return;
@@ -533,8 +782,18 @@ class PlayerBase {
     // Né tránh
     if (st === 'dodge') {
       this.invincibleTimer = Math.max(this.invincibleTimer, 0.1);
-      if (window.effectManager && Math.random() < 0.5) window.effectManager.addGhostTrail(this, 'rgba(0, 210, 255, 0.5)');
+      if (window.effectManager && Math.random() < 0.45) {
+        const prof = window.CharacterRegistry && window.CharacterRegistry.getTrailProfile
+          ? window.CharacterRegistry.getTrailProfile(this)
+          : null;
+        window.effectManager.addGhostTrail(this, (prof && prof.dodgeGhost) || 'rgba(56, 189, 248, 0.45)');
+      }
       if (!this.perfectDodgeDone) this.checkPerfectDodgeOpportunity(enemies);
+      if (this.stateTimer >= 0.12 && this._dodgeFollowupTimer > 0 && window.input && (window.input.peek('KeyJ') || window.input.peek('KeyK'))) {
+        this.setState('idle');
+        this.handlePlayerInput(enemies);
+        return;
+      }
       if (this.stateTimer >= this.stateDuration) this.setState('idle');
       return;
     }
@@ -612,7 +871,7 @@ class PlayerBase {
       // Đá bay: nếu chạm đất thì Z-physics đã đưa vào 'landing'; nếu hết thời gian trên không thì rơi tự do
       if (st === 'flying_kick') {
         if (this.z >= 0) {
-          const recDuration = this.kickHasHit ? 0.55 : 0.75;
+          const recDuration = this.noWhiffStun ? 0.08 : (this.kickHasHit ? 0.55 : 0.75);
           this.setState('landing', recDuration);
           this.lastAerialAttack = null;
         } else if (this.stateTimer >= this.stateDuration) {
@@ -622,7 +881,7 @@ class PlayerBase {
       }
       if (st === 'air_punch') {
         if (this.z >= 0) {
-          const recDuration = this.airPunchHasHit ? 0.24 : 0.44;
+          const recDuration = this.noWhiffStun ? 0.08 : (this.airPunchHasHit ? 0.24 : 0.44);
           this.setState('landing', recDuration);
           this.lastAerialAttack = null;
         } else if (this.stateTimer >= this.stateDuration) {
@@ -631,17 +890,18 @@ class PlayerBase {
         return;
       }
 
-      // Đòn nặng (chỏ / quét trụ / móc lên): cam kết tới hết đòn, không nối chuỗi
+      // Đòn nặng (chỏ / quét trụ / móc lên): cam kết tới hết đòn, riêng nhân vật miễn khựng hụt chiêu được thoát sớm từ 75% trở đi
       if (st === 'elbow_strike' || st === 'kick_sweep' || st === 'uppercut') {
-        if (this.stateTimer >= this.stateDuration) {
+        const earlyHeavy = this.noWhiffStun && p > 0.75 && window.input && (window.input.peek('KeyL') || window.input.peek('Space') || window.input.block);
+        if (earlyHeavy || this.stateTimer >= this.stateDuration) {
           this.comboWindowTimer = 0.6;
           this.setState('idle');
         }
         return;
       }
 
-      // Đòn nhẹ: HIT-CONFIRM — trúng đòn thì nối/ngắt sớm, đánh hụt phải chịu hết hồi đòn
-      const hitConfirm = this.hitTargets.size > 0;
+      // Đòn nhẹ: HIT-CONFIRM (Ngô Nhất Nghị miễn khựng khi hụt chiêu luôn được nối/ngắt mượt từ 52%)
+      const hitConfirm = this.hitTargets.size > 0 || !!this.noWhiffStun;
       const cancelAt = hitConfirm ? 0.52 : 0.8;
       const canChain = p > cancelAt && (window.input.peek('KeyJ') || window.input.peek('KeyK'));
       const canEscape = p > (hitConfirm ? 0.6 : 0.86) && (window.input.block || window.input.peek('KeyL') || window.input.peek('Space'));
@@ -660,7 +920,9 @@ class PlayerBase {
     this._rhythmApplied = false;
     this.vx = this.facing * lunge;
     this.comboWindowTimer = 0.9;
-    this.setState(state, duration);
+    const durMul = this.attackDurationMul || 1.0;
+    const scaledDuration = +(duration * durMul).toFixed(3);
+    this.setState(state, scaledDuration);
     if (window.audioManager) window.audioManager.playWhoosh();
     this.spendStamina(state);
     if (window.allyManager) window.allyManager.checkCoopTrigger(this);
@@ -684,14 +946,19 @@ class PlayerBase {
       this.kickCooldown = (state === 'flying_kick') ? 0.6 : this.maxKickCooldown;
     }
     if (this.stamina <= 0) {
-      this.stamina = 28;
-      this.exhaustTimer = 0.8;
-      this.comboStep = 0;
-      if (window.effectManager) {
-        window.effectManager.addFloatingText('KIỆT SỨC!', this.x, this.y - 190, 'warn');
-        window.effectManager.createDust(this.x, this.y, 8, 40);
+      if (this.noWhiffStun) {
+        this.stamina = 40;
+        this.exhaustTimer = 0;
+      } else {
+        this.stamina = 28;
+        this.exhaustTimer = 0.8;
+        this.comboStep = 0;
+        if (window.effectManager) {
+          window.effectManager.addFloatingText('KIỆT SỨC!', this.x, this.y - 190, 'warn');
+          window.effectManager.createDust(this.x, this.y, 8, 40);
+        }
+        if (window.audioManager) window.audioManager.playBlock();
       }
-      if (window.audioManager) window.audioManager.playBlock();
     }
   }
 
@@ -742,7 +1009,45 @@ class PlayerBase {
     return closest;
   }
 
-  // Né đúng lúc đối thủ đang tung đòn gần mình -> Perfect Dodge (chỉ tính một lần mỗi lần né)
+  // ==========================================================================
+  // HỆ THỐNG 3 TẦNG GIÁP HÀO QUANG (3-TIER ARMOR AURAS)
+  // 'red'   = Bá Thể Cương Kình (Kháng choáng/ngã, nhận sát thương, có thể bị phá)
+  // 'gold'  = Kim Cang Bất Khuất (Kháng choáng/ngã, giảm 35% DMG, BẤT KHẢ PHÁ)
+  // 'white' = Bất Hoại Thân Pháp (BẤT TỬ HOÀN TOÀN 0 DMG, kháng mọi hiệu ứng)
+  // ==========================================================================
+  setAuraArmor(type, duration = 3.0, hp = 100, hits = 5) {
+    this.auraArmor = type;
+    this.auraArmorTimer = duration;
+    this.auraArmorHp = hp;
+    this.auraArmorMaxHp = hp;
+    this.auraArmorHits = hits;
+    if (window.effectManager) {
+      const py = (this.y || 580) + (this.z || 0);
+      if (type === 'red') {
+        window.effectManager.addFloatingText('🔴 BÁ THỂ CƯƠNG KÌNH!', this.x, py - 170, 'ultimate');
+        window.effectManager.createShockRing(this.x, this.y || 580, '#ef4444');
+      } else if (type === 'gold') {
+        window.effectManager.addFloatingText('🟡 KIM CANG BẤT KHUẤT!', this.x, py - 170, 'heal');
+        window.effectManager.createShockRing(this.x, this.y || 580, '#ffd700');
+      } else if (type === 'white') {
+        window.effectManager.addFloatingText('⚪ BẤT HOẠI THÂN PHÁP (BẤT TỬ)!', this.x, py - 170, 'dodge');
+        window.effectManager.createShockRing(this.x, this.y || 580, '#ffffff');
+      }
+    }
+  }
+
+  clearAuraArmor() {
+    this.auraArmor = null;
+    this.auraArmorTimer = 0;
+    this.auraArmorHp = 0;
+    this.auraArmorMaxHp = 0;
+    this.auraArmorHits = 0;
+  }
+
+  hasAuraArmor(type) {
+    if (type) return this.auraArmor === type && this.auraArmorTimer > 0;
+    return !!this.auraArmor && this.auraArmorTimer > 0;
+  }
 }
 
 window.PlayerBase = PlayerBase;

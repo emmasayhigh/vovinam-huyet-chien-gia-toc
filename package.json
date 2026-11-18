@@ -5,6 +5,15 @@
   "description": "Game hành động võ thuật HTML5 Canvas 2D — Vovinam: Huyết Chiến Gia Tộc",
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/test_combat.js && node tests/test_upgrades.js && node tests/test_v5_features.js"
+    "test": "node tests/test_combat.js && node tests/test_upgrades.js && node tests/test_v5_features.js",
+    "harness:test": "node harness/run-tests.js",
+    "harness:gate": "node harness/gate.js --base=backup/user-wip-baseline",
+    "harness:smoke": "node harness/browser-smoke.js",
+    "harness:visual": "node harness/visual-diff.js",
+    "harness:report": "node harness/generate-report.js",
+    "harness:acceptance": "node harness/test-harness.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.0"
   }
 }

@@ -82,9 +82,18 @@ class TrainingManagerBase {
     this.maxComboDamage = 0;
     this.maxComboHits = 0;
 
-    // Reset sạch sẽ đồng minh nếu có từ trước
+    // Reset thực thể đồng minh cũ nhưng bảo toàn lựa chọn Trợ Chiến [Phím H] của Võ Đường
+    const chosenAlly = this.selectedTrainingAlly
+      || (window.saveManager && window.saveManager.data && window.saveManager.data.selectedAlly)
+      || (window.allyManager && window.allyManager.selectedAllyId)
+      || 'auto';
     if (window.allyManager && typeof window.allyManager.reset === 'function') {
       window.allyManager.reset();
+    }
+    if (window.allyManager) {
+      const targetHeroForCheck = charId || this.selectedTrainingChar || (window.saveManager && window.saveManager.data.selectedCharacter) || 'nghi';
+      window.allyManager.selectedAllyId = (chosenAlly === targetHeroForCheck) ? 'auto' : chosenAlly;
+      if (typeof window.allyManager.updateHUD === 'function') window.allyManager.updateHUD();
     }
 
     const game = window.game;
@@ -408,11 +417,14 @@ class TrainingManagerBase {
         player.energy = player.maxEnergy;
         player.dodgeCooldown = 0;
         player.counterCooldown = 0;
+        player.stanceSkillCooldown = 0;
+        player._fiendSummonCd = 0;
         if (window.uiManager) {
           window.uiManager.updatePlayerEnergy(player.energy, player.maxEnergy);
           const cdDodge = document.getElementById('cd-dodge-text'); if (cdDodge) cdDodge.textContent = 'SẴN SÀNG';
           const cdHand = document.getElementById('cd-counter-hand-text'); if (cdHand) cdHand.textContent = 'SẴN SÀNG';
           const cdLeg = document.getElementById('cd-counter-leg-text'); if (cdLeg) cdLeg.textContent = 'SẴN SÀNG';
+          const cdWu = document.getElementById('cd-stance-wu-text'); if (cdWu) cdWu.textContent = 'SẴN SÀNG';
         }
       }
       if (window.allyManager) {

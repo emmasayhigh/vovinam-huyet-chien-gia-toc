@@ -128,16 +128,18 @@ class GameWave extends window.GameBase {
   // ==========================================================================
   // QUẢN LÝ TIẾN TRÌNH CÁC ĐỢT KẺ ĐỊCH (WAVES & BOSS)
   // ==========================================================================
-  checkWaveProgress() {
-    if (this.state === 'TUTORIAL' || this.state === 'TRAINING') return;
-    const stageData = window.stageManager.getCurrentStage();
+  checkWaveProgress(dt = 0.016) {
+    if (this.isBossRush || this.state === 'TUTORIAL' || this.state === 'TRAINING') return;
+    const stageData = window.stageManager ? window.stageManager.getCurrentStage() : null;
+    if (!stageData || !Array.isArray(stageData.waves)) return;
     const waves = stageData.waves;
+    const stepDt = (typeof dt === 'number' && dt > 0) ? dt : 0.016;
 
     // 1. Quản lý đợt lính quần chiến hiện tại
     if (this.currentWaveActive) {
-      this.currentWaveTime = (this.currentWaveTime || 0) + 0.016;
+      this.currentWaveTime = (this.currentWaveTime || 0) + stepDt;
       const required = this.currentWaveRequiredEnemies;
-      const aliveRequired = required.filter((e) => !e.isDead);
+      const aliveRequired = required.filter((e) => !e.isDead && !(typeof e.hp === 'number' && e.hp <= 0));
 
       // Kích hoạt sự kiện tiếp viện nếu điều kiện thỏa mãn
       if (this.currentWaveReinforcements && this.currentWaveReinforcements.length > 0) {
@@ -164,7 +166,7 @@ class GameWave extends window.GameBase {
       }
 
       // Toàn bộ kẻ địch bắt buộc (kể cả tiếp viện) phải bị tiêu diệt
-      const allCleared = required.length > 0 && required.every((e) => e.isDead);
+      const allCleared = required.length > 0 && required.every((e) => e.isDead || (typeof e.hp === 'number' && e.hp <= 0));
       if (allCleared) {
         this.currentWaveActive = false;
         this.arenaLocked = false;
@@ -201,9 +203,15 @@ class GameWave extends window.GameBase {
           }
         }
 
-        // Mở lối đi tiếp sang khu vực kế tiếp
+        // Mở lối đi tiếp sang khu vực kế tiếp hoặc hoàn tất màn không có Boss (3-4 màn mới gặp Boss)
         if (this.currentWaveIndex < waves.length) {
           if (window.audioManager) window.audioManager.playClick();
+        } else if (!stageData.bossClass && !stageData.escape && !this.stageCompletedPending && !this._waveVictoryScheduled) {
+          this._waveVictoryScheduled = true;
+          if (window.uiManager) window.uiManager.showAlertBanner('🔥 KHU VỰC ĐÃ ĐƯỢC QUÉT SẠCH!');
+          this.later(() => {
+            if (typeof this.triggerStageVictory === 'function') this.triggerStageVictory();
+          }, 700);
         }
       }
       return;
@@ -219,34 +227,54 @@ class GameWave extends window.GameBase {
             this.spawnBossWave(wave, stageData);
           }
         } else {
-          this.currentWaveActive = true;
+          const stageW = (window.stageManager && window.stageManager.stageWidth) || stageData.width || 2600;
+          this.arenaMinX = (this.currentWaveIndex === 0) ? 20 : Math.max(20, waves[this.currentWaveIndex - 1].spawnX + 100);
+          this.arenaMaxX = Math.min(stageW - 20, wave.spawnX + 520);
+          // Màn trốn thoát (escape): phục kích lao ra cản đường nhưng KHÔNG khóa tường vô hình để mở đường máu thoát thân
+          this.arenaLocked = !stageData.escape;
+          this.currentWaveActive = !stageData.escape;
           this.currentWaveTime = 0;
           this.combatMode = 'CROWD';
-          this.currentWaveRequiredEnemies = this.spawnMinionWave(wave);
+          const spawnedWave = this.spawnMinionWave(wave);
+          if (Array.isArray(wave.dialogue) && wave.dialogue.length > 0 && typeof this.playInlineDialogue === 'function') {
+            this.playInlineDialogue(wave.dialogue);
+          }
 
-          // Đăng ký danh sách tiếp viện của đợt này
-          this.currentWaveReinforcements = (wave.reinforcements || []).map((r, idx) => ({
-            ...r,
-            id: r.id || `wave_${this.currentWaveIndex}_r_${idx}`,
-            triggered: false
-          }));
-
-          // Khóa khu vực chiến đấu của đợt này (Encounter Boundary)
-          this.arenaLocked = true;
-          this.arenaMinX = (this.currentWaveIndex === 0) ? 20 : (waves[this.currentWaveIndex - 1].spawnX + 100);
-          this.arenaMaxX = Math.min(window.stageManager.stageWidth - 20, wave.spawnX + 480);
+          if (stageData.escape) {
+            this.currentWaveRequiredEnemies = [];
+            this.currentWaveReinforcements = [];
+            this.currentWaveIndex++;
+          } else {
+            this.currentWaveRequiredEnemies = spawnedWave;
+            // Đăng ký danh sách tiếp viện của đợt này
+            this.currentWaveReinforcements = (wave.reinforcements || []).map((r, idx) => ({
+              ...r,
+              id: r.id || `wave_${this.currentWaveIndex}_r_${idx}`,
+              triggered: false
+            }));
+          }
         }
       }
+    }
+
+    // Dự phòng an toàn: nếu mọi đợt đã kết thúc nhưng chưa kích hoạt chiến thắng ở màn không có Boss
+    if (!this.currentWaveActive && this.currentWaveIndex >= waves.length && !stageData.bossClass && !stageData.escape && !this.stageCompletedPending && !this._waveVictoryScheduled) {
+      this._waveVictoryScheduled = true;
+      if (window.uiManager) window.uiManager.showAlertBanner('🔥 KHU VỰC ĐÃ ĐƯỢC QUÉT SẠCH!');
+      this.later(() => {
+        if (typeof this.triggerStageVictory === 'function') this.triggerStageVictory();
+      }, 700);
     }
   }
 
   spawnMinionWave(wave) {
     const spawned = [];
-    for (const group of wave.enemies) {
+    for (const group of (wave.enemies || [])) {
       for (let i = 0; i < group.count; i++) {
-        const spawnX = wave.spawnX + i * group.spacing;
-        const spawnY = 540 + (i % 3) * 35;
-        const enemy = this.createEnemyInstance(group.type, spawnX, spawnY, group.faction);
+        const rawX = wave.spawnX + i * (group.spacing || 95);
+        const rawY = 540 + (i % 3) * 35;
+        const pos = this.findValidSpawnPosition(rawX, rawY);
+        const enemy = this.createEnemyInstance(group.type, pos.x, pos.y, group.faction);
         spawned.push(enemy);
         this.enemies.push(enemy);
       }
@@ -259,10 +287,12 @@ class GameWave extends window.GameBase {
     this.combatMode = 'DUEL';
     this.arenaLocked = true;
 
-    // SỬA LỖI MẤT NỬA MAP: Sân đấu Boss mở rộng toàn bộ chiều rộng từ cổng vào đến hết mép phải map
+    // Sân đấu Boss: luôn đảm bảo độ rộng chuẩn võ đài (1080px - 1380px) và kéo tới mép phải bản đồ
     const waves = stageData.waves || [];
-    this.arenaMinX = (waves.length > 1) ? Math.max(20, waves[waves.length - 2].spawnX + 100) : 20;
-    this.arenaMaxX = window.stageManager.stageWidth - 20;
+    const stageW = (window.stageManager && window.stageManager.stageWidth) || stageData.width || 2600;
+    this.arenaMaxX = stageW - 20;
+    const rawMin = (waves.length > 1) ? Math.max(20, waves[waves.length - 2].spawnX + 100) : 20;
+    this.arenaMinX = Math.max(20, Math.min(this.arenaMaxX - 1080, Math.max(rawMin, this.arenaMaxX - 1380)));
 
     // Sinh Boss
     const BossClass = stageData.bossClass;
@@ -294,8 +324,8 @@ class GameWave extends window.GameBase {
     this.bossZoom = 1;
     this.bossIntroTarget = boss;
 
-    // ĐẶC BIỆT MÀN 7: Cuộc gặp tại nơi ẩn náu — không lập tức đánh boss mà có 3 lựa chọn
-    if (stageData.id === 7 && !this.isBossCutsceneTriggered) {
+    // ĐẶC BIỆT: Cuộc gặp Phó Dung Hải — không lập tức đánh boss mà có 3 lựa chọn
+    if ((stageData.bossType === 'dunghai' || stageData.id === 13 || stageData.id === 7) && !this.isBossCutsceneTriggered) {
       this.triggerStage7DungHaiEncounter(stageData, wave);
       return;
     }
@@ -358,10 +388,12 @@ class GameWave extends window.GameBase {
   spawnChasers() {
     const alive = this.enemies.filter((e) => !e.isDead).length;
     if (alive >= 5) return;
-    const px = this.player.x;
-    const sx = Math.max(80, px - 320 - Math.random() * 120);
-    const type = Math.random() < 0.4 ? 'dodger' : 'thug';
-    this.spawnMinionAt(type, sx, 530 + Math.random() * 90);
+    const px = this.player ? this.player.x : 400;
+    const sx = Math.max(80, px - 300 - Math.random() * 110);
+    const pool = ['dodger', 'blade', 'baton', 'thug'];
+    const type = pool[Math.floor(Math.random() * pool.length)];
+    const chaser = this.spawnMinionAt(type, sx, 530 + Math.random() * 95, 'huavudai', false);
+    if (chaser) chaser.isChaser = true;
     if (window.audioManager) window.audioManager.playWarning();
   }
 
@@ -392,7 +424,22 @@ class GameWave extends window.GameBase {
         this.projectiles.splice(i, 1);
         continue;
       }
-      if (p.life <= 0 || p.x < -100 || p.x > window.stageManager.stageWidth + 100) {
+
+      const rawAlly = (window.allyManager && window.allyManager.activeAlly) || (window.allySystem && window.allySystem.activeAlly);
+      const hitAlly = rawAlly && !rawAlly.isDead && rawAlly.hp > 0 &&
+        !(rawAlly.isInvulnerable && rawAlly.isInvulnerable()) &&
+        Math.abs(p.x - rawAlly.x) < 44 &&
+        Math.abs(p.y - 30 - (rawAlly.y - 60)) < 70 &&
+        (rawAlly.z || 0) > -70;
+
+      if (hitAlly) {
+        rawAlly.takeDamage(p.damage, Math.sign(p.vx) * 6, false);
+        if (window.effectManager) window.effectManager.createHitSparks(p.x, p.y, 10, false);
+        this.projectiles.splice(i, 1);
+        continue;
+      }
+      const stageW = (window.stageManager && window.stageManager.stageWidth) || 2600;
+      if (p.life <= 0 || p.x < -100 || p.x > stageW + 100) {
         this.projectiles.splice(i, 1);
       }
     }

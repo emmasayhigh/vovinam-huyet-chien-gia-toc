@@ -18,6 +18,9 @@ class EffectManager {
     this.magmaCraters = [];
     this.sonicCones = [];
     this.thunderStrikes = [];
+    this.skillProps = [];
+    this.scheduledEffects = [];
+    this.maxParticles = 480;
     this.cinematic = null;
     this.finisherCutIn = null;
 
@@ -40,23 +43,48 @@ class EffectManager {
     // Mưa môi trường (Màn 1)
     this.isRaining = true;
     this.initRain(150);
+    this._spriteCache = {};
+    this._getEffectSprite('tieuquy_imp', 'assets/images/effects/tieuquy_imp.png');
+    this._getEffectSprite('croc_lower', 'assets/images/effects/croc_body_lower.png');
+    this._getEffectSprite('croc_upper', 'assets/images/effects/croc_upper_jaw.png');
   }
 
-  initRain(count = 150) {
+  /**
+   * Tải lười sprite hiệu ứng/triệu hồi (an toàn cả trên Node headless).
+   */
+  _getEffectSprite(key, src) {
+    if (typeof Image === 'undefined') return null;
+    if (!this._spriteCache[key]) {
+      const img = new Image();
+      img.src = src;
+      this._spriteCache[key] = img;
+    }
+    const cached = this._spriteCache[key];
+    return (cached && cached.complete && cached.naturalWidth > 0) ? cached : null;
+  }
+
+  initRain(count = 220) {
     this.rainDrops = [];
     for (let i = 0; i < count; i++) {
       this.rainDrops.push({
-        x: Math.random() * 1600 - 150,
-        y: Math.random() * 800 - 100,
-        speed: 12 + Math.random() * 8,
-        length: 14 + Math.random() * 10,
-        alpha: 0.15 + Math.random() * 0.25
+        x: Math.random() * 1700 - 150,
+        y: Math.random() * 850 - 100,
+        speed: 14 + Math.random() * 9,
+        length: 16 + Math.random() * 12,
+        alpha: 0.18 + Math.random() * 0.32
       });
     }
   }
 
   setWeather(stageNumber) {
+    this.currentStageNumber = stageNumber;
     this.isRaining = (stageNumber === 1);
+    this.isStorming = (stageNumber === 11);
+    this.isMountainMist = (stageNumber === 8);
+    this.isIndustrialSparks = (stageNumber === 2);
+    if (this.isRaining && (!this.rainDrops || this.rainDrops.length < 200)) {
+      this.initRain(220);
+    }
   }
 
   triggerScreenShake(intensity = 8, duration = 0.25, dirX = 0, dirY = 0) {
@@ -91,16 +119,20 @@ class EffectManager {
   }
 
   // Tạo tia lửa va chạm phong cách Arcade Beat'em up (Streak Sparks + Impact Starburst)
-  createHitSparks(x, y, count = 10, isCrit = false) {
-    const baseColor = isCrit ? '#ffd700' : '#ff3344';
-    const altColor = isCrit ? '#fffbeb' : '#00f0ff';
+  createHitSparks(x, y, count = 10, isCrit = false, colorOpts = null) {
+    const customBase = typeof colorOpts === 'string'
+      ? colorOpts
+      : (Array.isArray(colorOpts) ? colorOpts[0] : (colorOpts && colorOpts.base));
+    const customAlt = (Array.isArray(colorOpts) ? colorOpts[1] : (colorOpts && colorOpts.alt)) || '#ffffff';
+    const baseColor = customBase || (isCrit ? '#ffd700' : '#ff3344');
+    const altColor = customBase ? customAlt : (isCrit ? '#fffbeb' : '#00f0ff');
 
     // 1. Ngôi sao va chạm (Impact Starburst)
     this.impactStars.push({
       x: x,
       y: y,
       size: isCrit ? 36 : 22,
-      color: isCrit ? '#ffd700' : '#ffffff',
+      color: customBase || (isCrit ? '#ffd700' : '#ffffff'),
       fringe: baseColor,
       alpha: 1.0,
       life: isCrit ? 0.22 : 0.15,
@@ -135,7 +167,7 @@ class EffectManager {
         y: y,
         radius: 8,
         maxRadius: isCrit ? 56 : 34,
-        color: isCrit ? '#ffd700' : '#00d2ff',
+        color: customBase || (isCrit ? '#ffd700' : '#00d2ff'),
         alpha: 0.85,
         lineWidth: isCrit ? 3.5 : 2.5
       });
@@ -227,44 +259,431 @@ class EffectManager {
     }
   }
 
-  // Hiệu ứng Sóng Năng Lượng Tuyệt Kỹ (Ultimate Shockwave Blast)
-  createUltimateBlast(x, y) {
-    this.triggerFlash('#00f0ff', 0.85);
-    this.triggerScreenShake(18, 0.6);
-    this.triggerSlowMo(0.2, 0.45);
+  // Đẩy hạt có giới hạn bộ nhớ để tránh rò rỉ khi spam skill
+  _pushParticle(p) {
+    if (this.particles.length >= this.maxParticles) {
+      this.particles.shift();
+    }
+    this.particles.push(p);
+  }
+
+  clearSkillEffects() {
+    this.particles.length = 0;
+    this.shockwaves.length = 0;
+    this.ghostTrails.length = 0;
+    this.impactStars.length = 0;
+    this.groundCracks.length = 0;
+    this.lightningArcs.length = 0;
+    this.dimensionalSlashes.length = 0;
+    this.magmaCraters.length = 0;
+    this.sonicCones.length = 0;
+    this.thunderStrikes.length = 0;
+    this.skillProps.length = 0;
+    this.scheduledEffects.length = 0;
+  }
+
+  scheduleEffect(delaySec, fn) {
+    if (typeof fn !== 'function') return;
+    if (delaySec <= 0) { fn(); return; }
+    this.scheduledEffects.push({ timer: delaySec, fn });
+  }
+
+  // ---- HIỆU ỨNG KỸ NĂNG ĐẶC TRƯNG THEO BẢN SẮC NHÂN VẬT ----
+
+  // 1. Vovinam Long Hổ / Hoa Sen Thanh Kim (Ngô Nhất Nghị & Trang phục Vovinam)
+  createDragonTigerLotus(x, y, dir = 1, radius = 85, duration = 0.45) {
+    this.skillProps.push({
+      kind: 'lotus', x, y, dir, radius: 14, maxRadius: radius,
+      rot: 0, spin: 4.5 * dir, color: '#38bdf8', accent: '#facc15',
+      life: duration, maxLife: duration, alpha: 1
+    });
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * Math.PI * 2;
+      this._pushParticle({
+        x: x + Math.cos(a) * 10, y: y + Math.sin(a) * 10,
+        vx: Math.cos(a) * (3.2 + Math.random() * 4.5) + dir * 2.2,
+        vy: Math.sin(a) * (2.6 + Math.random() * 3.5) - 0.8,
+        size: 3 + Math.random() * 3.2,
+        color: i % 3 === 0 ? '#facc15' : '#38bdf8',
+        alpha: 0.95, life: 0.28 + Math.random() * 0.2, maxLife: 0.48,
+        gravity: -0.02, isStreak: true
+      });
+    }
+  }
+
+  // 2. Muzzle Flash + Vỏ Đạn Đồng + Tàn Tro Đô-la (Phó Văn Anh)
+  createMuzzleFlash(x, y, dir = 1, color = '#facc15') {
+    this.skillProps.push({
+      kind: 'muzzle', x, y, dir, radius: 34, maxRadius: 42,
+      rot: (Math.random() - 0.5) * 0.25, spin: 0, color, accent: '#ef4444',
+      life: 0.14, maxLife: 0.14, alpha: 1
+    });
+    for (let i = 0; i < 10; i++) {
+      const spread = (Math.random() - 0.5) * 0.5;
+      const spd = 7 + Math.random() * 9;
+      this._pushParticle({
+        x, y,
+        vx: Math.cos(spread) * dir * spd,
+        vy: Math.sin(spread) * spd - 0.4,
+        size: 2.4 + Math.random() * 2.6,
+        color: i % 3 === 0 ? '#ffffff' : (i % 2 === 0 ? '#facc15' : '#f97316'),
+        alpha: 1, life: 0.18 + Math.random() * 0.14, maxLife: 0.32,
+        gravity: 0.04, isStreak: true
+      });
+    }
+    this.createBrassShell(x - dir * 10, y - 4, dir);
+  }
+
+  createBrassShell(x, y, dir = 1) {
+    this.skillProps.push({
+      kind: 'shell', x, y, dir, vx: -dir * (1.8 + Math.random() * 2.4),
+      vy: -(3.2 + Math.random() * 2.6), rot: Math.random() * Math.PI,
+      spin: (Math.random() > 0.5 ? 1 : -1) * 14, color: '#eab308', accent: '#fef08a',
+      life: 0.55, maxLife: 0.55, alpha: 1
+    });
+  }
+
+  createBanknoteScatter(x, y, count = 10) {
+    for (let i = 0; i < count; i++) {
+      this.skillProps.push({
+        kind: 'note', x: x + (Math.random() - 0.5) * 60, y: y - 40 - Math.random() * 60,
+        vx: (Math.random() - 0.5) * 4.5, vy: -1.8 - Math.random() * 2.4,
+        rot: Math.random() * Math.PI, spin: (Math.random() - 0.5) * 7,
+        color: i % 3 === 0 ? '#ef4444' : '#fde047', accent: '#78350f',
+        life: 0.75 + Math.random() * 0.35, maxLife: 1.1, alpha: 1
+      });
+    }
+  }
+
+  // 3. Lưới Lục Giác Lượng Tử & Vệt Glitch (Phó Tiến Đăng)
+  createQuantumLockOn(x, y, radius = 64, duration = 0.42) {
+    this.skillProps.push({
+      kind: 'hex_lock', x, y, dir: 1, radius: radius * 1.35, maxRadius: radius,
+      rot: 0, spin: 5.5, color: '#00d2ff', accent: '#a5f3fc',
+      life: duration, maxLife: duration, alpha: 1
+    });
+  }
+
+  createCyberHexBurst(x, y, dir = 1, color = '#00d2ff') {
+    this.skillProps.push({
+      kind: 'hex_burst', x, y, dir, radius: 16, maxRadius: 72,
+      rot: Math.random() * Math.PI, spin: 3.0 * dir, color, accent: '#ffffff',
+      life: 0.28, maxLife: 0.28, alpha: 1
+    });
+    for (let i = 0; i < 12; i++) {
+      const ang = (Math.random() - 0.5) * 1.4;
+      const spd = 4.5 + Math.random() * 7.5;
+      this._pushParticle({
+        x, y, vx: dir * Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        size: 2.8 + Math.random() * 2.6, color: i % 2 === 0 ? color : '#e0f2fe',
+        alpha: 0.95, life: 0.22 + Math.random() * 0.16, maxLife: 0.38,
+        gravity: 0, isStreak: true
+      });
+    }
+  }
+
+  // 4. Ấn Ký Gia Chủ & Cột Truy Sát Đế Vương (Hứa Vũ Đại)
+  createImperialSeal(x, y, radius = 78, duration = 0.55, color = '#dc2626') {
+    this.skillProps.push({
+      kind: 'imperial_seal', x, y, dir: 1, radius: radius * 0.4, maxRadius: radius,
+      rot: 0, spin: 2.2, color, accent: '#facc15',
+      life: duration, maxLife: duration, alpha: 1
+    });
+  }
+
+  createOrbitalPillar(x, y, color = '#f43f5e') {
+    this.skillProps.push({
+      kind: 'orbital_pillar', x, y, dir: 1, radius: 34, maxRadius: 56,
+      rot: 0, spin: 0, color, accent: '#fef08a',
+      life: 0.36, maxLife: 0.36, alpha: 1
+    });
+    this.createGroundCrack(x, y, 75, '#facc15');
+    this.createShockRing(x, y - 10, color);
+  }
+
+  // 5. Lốc Xoáy Thanh Phong (Hứa Bích Lâm)
+  createWindVortex(x, y, dir = 1, radius = 58, duration = 0.36) {
+    this.skillProps.push({
+      kind: 'wind_vortex', x, y, dir, radius: radius * 0.45, maxRadius: radius,
+      rot: 0, spin: 10 * dir, color: '#22c55e', accent: '#bef264',
+      life: duration, maxLife: duration, alpha: 1
+    });
+    for (let i = 0; i < 12; i++) {
+      const a = Math.random() * Math.PI * 2;
+      this._pushParticle({
+        x: x + Math.cos(a) * 16, y: y + Math.sin(a) * 14,
+        vx: dir * (3.5 + Math.random() * 5.5), vy: -1.5 - Math.random() * 2.5,
+        size: 2.8 + Math.random() * 2.8, color: i % 3 === 0 ? '#ffffff' : '#4ade80',
+        alpha: 0.9, life: 0.25 + Math.random() * 0.2, maxLife: 0.45,
+        gravity: -0.04, isStreak: true
+      });
+    }
+  }
+
+  // 6. Cánh Phụng Hoàng & Vòm Hỏa Liên (Triệu Đình An)
+  createPhoenixWingFlare(x, y, dir = 1, duration = 0.45) {
+    this.skillProps.push({
+      kind: 'phoenix_wings', x, y, dir, radius: 22, maxRadius: 96,
+      rot: 0, spin: 0, color: '#f97316', accent: '#fef08a',
+      life: duration, maxLife: duration, alpha: 1
+    });
+    for (let i = 0; i < 16; i++) {
+      const a = -Math.PI * 0.9 + Math.random() * Math.PI * 0.8;
+      this._pushParticle({
+        x: x + (Math.random() - 0.5) * 32, y: y - Math.random() * 35,
+        vx: Math.cos(a) * (2 + Math.random() * 4) - dir * 1.4,
+        vy: Math.sin(a) * (2.5 + Math.random() * 4) - 1.2,
+        size: 3.2 + Math.random() * 3.5, color: i % 3 === 0 ? '#fef08a' : '#f97316',
+        alpha: 0.95, life: 0.3 + Math.random() * 0.25, maxLife: 0.55,
+        gravity: -0.06, isStreak: true
+      });
+    }
+  }
+
+  createSacredDome(x, y, radius = 140, duration = 0.46) {
+    this.skillProps.push({
+      kind: 'sacred_dome', x, y, dir: 1, radius: 18, maxRadius: radius,
+      rot: 0, spin: 0, color: '#f59e0b', accent: '#fef08a',
+      life: duration, maxLife: duration, alpha: 1
+    });
+  }
+
+  // 7. Đá Vỡ & Bụi Địa Chấn Sơn Cước (Phó Đặng Hoàng Anh)
+  createEarthShardBurst(x, y, dir = 1, count = 12) {
+    for (let i = 0; i < count; i++) {
+      const spd = 2.8 + Math.random() * 5.2;
+      const up = -(3.5 + Math.random() * 5.5);
+      this.skillProps.push({
+        kind: 'rock', x: x + (Math.random() - 0.5) * 44, y: y - 4,
+        dir, vx: ((Math.random() - 0.5) * 2 + dir * 0.45) * spd, vy: up,
+        rot: Math.random() * Math.PI * 2, spin: (Math.random() - 0.5) * 11,
+        radius: 4 + Math.random() * 5,
+        color: i % 3 === 0 ? '#d97706' : '#78350f', accent: '#fde68a',
+        life: 0.48 + Math.random() * 0.25, maxLife: 0.73, alpha: 1
+      });
+    }
+  }
+
+  // 8. Huyễn Ảnh Đao Khí & Phi Tiêu Tản Mạn (Phó Dung Hải)
+  createShadowDecoyCut(x, y, dir = 1, color = '#f43f5e') {
+    this.createDimensionalSlash(x + (Math.random() - 0.5) * 32, y - 55, (Math.random() - 0.5) * 0.9, 130, color);
+    this.createDimensionalSlash(x + (Math.random() - 0.5) * 32, y - 55, Math.PI * 0.5 + (Math.random() - 0.5) * 0.6, 120, '#0f172a');
+    this.createShurikenBurst(x, y - 48, dir, 4);
+  }
+
+  createShurikenBurst(x, y, dir = 1, count = 5) {
+    for (let i = 0; i < count; i++) {
+      const ang = (i - (count - 1) / 2) * 0.28 + (dir < 0 ? Math.PI : 0);
+      const spd = 6.5 + Math.random() * 4;
+      this.skillProps.push({
+        kind: 'shuriken', x, y, dir,
+        vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        rot: 0, spin: 18, radius: 7,
+        color: '#e2e8f0', accent: '#f43f5e',
+        life: 0.34, maxLife: 0.34, alpha: 1
+      });
+    }
+  }
+
+  // 9. Trận Đồ Hàn Băng & Mảnh Băng Vỡ (Ngô Giang Mạnh)
+  createFrostMandala(x, y, radius = 92, duration = 0.62) {
+    this.skillProps.push({
+      kind: 'frost_mandala', x, y, dir: 1, radius: radius * 0.25, maxRadius: radius,
+      rot: 0, spin: 2.8, color: '#7dd3fc', accent: '#ffffff',
+      life: duration, maxLife: duration, alpha: 1
+    });
+  }
+
+  createIceShatterBurst(x, y, count = 16) {
+    for (let i = 0; i < count; i++) {
+      const ang = (i / count) * Math.PI * 2 + Math.random() * 0.2;
+      const spd = 3.5 + Math.random() * 6.5;
+      this.skillProps.push({
+        kind: 'ice_shard', x, y, dir: 1,
+        vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd - 1.5,
+        rot: ang, spin: (Math.random() - 0.5) * 8,
+        radius: 5 + Math.random() * 5,
+        color: i % 2 === 0 ? '#bae6fd' : '#38bdf8', accent: '#ffffff',
+        life: 0.42 + Math.random() * 0.22, maxLife: 0.64, alpha: 1
+      });
+    }
+  }
+
+  // 10. Hiệu ứng Cá Sấu Đỏ Mũi Đớp Lên & Thủy Triều Sông Cửu Long (Ông Năm Chèo SSS)
+  createCrocodileBite(x, y, dir = 1, scale = 1.0) {
+    this.skillProps.push({
+      kind: 'croc_bite',
+      x,
+      y,
+      dir: dir || 1,
+      scale: scale || 1.0,
+      rot: 0,
+      spin: 0,
+      radius: 82 * (scale || 1.0),
+      color: '#0f766e',
+      accent: '#ef4444',
+      life: 0.56,
+      maxLife: 0.56,
+      alpha: 1.0
+    });
+    this.createShockRing(x, y, '#0ea5e9');
+    this.createShockRing(x, y, '#ef4444');
+    for (let i = 0; i < 18; i++) {
+      const spread = (Math.random() - 0.5) * 5.2;
+      this._pushParticle({
+        x: x + (Math.random() - 0.5) * 34 * scale,
+        y: y - 10 - Math.random() * 36 * scale,
+        vx: spread + (dir || 1) * 1.4,
+        vy: -3.2 - Math.random() * 5.8,
+        size: 3.0 + Math.random() * 3.8,
+        color: i % 5 === 0 ? '#ef4444' : (i % 3 === 0 ? '#facc15' : '#38bdf8'),
+        alpha: 1.0,
+        life: 0.46 + Math.random() * 0.22,
+        maxLife: 0.68,
+        gravity: 0.16,
+        isStreak: true
+      });
+    }
+  }
+
+  createCrocodileTailSweep(x, y, dir = 1, radius = 92) {
+    this.skillProps.push({
+      kind: 'croc_tail_sweep',
+      x,
+      y,
+      dir: dir || 1,
+      rot: 0,
+      spin: (dir || 1) * 11,
+      radius: radius * 0.45,
+      maxRadius: radius,
+      color: '#0ea5e9',
+      accent: '#10b981',
+      life: 0.42,
+      maxLife: 0.42,
+      alpha: 1.0
+    });
+  }
+
+  createWaterSlashArc(x, y, dir = 1, angle = 0, radius = 68) {
+    this.skillProps.push({
+      kind: 'croc_slash',
+      x,
+      y,
+      dir: dir || 1,
+      vx: (dir || 1) * 1.6,
+      vy: 0,
+      rot: angle,
+      spin: (dir || 1) * 3.8,
+      radius,
+      color: '#0ea5e9',
+      accent: '#ef4444',
+      life: 0.30,
+      maxLife: 0.30,
+      alpha: 1.0
+    });
+  }
+
+  // Châu Ngọc Thiên Khánh: Vòng kiếm khí Kiếm Xu Đồng Đốt & Quái Hỏa Âm Binh triệu hồi
+  createFlameCoinSlash(x, y, dir = 1, angle = 0, radius = 72) {
+    this.skillProps.push({
+      kind: 'flame_coin_slash',
+      x,
+      y,
+      dir: dir || 1,
+      vx: (dir || 1) * 1.9,
+      vy: 0,
+      rot: angle,
+      spin: (dir || 1) * 4.6,
+      radius,
+      color: '#f97316',
+      accent: '#dc2626',
+      life: 0.34,
+      maxLife: 0.34,
+      alpha: 1.0
+    });
+  }
+
+  createTaoistFiend(fiend) {
+    if (!fiend) return;
+    this.skillProps.push({
+      kind: 'taoist_fiend',
+      fiend,
+      x: fiend.x,
+      y: fiend.y,
+      rot: 0,
+      spin: 0,
+      life: fiend.life || 6.0,
+      maxLife: fiend.maxLife || 6.0,
+      alpha: 1.0
+    });
+  }
+
+  // Hiệu ứng Sóng Năng Lượng Tuyệt Kỹ (Ultimate Shockwave Blast — dùng delta time, đa bảng màu)
+  createUltimateBlast(x, y, opts = {}) {
+    const primary = opts.primary || '#00e5ff';
+    const secondary = opts.secondary || '#ffffff';
+    const flashCol = opts.flash || primary;
+    const count = opts.particles || 48;
+
+    this.triggerFlash(flashCol, opts.flashAlpha !== undefined ? opts.flashAlpha : 0.78);
+    this.triggerScreenShake(opts.shake || 16, opts.shakeDur || 0.52);
+    if (opts.slowMo !== false) {
+      this.triggerSlowMo(opts.slowScale || 0.24, opts.slowDur || 0.36);
+    }
 
     for (let i = 0; i < 4; i++) {
-      setTimeout(() => {
+      this.scheduleEffect(i * 0.055, () => {
         this.shockwaves.push({
           x: x,
           y: y,
           radius: 12 + i * 16,
-          maxRadius: 190 + i * 45,
-          color: i % 2 === 0 ? '#00e5ff' : '#ffffff',
+          maxRadius: (opts.maxRadius || 190) + i * 42,
+          color: i % 2 === 0 ? primary : secondary,
           alpha: 1.0,
           lineWidth: 5.5 - i
         });
-      }, i * 65);
+      });
     }
 
-    // Tung toé năng lượng rồng hổ
-    for (let i = 0; i < 55; i++) {
+    for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 4.5 + Math.random() * 13;
-      this.particles.push({
+      const speed = 4.2 + Math.random() * 12;
+      this._pushParticle({
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        size: 3.5 + Math.random() * 5.5,
-        color: Math.random() > 0.3 ? '#00e5ff' : '#ffffff',
+        size: 3.2 + Math.random() * 5.0,
+        color: i % 3 === 0 ? secondary : primary,
         alpha: 1.0,
-        life: 0.5 + Math.random() * 0.4,
-        maxLife: 0.9,
-        gravity: 0.08,
+        life: 0.42 + Math.random() * 0.36,
+        maxLife: 0.78,
+        gravity: opts.gravity !== undefined ? opts.gravity : 0.06,
         isStreak: true
       });
     }
+  }
+
+  /**
+   * Xóa sạch tàn dư hiệu ứng & vật triệu hồi (Tiểu Quỷ, Cá Sấu...) khi chuyển màn hoặc thoát Võ Đường.
+   */
+  clearCombatEffects() {
+    this.particles = [];
+    this.floatingTexts = [];
+    this.shockwaves = [];
+    this.ghostTrails = [];
+    this.ripples = [];
+    this.impactStars = [];
+    this.groundCracks = [];
+    this.lightningArcs = [];
+    this.dimensionalSlashes = [];
+    this.magmaCraters = [];
+    this.sonicCones = [];
+    this.thunderStrikes = [];
+    this.skillProps = [];
+    this.scheduledEffects = [];
+    this.cinematic = null;
+    this.finisherCutIn = null;
   }
 
   // Kích hoạt Trình diễn Điện ảnh Tuyệt Kỹ (Cinematic Ultimate Presentation)
@@ -615,7 +1034,42 @@ class EffectManager {
       this.flashAlpha = Math.max(0, this.flashAlpha - rawDt * 4);
     }
 
-    // Cập nhật Hạt (Particles - chuẩn hóa theo dtScale)
+    // Bộ đếm kích hoạt VFX theo delta time (thay thế hoàn toàn setTimeout)
+    for (let i = this.scheduledEffects.length - 1; i >= 0; i--) {
+      const se = this.scheduledEffects[i];
+      se.timer -= dt;
+      if (se.timer <= 0) {
+        this.scheduledEffects.splice(i, 1);
+        try { se.fn(); } catch (err) { /* ignore */ }
+      }
+    }
+
+    // Cập nhật Vật thể VFX kỹ năng chuyên biệt (Mandala, Cột sáng, Mảnh băng/đá, Đạn, Lốc gió)
+    for (let i = this.skillProps.length - 1; i >= 0; i--) {
+      const sp = this.skillProps[i];
+      sp.life -= dt;
+      if (sp.life <= 0) {
+        this.skillProps.splice(i, 1);
+        continue;
+      }
+      const prog = 1 - sp.life / sp.maxLife;
+      sp.alpha = prog < 0.15 ? (prog / 0.15) : (sp.life / (sp.maxLife * 0.85));
+      sp.rot += (sp.spin || 0) * dt;
+      if (sp.vx !== undefined) {
+        sp.x += sp.vx * dtScale;
+        sp.y += (sp.vy || 0) * dtScale;
+        if (sp.kind === 'shell' || sp.kind === 'rock' || sp.kind === 'ice_shard') {
+          sp.vy += 0.22 * dtScale;
+        } else if (sp.kind === 'note') {
+          sp.vy += 0.04 * dtScale;
+          sp.vx *= Math.pow(0.96, dtScale);
+        }
+      } else if (sp.maxRadius) {
+        sp.radius += (sp.maxRadius - sp.radius) * Math.min(1, 10 * dt);
+      }
+    }
+
+    // Cập nhật Hạt (Particles - chuẩn hóa theo dtScale & giới hạn bộ nhớ)
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.life -= dt;
@@ -687,7 +1141,7 @@ class EffectManager {
     }
 
     // Cập nhật Mưa (Rain) & Vòng gợn nước (Ripples - vá lỗi rò rỉ bộ nhớ)
-    if (this.isRaining) {
+    if (this.isRaining || this.isStorming) {
       for (let i = 0; i < this.rainDrops.length; i++) {
         const r = this.rainDrops[i];
         r.y += r.speed * dtScale;
@@ -821,6 +1275,7 @@ class EffectManager {
     // 2. Gợn nước trên mặt đất
     ctx.lineWidth = 1;
     for (const rip of this.ripples) {
+      if (!rip || rip.radius <= 0) continue;
       ctx.strokeStyle = `rgba(180, 220, 255, ${rip.alpha})`;
       ctx.beginPath();
       ctx.ellipse(rip.x, rip.y, rip.radius * 2, rip.radius, 0, 0, Math.PI * 2);
@@ -989,12 +1444,478 @@ class EffectManager {
 
     // 10. Sóng chấn động (Shockwaves)
     for (const s of this.shockwaves) {
+      if (!s || s.radius <= 0) continue;
       ctx.globalAlpha = Math.max(0, Math.min(1, s.alpha));
       ctx.strokeStyle = s.color;
       ctx.lineWidth = s.lineWidth || 2;
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
       ctx.stroke();
+    }
+
+    // 10b. Hình học Kỹ năng Đặc trưng theo Từng Nhân Vật (Mandalas, Seals, Phoenix Wings, Gunfire, Vortex, Shards)
+    for (const sp of this.skillProps) {
+      const al = Math.max(0, Math.min(1, sp.alpha));
+      ctx.save();
+      ctx.globalAlpha = al;
+      ctx.translate(sp.x, sp.y);
+
+      if (sp.kind === 'frost_mandala') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.rotate(sp.rot);
+        ctx.strokeStyle = sp.color;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.arc(0, 0, sp.radius, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, sp.radius * 0.72, 0, Math.PI * 2); ctx.stroke();
+        for (let k = 0; k < 6; k++) {
+          const a = (k * Math.PI) / 3;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(a) * sp.radius, Math.sin(a) * sp.radius);
+          ctx.lineTo(Math.cos(a + Math.PI * 2 / 3) * sp.radius, Math.sin(a + Math.PI * 2 / 3) * sp.radius);
+          ctx.stroke();
+          ctx.fillStyle = sp.accent;
+          ctx.beginPath();
+          ctx.arc(Math.cos(a) * sp.radius * 0.86, Math.sin(a) * sp.radius * 0.86, 3.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (sp.kind === 'imperial_seal') {
+        ctx.scale(1, 0.42);
+        ctx.rotate(sp.rot);
+        ctx.strokeStyle = sp.accent;
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(0, 0, sp.radius, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = sp.color;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.arc(0, 0, sp.radius * 0.74, 0, Math.PI * 2); ctx.stroke();
+        for (let k = 0; k < 4; k++) {
+          const a = (k * Math.PI) / 2;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(a) * sp.radius, Math.sin(a) * sp.radius);
+          ctx.lineTo(Math.cos(a + Math.PI / 2) * sp.radius, Math.sin(a + Math.PI / 2) * sp.radius);
+          ctx.stroke();
+        }
+      } else if (sp.kind === 'orbital_pillar') {
+        ctx.globalCompositeOperation = 'lighter';
+        const g = ctx.createLinearGradient(-sp.radius, 0, sp.radius, 0);
+        g.addColorStop(0, 'rgba(244,63,94,0)');
+        g.addColorStop(0.35, sp.color);
+        g.addColorStop(0.5, '#ffffff');
+        g.addColorStop(0.65, sp.color);
+        g.addColorStop(1, 'rgba(244,63,94,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(-sp.radius, -420, sp.radius * 2, 420);
+      } else if (sp.kind === 'hex_lock' || sp.kind === 'hex_burst') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.rotate(sp.rot);
+        ctx.strokeStyle = sp.color;
+        ctx.lineWidth = sp.kind === 'hex_lock' ? 2.6 : 3.2;
+        ctx.beginPath();
+        for (let k = 0; k < 6; k++) {
+          const a = (k * Math.PI) / 3;
+          const vx = Math.cos(a) * sp.radius, vy = Math.sin(a) * sp.radius;
+          if (k === 0) ctx.moveTo(vx, vy); else ctx.lineTo(vx, vy);
+        }
+        ctx.closePath(); ctx.stroke();
+        ctx.strokeStyle = sp.accent; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(0, 0, sp.radius * 0.56, 0, Math.PI * 2); ctx.stroke();
+      } else if (sp.kind === 'muzzle') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.scale(sp.dir, 1);
+        ctx.rotate(sp.rot);
+        ctx.fillStyle = sp.color;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(sp.radius, -sp.radius * 0.34);
+        ctx.lineTo(sp.radius * 0.62, 0);
+        ctx.lineTo(sp.radius * 1.15, sp.radius * 0.04);
+        ctx.lineTo(sp.radius * 0.6, 0);
+        ctx.lineTo(sp.radius * 0.9, sp.radius * 0.34);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.ellipse(10, 0, 12, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+      } else if (sp.kind === 'shell') {
+        ctx.rotate(sp.rot);
+        ctx.fillStyle = sp.color;
+        ctx.fillRect(-4, -1.6, 8, 3.2);
+        ctx.fillStyle = sp.accent;
+        ctx.fillRect(-1, -1.2, 4, 1.4);
+      } else if (sp.kind === 'note') {
+        ctx.rotate(sp.rot);
+        ctx.fillStyle = sp.color;
+        ctx.fillRect(-6, -3.5, 12, 7);
+        ctx.strokeStyle = sp.accent; ctx.lineWidth = 1;
+        ctx.strokeRect(-6, -3.5, 12, 7);
+      } else if (sp.kind === 'wind_vortex') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.rotate(sp.rot);
+        for (let r = 0; r < 3; r++) {
+          ctx.strokeStyle = r === 0 ? sp.accent : sp.color;
+          ctx.lineWidth = 3.2 - r * 0.7;
+          ctx.beginPath();
+          ctx.arc(0, 0, sp.radius * (0.45 + r * 0.26), r * 1.4, r * 1.4 + Math.PI * 1.35);
+          ctx.stroke();
+        }
+      } else if (sp.kind === 'phoenix_wings') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.scale(sp.dir, 1);
+        for (const sign of [-1, 1]) {
+          ctx.strokeStyle = sp.color;
+          ctx.lineWidth = 4.2;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.quadraticCurveTo(-sp.radius * 0.65, -sp.radius * 0.55 * sign, -sp.radius * 1.15, -sp.radius * 0.15 * sign);
+          ctx.stroke();
+          ctx.strokeStyle = sp.accent; ctx.lineWidth = 2.0;
+          ctx.beginPath();
+          ctx.moveTo(-4, 0);
+          ctx.quadraticCurveTo(-sp.radius * 0.55, -sp.radius * 0.35 * sign, -sp.radius * 0.9, -sp.radius * 0.08 * sign);
+          ctx.stroke();
+        }
+      } else if (sp.kind === 'sacred_dome') {
+        ctx.globalCompositeOperation = 'lighter';
+        const g = ctx.createRadialGradient(0, 0, sp.radius * 0.25, 0, 0, sp.radius);
+        g.addColorStop(0, 'rgba(254,240,138,0.08)');
+        g.addColorStop(0.75, 'rgba(249,115,22,0.42)');
+        g.addColorStop(1, 'rgba(249,115,22,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(0, 0, sp.radius, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = sp.accent; ctx.lineWidth = 3.5;
+        ctx.beginPath(); ctx.arc(0, 0, sp.radius, Math.PI, Math.PI * 2); ctx.stroke();
+      } else if (sp.kind === 'lotus') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.rotate(sp.rot);
+        ctx.strokeStyle = sp.color; ctx.lineWidth = 2.6;
+        for (let k = 0; k < 8; k++) {
+          const a = (k * Math.PI) / 4;
+          ctx.beginPath();
+          ctx.ellipse(Math.cos(a) * sp.radius * 0.45, Math.sin(a) * sp.radius * 0.45, sp.radius * 0.45, sp.radius * 0.16, a, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = sp.accent; ctx.lineWidth = 2.0;
+        ctx.beginPath(); ctx.arc(0, 0, sp.radius * 0.52, 0, Math.PI * 2); ctx.stroke();
+      } else if (sp.kind === 'rock' || sp.kind === 'ice_shard') {
+        ctx.rotate(sp.rot);
+        ctx.fillStyle = sp.color;
+        ctx.beginPath();
+        ctx.moveTo(sp.radius, 0);
+        ctx.lineTo(-sp.radius * 0.6, -sp.radius * 0.55);
+        ctx.lineTo(-sp.radius * 0.9, sp.radius * 0.35);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = sp.accent; ctx.lineWidth = 1.2; ctx.stroke();
+      } else if (sp.kind === 'shuriken') {
+        ctx.rotate(sp.rot);
+        ctx.fillStyle = sp.color;
+        ctx.beginPath();
+        for (let k = 0; k < 4; k++) {
+          const a = (k * Math.PI) / 2;
+          ctx.lineTo(Math.cos(a) * sp.radius, Math.sin(a) * sp.radius);
+          ctx.lineTo(Math.cos(a + Math.PI / 4) * sp.radius * 0.3, Math.sin(a + Math.PI / 4) * sp.radius * 0.3);
+        }
+        ctx.closePath(); ctx.fill();
+      } else if (sp.kind === 'croc_bite') {
+        const sc = sp.scale || 1.0;
+        const prog = Math.max(0, Math.min(1, 1 - (sp.life / (sp.maxLife || 0.56))));
+        const rise = prog < 0.45 ? (1 - Math.pow(1 - prog / 0.45, 2)) : 1;
+        const crocLower = this._getEffectSprite('croc_lower', 'assets/images/effects/croc_body_lower.png');
+        const crocUpper = this._getEffectSprite('croc_upper', 'assets/images/effects/croc_upper_jaw.png');
+
+        if (crocLower && crocUpper) {
+          ctx.save();
+          ctx.scale(sp.dir || 1, 1);
+
+          // Vòng xoáy sóng nước dưới mặt đất khi cá sấu trồi lên
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.78)';
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          ctx.ellipse(2 * sc, 22 * sc, 46 * sc, 10 * sc, 0, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Trồi lên từ dưới mặt nước sân khấu, mở rộng hàm rồi sập chặt tạo xung kích cắn
+          const size = 198 * sc;
+          ctx.beginPath();
+          ctx.rect(-size, -260 * sc, size * 2, 278 * sc);
+          ctx.clip();
+
+          const drawX = -size * 0.58;
+          const drawY = (18 - rise * 176) * sc;
+          const hx = drawX + 0.5908 * size;
+          const hy = drawY + 0.3281 * size;
+
+          // Góc mở/ngậm khớp hàm trên (Canvas: âm = ngẩng mở to, dương = sập xuống ngoạm khít hàm dưới)
+          const jawAngle = prog < 0.46
+            ? -0.15 + prog * 0.12
+            : Math.min(0.56, -0.095 + (prog - 0.46) * 2.95);
+
+          ctx.drawImage(crocLower, drawX, drawY, size, size);
+          ctx.save();
+          ctx.translate(hx, hy);
+          ctx.rotate(jawAngle);
+          ctx.drawImage(crocUpper, -0.5908 * size, -0.3281 * size, size, size);
+          ctx.restore();
+
+          // Tia chớp đỏ-vàng lúc hai hàm ngậm chặt cắn mục tiêu
+          if (prog >= 0.46 && prog <= 0.78) {
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 4.2;
+            ctx.beginPath();
+            ctx.arc(hx + 34 * sc, hy + 8 * sc, 26 * sc, -0.9, 0.9);
+            ctx.stroke();
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.arc(hx + 34 * sc, hy + 8 * sc, 17 * sc, -1.2, 1.2);
+            ctx.stroke();
+          }
+          ctx.restore();
+          ctx.restore();
+          continue;
+        }
+
+        const jawY = (20 - rise * 82) * sc;
+        const jawOpen = prog < 0.46
+          ? (0.64 - prog * 0.35)
+          : Math.max(0.03, 0.44 - (prog - 0.46) * 2.2);
+
+        // Cột nước & xoáy sông đỏ-ngọc dâng lên từ mặt đất
+        ctx.save();
+        ctx.scale(sp.dir || 1, 1);
+        const wGrad = ctx.createLinearGradient(0, 26 * sc, 0, jawY - 14 * sc);
+        wGrad.addColorStop(0, 'rgba(14, 165, 233, 0.72)');
+        wGrad.addColorStop(0.55, 'rgba(20, 184, 166, 0.50)');
+        wGrad.addColorStop(1, 'rgba(239, 68, 68, 0.28)');
+        ctx.fillStyle = wGrad;
+        ctx.beginPath();
+        ctx.moveTo(-40 * sc, 26 * sc);
+        ctx.quadraticCurveTo(-20 * sc, jawY * 0.5, -24 * sc, jawY + 12 * sc);
+        ctx.lineTo(30 * sc, jawY + 12 * sc);
+        ctx.quadraticCurveTo(24 * sc, jawY * 0.5, 42 * sc, 26 * sc);
+        ctx.closePath();
+        ctx.fill();
+
+        // Vòng xoáy chân cột nước dưới mặt đất
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.78)';
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.ellipse(2 * sc, 22 * sc, 42 * sc, 9 * sc, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Đầu Cá Sấu Đỏ Mũi lao chéo từ dưới lên đớp mồi
+        ctx.translate(0, jawY);
+        ctx.rotate(-Math.PI * 0.44);
+
+        // Hào quang đỏ-ngọc quanh đầu cá sấu
+        const headAura = ctx.createRadialGradient(22 * sc, 0, 6 * sc, 22 * sc, 0, 74 * sc);
+        headAura.addColorStop(0, 'rgba(239, 68, 68, 0.34)');
+        headAura.addColorStop(0.6, 'rgba(20, 184, 166, 0.22)');
+        headAura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = headAura;
+        ctx.beginPath();
+        ctx.arc(22 * sc, 0, 74 * sc, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hàm trên (mõm vảy xanh lục bảo + chóp Mũi Đỏ Rực + 8 răng nanh)
+        ctx.save();
+        ctx.rotate(-jawOpen);
+        ctx.fillStyle = '#064e3b';
+        ctx.strokeStyle = '#14b8a6';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(-14 * sc, -22 * sc);
+        ctx.quadraticCurveTo(28 * sc, -26 * sc, 74 * sc, -8 * sc);
+        ctx.lineTo(70 * sc, 0);
+        ctx.lineTo(-10 * sc, 2 * sc);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+
+        // Răng nanh hàm trên
+        ctx.fillStyle = '#f8fafc';
+        for (let t = 0; t < 7; t++) {
+          const tx = (8 + t * 9.2) * sc;
+          ctx.beginPath();
+          ctx.moveTo(tx - 3 * sc, 0);
+          ctx.lineTo(tx, (t === 6 ? 11 : 8) * sc);
+          ctx.lineTo(tx + 3 * sc, 0);
+          ctx.closePath();
+          ctx.fill();
+        }
+        // Con mắt cá sấu hung dữ (đỏ rực lõi vàng)
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.ellipse(22 * sc, -14 * sc, 7 * sc, 4.2 * sc, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(21 * sc, -17 * sc, 2 * sc, 6 * sc);
+
+        // Chóp Mũi Đỏ Rực đặc trưng (Cá Sấu Đỏ Mũi)
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(71 * sc, -7 * sc, 6.2 * sc, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fecaca';
+        ctx.beginPath();
+        ctx.arc(70 * sc, -8.5 * sc, 2.2 * sc, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Hàm dưới
+        ctx.save();
+        ctx.rotate(jawOpen * 0.85);
+        ctx.fillStyle = '#0f766e';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        ctx.moveTo(-12 * sc, 0);
+        ctx.lineTo(68 * sc, 2 * sc);
+        ctx.quadraticCurveTo(42 * sc, 20 * sc, -14 * sc, 18 * sc);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+
+        // Răng hàm dưới
+        ctx.fillStyle = '#f8fafc';
+        for (let t = 0; t < 6; t++) {
+          const tx = (12 + t * 9.2) * sc;
+          ctx.beginPath();
+          ctx.moveTo(tx - 2.8 * sc, 1 * sc);
+          ctx.lineTo(tx, -8 * sc);
+          ctx.lineTo(tx + 2.8 * sc, 1 * sc);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // Tia chớp đỏ-vàng lúc hai hàm ngậm chặt cắn mục tiêu
+        if (prog >= 0.45 && prog <= 0.78) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 4.2;
+          ctx.beginPath();
+          ctx.arc(46 * sc, 0, 26 * sc, -0.9, 0.9);
+          ctx.stroke();
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          ctx.arc(46 * sc, 0, 17 * sc, -1.2, 1.2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      } else if (sp.kind === 'croc_tail_sweep') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.rotate(sp.rot);
+        ctx.strokeStyle = sp.color;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(0, 0, sp.radius, 0, Math.PI * 1.45);
+        ctx.stroke();
+        ctx.strokeStyle = '#14b8a6';
+        ctx.lineWidth = 3.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, sp.radius * 0.76, Math.PI * 0.5, Math.PI * 1.9);
+        ctx.stroke();
+        ctx.fillStyle = '#ef4444';
+        for (let k = 0; k < 5; k++) {
+          const ang = k * 0.42;
+          ctx.beginPath();
+          ctx.arc(Math.cos(ang) * sp.radius, Math.sin(ang) * sp.radius, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (sp.kind === 'croc_slash') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.scale(sp.dir || 1, 1);
+        ctx.rotate(sp.rot);
+        ctx.strokeStyle = sp.color;
+        ctx.lineWidth = 5.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, sp.radius, -1.05, 1.05);
+        ctx.stroke();
+        ctx.strokeStyle = sp.accent || '#ef4444';
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.arc(4, 0, sp.radius * 0.85, -0.9, 0.9);
+        ctx.stroke();
+      } else if (sp.kind === 'flame_coin_slash') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.scale(sp.dir || 1, 1);
+        ctx.rotate(sp.rot);
+        ctx.strokeStyle = sp.accent || '#dc2626';
+        ctx.lineWidth = 6.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, sp.radius, -1.15, 1.15);
+        ctx.stroke();
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.arc(3, 0, sp.radius * 0.88, -0.95, 0.95);
+        ctx.stroke();
+        for (let k = -2; k <= 2; k++) {
+          const ang = k * 0.42;
+          const cx = Math.cos(ang) * sp.radius;
+          const cy = Math.sin(ang) * sp.radius;
+          ctx.fillStyle = '#eab308';
+          ctx.beginPath();
+          ctx.arc(cx, cy, 3.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#1c1917';
+          ctx.fillRect(cx - 1.1, cy - 1.1, 2.2, 2.2);
+        }
+      } else if (sp.kind === 'taoist_fiend' && sp.fiend) {
+        const f = sp.fiend;
+        ctx.restore(); // reset from sp.x/sp.y so we always track live f.x, f.y
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, sp.alpha * 0.95));
+        ctx.translate(f.x, f.y);
+        const dir = f.facing >= 0 ? 1 : -1;
+        const bob = Math.sin(performance.now() * 0.015 + (f.seed || 0)) * 3.5;
+        ctx.scale(dir, 1);
+        // Vòng bùa chú đỏ dưới chân quái triệu hồi
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = 'rgba(220, 38, 38, 0.72)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(0, 2, 22, 7, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalCompositeOperation = 'source-over';
+
+        const impSprite = this._getEffectSprite('tieuquy_imp', 'assets/images/effects/tieuquy_imp.png');
+        if (impSprite) {
+          const lunging = f.slashTimer > 0;
+          const size = 98;
+          ctx.save();
+          ctx.translate(lunging ? 8 : 0, bob + (lunging ? -4 : 0));
+          if (lunging) ctx.rotate(0.14);
+          ctx.drawImage(impSprite, -size * 0.5, -size + 8, size, size);
+          if (lunging) {
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(22, -32, 24, -0.75, 0.75);
+            ctx.stroke();
+          }
+          ctx.restore();
+        } else {
+          // Thân hình Âm Binh Lửa Đỏ (fallback khi chạy headless không tải ảnh)
+          ctx.fillStyle = '#18181b';
+          ctx.beginPath();
+          ctx.moveTo(-12, -2 + bob); ctx.lineTo(-9, -36 + bob); ctx.lineTo(10, -34 + bob); ctx.lineTo(14, 0 + bob);
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.6; ctx.stroke();
+          ctx.fillStyle = '#27272a';
+          ctx.beginPath(); ctx.arc(1, -43 + bob, 9.5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#f97316';
+          ctx.beginPath(); ctx.moveTo(-5, -50 + bob); ctx.lineTo(-9, -60 + bob); ctx.lineTo(0, -52 + bob); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(4, -50 + bob); ctx.lineTo(9, -60 + bob); ctx.lineTo(8, -50 + bob); ctx.fill();
+          ctx.fillStyle = '#facc15';
+          ctx.beginPath(); ctx.arc(5, -44 + bob, 2.2, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#dc2626'; ctx.fillRect(4, -52 + bob, 4, 9);
+          const lunge = f.slashTimer > 0 ? 10 : 0;
+          ctx.strokeStyle = f.slashTimer > 0 ? '#facc15' : '#ea580c';
+          ctx.lineWidth = f.slashTimer > 0 ? 3.5 : 2.2;
+          ctx.beginPath();
+          ctx.moveTo(8, -28 + bob); ctx.lineTo(22 + lunge, -24 + bob);
+          ctx.moveTo(8, -22 + bob); ctx.lineTo(20 + lunge, -18 + bob);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
     }
 
     // 11. Chữ nổi hiển thị sát thương (Pop-in animation scale)
@@ -1022,14 +1943,16 @@ class EffectManager {
   renderScreen(ctx, width, height) {
     ctx.save();
 
-    // 1. Mưa màn 1
-    if (this.isRaining) {
-      ctx.strokeStyle = 'rgba(180, 210, 240, 0.28)';
-      ctx.lineWidth = 1.2;
+    // 1. Hiệu ứng Thời Tiết & Khí Quyển Theo Màn (Atmospheric Weather)
+    if (this.isRaining || this.isStorming) {
+      const stormColor = this.isStorming ? 'rgba(239, 68, 68, 0.32)' : 'rgba(180, 210, 240, 0.28)';
+      const slant = this.isStorming ? 7 : 4;
+      ctx.strokeStyle = stormColor;
+      ctx.lineWidth = this.isStorming ? 1.5 : 1.2;
       ctx.beginPath();
       for (const r of this.rainDrops) {
         ctx.moveTo(r.x, r.y);
-        ctx.lineTo(r.x - 4, r.y + r.length);
+        ctx.lineTo(r.x - slant, r.y + r.length);
       }
       ctx.stroke();
     }
@@ -1197,6 +2120,7 @@ class EffectManager {
 const effectManager = new EffectManager();
 window.effectManager = effectManager;
 
+window.EffectManager = EffectManager;
 window.fxSettings = window.fxSettings || {
   reduceShake: false,
   reduceFlash: false,

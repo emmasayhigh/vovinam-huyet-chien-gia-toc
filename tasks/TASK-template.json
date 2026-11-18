@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-YYYYMMDD-001",
+  "title": "Title of the proposed task",
+  "author": "AI Agent / Engineer",
+  "date": "2026-11-07",
+  "objective": "Detailed statement of purpose",
+  "requestedBehavior": "Concrete behavioral changes expected in runtime",
+  "allowedFiles": [
+    "docs/SOME_DOCUMENT.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CMB-001"
+  ],
+  "dependencies": [
+    "CombatManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 0,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "tests/test_combat.js"
+  ],
+  "acceptanceCriteria": [
+    "All 19 regression test suites pass",
+    "Pre-commit gate exits with code 0",
+    "No files outside allowedFiles are modified"
+  ]
+}

@@ -6,8 +6,14 @@
 (function () {
 class PlayerInput extends window.PlayerUltimate {
   handlePlayerInput(enemies) {
+    if (window.game && window.game._onlinePauseOpen) return;
     const input = window.input;
     if (!input) return;
+
+    // Nội tại hủy chiêu đặc trưng theo nhân vật (VD: Phó Dung Hải — Hư Ảnh Biến Ảo)
+    if (window.CharacterRegistry && window.CharacterRegistry.tryInputCancel(this, input)) {
+      return;
+    }
 
     // Không nhận lệnh điều khiển mới khi đang chịu hồi phục (landing, counter recovery), bị thương, bể thủ hay đang bắt đòn
     if (['landing', 'guard_break', 'counter_hand_prep', 'counter_leg_prep', 'counter_hand_recovery', 'counter_leg_recovery', 'counter_hand_strike', 'counter_leg_strike', 'hurt', 'knockdown', 'getup', 'scissor_kick'].includes(this.state)) {
@@ -21,9 +27,9 @@ class PlayerInput extends window.PlayerUltimate {
         return;
       }
       if (this.state === 'landing') {
-        // Nếu đòn đá/đấm trên không ĐÃ TRÚNG ĐÍCH (hit-confirm):
+        // Nếu đòn đá/đấm trên không ĐÃ TRÚNG ĐÍCH (hit-confirm) hoặc nhân vật miễn khựng hụt chiêu:
         // Sau nhịp tiếp đất đĩnh đạc (0.08s), người chơi được quyền hủy landing ngay lập tức khi di chuyển hoặc tung đòn tiếp
-        if (this.kickHasHit || this.airPunchHasHit) {
+        if (this.kickHasHit || this.airPunchHasHit || this.noWhiffStun) {
           const wantsMove = input.moveLeft || input.moveRight || input.moveUp || input.moveDown;
           const wantsAction = input.peek('KeyJ') || input.peek('KeyK') || input.peek('KeyL') || input.peek('Space') || input.peek('KeyI') || input.peek('KeyU');
           if (this.stateTimer >= 0.08 && (wantsMove || wantsAction)) {
@@ -129,10 +135,10 @@ class PlayerInput extends window.PlayerUltimate {
     }
 
     // ===== U + J: PHẢN ĐÒN TAY VOVINAM (COUNTER TAY) =====
-    // Cửa sổ 0.22s, hồi chiêu 2.5s, độc lập với thứ tự bấm U hay J
+    // Cửa sổ 0.32s, đỡ được cả đấm lẫn đá, hồi chiêu 2.5s
     if (input.consumeCounterHand()) {
       if (this.counterHandCooldown <= 0) {
-        this.startCounter('hand', 0.22, 2.5);
+        this.startCounter('hand', 0.32, 2.5);
         return;
       } else {
         if (this.attackClock - this._lastCounterWarnAt > 0.45) {
@@ -145,10 +151,10 @@ class PlayerInput extends window.PlayerUltimate {
     }
 
     // ===== U + K: PHẢN ĐÒN CHÂN VOVINAM (COUNTER CHÂN) =====
-    // Cửa sổ 0.22s, hồi chiêu 3.5s, độc lập với thứ tự bấm U hay K
+    // Cửa sổ 0.32s, đỡ được cả đấm lẫn đá, hồi chiêu 3.5s
     if (input.consumeCounterLeg()) {
       if (this.counterLegCooldown <= 0) {
-        this.startCounter('leg', 0.22, 3.5);
+        this.startCounter('leg', 0.32, 3.5);
         return;
       } else {
         if (this.attackClock - this._lastCounterWarnAt > 0.45) {
@@ -160,27 +166,43 @@ class PlayerInput extends window.PlayerUltimate {
       }
     }
 
+    // ===== W + U: CHIÊU ĐẶC TRƯNG THEO THẾ (STANCE SPECIAL) =====
+    const nowMs = performance.now();
+    const isHoldingUp = input.moveUp || (nowMs - ((input.lastKeyDownTime && input.lastKeyDownTime['KeyW']) || 0) < 220) || (nowMs - ((input.lastKeyDownTime && input.lastKeyDownTime['ArrowUp']) || 0) < 220);
+    const isHoldingDown = input.moveDown || (nowMs - ((input.lastKeyDownTime && input.lastKeyDownTime['KeyS']) || 0) < 220) || (nowMs - ((input.lastKeyDownTime && input.lastKeyDownTime['ArrowDown']) || 0) < 220);
+    const uPressed = (typeof input.isJustPressed === 'function' && input.isJustPressed('KeyU')) ||
+                     (typeof input.isActionJustPressed === 'function' && input.isActionJustPressed('block'));
+    const holdingJK = (typeof input.isDown === 'function' && (input.isDown('KeyJ') || input.isDown('KeyK'))) ||
+                      !!(input.keys && (input.keys['KeyJ'] || input.keys['KeyK']));
+    if (isHoldingUp && uPressed && !holdingJK) {
+      if (typeof input.consumeBufferedAction === 'function') input.consumeBufferedAction('KeyU');
+      if (input.justPressed) input.justPressed['KeyU'] = false;
+      if ((this.stanceSkillCooldown || 0) <= 0) {
+        if (window.CharacterRegistry && window.CharacterRegistry.tryStanceSpecial(this, enemies)) {
+          return;
+        }
+      } else if (this.attackClock - (this._lastCounterWarnAt || -99) > 0.45) {
+        this._lastCounterWarnAt = this.attackClock;
+        if (window.effectManager) {
+          window.effectManager.addFloatingText('CHIÊU W+U ĐANG HỒI! (' + this.stanceSkillCooldown.toFixed(1) + 's)', this.x, this.y - 150, 'stale');
+        }
+      }
+    }
+
     // --- Tuyệt kỹ (I): mỗi nhân vật một tuyệt kỹ riêng ---
-    if (input.ultimate && this.energy >= this.maxEnergy) {
+    if (input.ultimate && this.maxEnergy > 0 && this.energy >= this.maxEnergy) {
       if (window.trainingManager) window.trainingManager.recordAction('ultimate_hit');
       if (window.tutorialManager) window.tutorialManager.recordAction('ultimate_hit');
       this.consumeEnergy(this.maxEnergy);
       if (window.audioManager) {
         window.audioManager.playUltimateBurst();
         if (typeof window.audioManager.playVovinamKiai === 'function') {
-          window.audioManager.playVovinamKiai('ultimate', this.characterId || 'nghi');
+          window.audioManager.playVovinamKiai('ultimate', this.finisher === 'scissor' ? 'nghi' : (this.characterId || 'nghi'));
         }
       }
-      const ultMeta = {
-        nghi:     { title: 'NGÔ NHẤT NGHỊ',     ult: 'LONG HỔ XUẤT SƠN',      color: '#00f0ff', accent: '#ffd700', style: 'lightning' },
-        hoanganh: { title: 'PHÓ ĐẶNG HOÀNG ANH', ult: 'THỐNG SƠN ĐẠI CHÙY',     color: '#f97316', accent: '#ef4444', style: 'magma' },
-        dinhan:   { title: 'TRIỆU ĐÌNH AN',     ult: 'LÔI HỎA PHÁ TRẬN',      color: '#f59e0b', accent: '#facc15', style: 'thunder' },
-        giangmanh:{ title: 'NGÔ GIANG MẠNH',    ult: 'HÀN BĂNG TUYỆT SÁT',    color: '#38bdf8', accent: '#e0f2fe', style: 'ice' },
-        dunghai:  { title: 'PHÓ DUNG HẢI',      ult: 'HUYỄN ẢNH LOẠN VŨ',     color: '#a855f7', accent: '#06b6d4', style: 'shadow' },
-        bichlam:  { title: 'TRẦN BÍCH LÂM',     ult: 'PHONG VŨ THẦN TIỄN',    color: '#10b981', accent: '#34d399', style: 'wind' },
-        huavudai: { title: 'HỨA VŨ ĐẠI',        ult: 'MỆNH LỆNH TRUY SÁT',    color: '#ef4444', accent: '#fbbf24', style: 'command' }
-      };
-      const meta = ultMeta[this.charId] || ultMeta.nghi;
+      const meta = window.CharacterRegistry
+        ? window.CharacterRegistry.getUltimateCinematic(this.charId, this)
+        : { title: 'NGÔ NHẤT NGHỊ', ult: 'LONG HỔ XUẤT SƠN', color: '#00f0ff', accent: '#ffd700', style: 'lightning', duration: 1.4 };
       if (window.effectManager) {
         window.effectManager.triggerUltimateCinematic(meta.title, meta.ult, meta.color, meta.accent, meta.style);
         window.effectManager.addFloatingText('⚡ ' + meta.ult + '!', this.x, this.y - 180, 'ultimate');
@@ -192,15 +214,13 @@ class PlayerInput extends window.PlayerUltimate {
       this._ultInit = false;
       this.hitTargets.clear();
       const st = this.ultimateState || 'ultimate_flurry';
-      const durations = {
-        ultimate_flurry: 1.4, ultimate_slam: 1.25, ultimate_command: 1.35,
-        ultimate_rush: 1.4, ultimate_precision: 1.15, ultimate_feint: 1.2, ultimate_bash: 1.15
-      };
-      this.setState(st, durations[st] || 1.3);
+      const ultDur = meta.duration || 1.3;
+      this.setAuraArmor('white', ultDur + 0.2); // Hào quang Trắng Bất Hoại bảo hộ hoàn toàn trong lúc tung Tuyệt Kỹ
+      this.setState(st, ultDur);
       return;
     }
 
-    // --- Né tránh (L): hồi chiêu 8.0s, i-frame 0.18s, chống spam triệt để ---
+    // --- Né tránh (L): hồi chiêu 8.0s, i-frame theo nhân vật, chống spam triệt để ---
     if (input.isJustPressed('KeyL') || input.peek('KeyL')) {
       input.consumeBufferedAction('KeyL');
       if (input.justPressed) input.justPressed['KeyL'] = false;
@@ -216,12 +236,18 @@ class PlayerInput extends window.PlayerUltimate {
       this.dodgeCooldown = this.maxDodgeCooldown; // 8.0s hồi chiêu chuẩn trung tâm
       const mx = (input.moveRight ? 1 : 0) - (input.moveLeft ? 1 : 0);
       const dir = mx !== 0 ? mx : -this.facing;
-      this.vx = dir * 440;
+      const dodgeCtx = { dodgeSpeed: 440, dir };
+      if (window.CharacterRegistry) {
+        window.CharacterRegistry.onDodge(this, dodgeCtx);
+      }
+
+      this.vx = (dodgeCtx.dir || dir) * dodgeCtx.dodgeSpeed;
       this.squashTimer = 0.16;
       this.squashType = 'stretch';
       if (window.audioManager) window.audioManager.playDodge();
       this.setState('dodge', 0.28);
-      this.invincibleTimer = 0.18; // Cửa sổ i-frame cân bằng
+      // Thời gian bất tử i-frame: cơ bản 0.18s, tăng thêm theo nội tại nhân vật
+      this.invincibleTimer = 0.18 * (this.dodgeIframeMul || 1);
       return;
     }
 
@@ -263,35 +289,119 @@ class PlayerInput extends window.PlayerUltimate {
       }
     }
 
-    // ===== ĐÒN THẾ VOVINAM MỞ RỘNG (giữ hướng + phím đòn) =====
-    // Đấm Móc Lên (giữ ↑ + J): móc xoáy từ dưới hất tung đối thủ lên không
-    if (pressedJ && input.moveUp) {
+    // ===== ĐÒN NỐI SAU KHI NÉ (L → J / L → K) =====
+    if (this._dodgeFollowupTimer > 0 && (pressedJ || pressedK) && !isHoldingUp && !isHoldingDown && !input.run) {
+      const followBtn = pressedK ? 'K' : 'J';
+      this._isCrossComboHit = (this._prevComboBtn !== null && this._prevComboBtn !== followBtn);
+      this._prevComboBtn = followBtn;
+      if (window.CharacterRegistry && window.CharacterRegistry.tryDodgeFollowup(this, followBtn, enemies)) {
+        this._dodgeFollowupTimer = 0;
+        return;
+      }
+    }
+
+    // ===== ĐÒN THẾ VOVINAM MỞ RỘNG (giữ hướng Lên/Xuống + phím đòn) =====
+
+    // 1. Đấm Móc Lên (giữ ↑/W + J): móc xoáy từ dưới hất tung đối thủ lên không, quật ngã (Knockdown)
+    if (pressedJ && isHoldingUp) {
       if (window.trainingManager) window.trainingManager.recordAction('uppercut');
       if (window.tutorialManager) window.tutorialManager.recordAction('uppercut');
       this.comboStep = 0;
+      this._isCrossComboHit = false;
+      this._prevComboBtn = 'J';
       this.startAttack('uppercut', 0.52, 130);
+      if (window.audioManager) window.audioManager.playHeavyHit();
       if (window.effectManager) {
-        window.effectManager.addGhostTrail(this, 'rgba(56, 189, 248, 0.5)');
-        window.effectManager.createEnergySparks(this.x + this.facing * 20, this.y - 70, 6);
+        const isNamCheoUppercut = (this.charId === 'bichlam' && this.equippedSkin === 'namcheo');
+        const upName = isNamCheoUppercut
+          ? '🐊 CÁ SẤU ĐỎ MŨI ĐỚP MỒI'
+          : ((window.CharacterRegistry && window.CharacterRegistry.getSkillMoveLabel)
+            ? window.CharacterRegistry.getSkillMoveLabel(this, 'uppercut', 'ĐẤM MÓC LÊN')
+            : 'ĐẤM MÓC LÊN');
+        window.effectManager.addFloatingText((isNamCheoUppercut ? '' : '💥 ') + upName + '!', this.x, this.y - 150, 'crit');
+        window.effectManager.addGhostTrail(this, isNamCheoUppercut ? 'rgba(239, 68, 68, 0.55)' : 'rgba(56, 189, 248, 0.5)');
+        window.effectManager.createEnergySparks(this.x + this.facing * 20, this.y - 70, 8);
       }
       return;
     }
-    // Đánh Chỏ (giữ ↓ + J): cực gần, phá thủ, không bị chùn bước
-    if (pressedJ && input.moveDown) {
+
+    // Đòn Tiến Công W + K: Vovinam áp sát kẹp cổ (scissor_kick), hoặc chiêu tiến W+K riêng từng nhân vật (giữ nguyên hitbox & sát thương chuẩn)
+    // Cân bằng PvP & Boss: Không cho phép kẹp cổ (scissor_kick) lên Boss hoặc đối thủ Online PvP (RemotePlayer)
+    const isOnlinePvP = !!(window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'pvp');
+    if (pressedK && isHoldingUp) {
+      if (this.finisher === 'scissor' && !isOnlinePvP) {
+        const near = this.findClosestEnemy(enemies, 130 * this.reachMul);
+        if (near && !near.isBoss && !near.isRemotePlayer) {
+          if (window.trainingManager) window.trainingManager.recordAction('combo_finished');
+          if (window.tutorialManager) window.tutorialManager.recordAction('combo_finished');
+          this.comboStep = 0;
+          this._isCrossComboHit = false;
+          this._prevComboBtn = 'K';
+          this.grabbedTarget = near;
+          this.scissorHitDone = false;
+          this.vz = 330;
+          this.vx = this.facing * 160;
+          if (window.audioManager) window.audioManager.playWhoosh();
+          if (window.effectManager) {
+            window.effectManager.addFloatingText('🥋 ĐÒN CHÂN KẸP VOVINAM!', this.x, this.y - 170, 'crit');
+            window.effectManager.createShockRing(this.x, this.y, '#00d2ff');
+          }
+          this.setState('scissor_kick', 0.7);
+          this.spendStamina('scissor_kick');
+          return;
+        }
+      }
+      if (window.trainingManager) window.trainingManager.recordAction('kick');
+      if (window.tutorialManager) window.tutorialManager.recordAction('kick');
+      this.comboStep = 0;
+      this._isCrossComboHit = false;
+      this._prevComboBtn = 'K';
+      this.startAttack('kick_push', 0.52, 110);
+      this._moveVariant = 'wk';
+      if (window.effectManager) {
+        const wkName = (window.CharacterRegistry && window.CharacterRegistry.getSkillMoveLabel)
+          ? window.CharacterRegistry.getSkillMoveLabel(this, 'wk', 'TIẾN CƯỚC')
+          : 'TIẾN CƯỚC';
+        window.effectManager.addFloatingText('⚡ ' + wkName + '!', this.x, this.y - 150, 'dodge');
+      }
+      return;
+    }
+
+    // 2. Đánh Chỏ Phá Thủ (giữ ↓/S + J): áp sát cực gần, PHÁ PHÒNG THỦ (Unblockable & Guard Break)
+    if (pressedJ && isHoldingDown) {
       if (window.trainingManager) window.trainingManager.recordAction('punch');
       if (window.tutorialManager) window.tutorialManager.recordAction('punch');
       this.comboStep = 0;
+      this._isCrossComboHit = false;
+      this._prevComboBtn = 'J';
       this.startAttack('elbow_strike', 0.46, 95);
+      if (window.audioManager) window.audioManager.playPunchHit();
+      if (window.effectManager) {
+        const elbowName = (window.CharacterRegistry && window.CharacterRegistry.getSkillMoveLabel)
+          ? window.CharacterRegistry.getSkillMoveLabel(this, 'elbow_strike', 'ĐÁNH CHỎ PHÁ THỦ')
+          : 'ĐÁNH CHỎ PHÁ THỦ';
+        window.effectManager.addFloatingText('⚡ ' + elbowName + '!', this.x, this.y - 150, 'warn');
+        window.effectManager.createShockRing(this.x + this.facing * 35, this.y - 65, '#f59e0b');
+        window.effectManager.createHitSparks(this.x + this.facing * 40, this.y - 70, 10, true);
+      }
       return;
     }
-    // Quét Trụ (giữ ↓ + K): đòn thấp quật ngã, xuyên thủ, hồi lâu nếu đánh hụt
-    if (pressedK && input.moveDown) {
+
+    // 3. Quét Trụ (giữ ↓/S + K): đòn chân thấp quật ngã, xuyên thủ, hồi lâu nếu đánh hụt
+    if (pressedK && isHoldingDown) {
       if (window.trainingManager) window.trainingManager.recordAction('sweep');
       if (window.tutorialManager) window.tutorialManager.recordAction('sweep');
       this.comboStep = 0;
+      this._isCrossComboHit = false;
+      this._prevComboBtn = 'K';
       this.startAttack('kick_sweep', 0.66, 85);
+      if (window.audioManager) window.audioManager.playWhoosh();
       if (window.effectManager) {
-        window.effectManager.createDust(this.x + this.facing * 40, this.y, 12, 50);
+        const sweepName = (window.CharacterRegistry && window.CharacterRegistry.getSkillMoveLabel)
+          ? window.CharacterRegistry.getSkillMoveLabel(this, 'kick_sweep', 'QUÉT TRỤ HẠ ĐỐI THỦ')
+          : 'QUÉT TRỤ HẠ ĐỐI THỦ';
+        window.effectManager.addFloatingText('🌪️ ' + sweepName + '!', this.x, this.y - 140, 'crit');
+        window.effectManager.createDust(this.x + this.facing * 40, this.y, 14, 50);
       }
       return;
     }
@@ -300,6 +410,8 @@ class PlayerInput extends window.PlayerUltimate {
       if (window.trainingManager) window.trainingManager.recordAction('dash_punch');
       if (window.tutorialManager) window.tutorialManager.recordAction('dash_punch');
       this.comboStep = 0;
+      this._isCrossComboHit = false;
+      this._prevComboBtn = 'J';
       this.startAttack('hook_run', 0.48, 310);
       return;
     }
@@ -307,6 +419,8 @@ class PlayerInput extends window.PlayerUltimate {
     if (pressedJ) {
       if (window.trainingManager) window.trainingManager.recordAction('punch');
       if (window.tutorialManager) window.tutorialManager.recordAction('punch');
+      this._isCrossComboHit = (this.comboWindowTimer > 0 && this._prevComboBtn === 'K');
+      this._prevComboBtn = 'J';
       const n = this.comboStep;
       const max = Math.max(3, this.comboMax);
       if (n === 0 || n >= max) {
@@ -326,15 +440,18 @@ class PlayerInput extends window.PlayerUltimate {
     if (pressedK) {
       if (window.trainingManager) window.trainingManager.recordAction('kick');
       if (window.tutorialManager) window.tutorialManager.recordAction('kick');
+      this._isCrossComboHit = (this.comboWindowTimer > 0 && this._prevComboBtn === 'J');
+      this._prevComboBtn = 'K';
       const n = this.comboStep;
       const near = this.findClosestEnemy(enemies, 95 * this.reachMul);
-      // FINISHER: chốt hạ chuỗi combo khi đã nối 2 đòn và ở cự ly gần
-      const canFinish = n >= 2 && near && (this.finisher !== 'scissor' || !near.isBoss);
+      // FINISHER: chốt hạ chuỗi combo khi đã nối 2 đòn và ở cự ly gần (không kẹp cổ Boss hoặc đối thủ Online PvP)
+      const isScissor = (this.finisher === 'scissor');
+      const canFinish = n >= 2 && near && (!isScissor || (!isOnlinePvP && !near.isBoss && !near.isRemotePlayer));
       if (canFinish) {
         if (window.trainingManager) window.trainingManager.recordAction('combo_finished');
         if (window.tutorialManager) window.tutorialManager.recordAction('combo_finished');
         this.comboStep = 0;
-        if (this.finisher === 'scissor') {
+        if (isScissor) {
           // Đòn chân kẹp biểu diễn của Ngô Nhất Nghị (boss không bị kẹp)
           this.grabbedTarget = near;
           this.scissorHitDone = false;

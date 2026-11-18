@@ -11,6 +11,9 @@ class StageManagerRenderer extends window.StageManagerBase {
   // VẼ BỐI CẢNH PARALLAX ĐA LỚP TRÊN CANVAS THEO TỪNG MÀN
   // ==========================================================================
   renderBackground(ctx, camera, width, height) {
+    if (window._renderSceneryBackground) {
+      return window._renderSceneryBackground.call(this, ctx, camera, width, height);
+    }
     const stage = this.getCurrentStage();
     const camX = camera.x;
 

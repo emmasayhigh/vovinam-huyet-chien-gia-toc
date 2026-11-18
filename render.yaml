@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: vovinam-huyet-chien-gia-toc
+    runtime: node
+    plan: free
+    buildCommand: "npm install --omit=dev || true"
+    startCommand: "npm start"
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production

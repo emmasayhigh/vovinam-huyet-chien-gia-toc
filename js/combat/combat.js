@@ -3,6 +3,10 @@
  * js/combat.js - Hitbox Collision, Combo System, Perfect Dodge & Damage Calculation
  */
 
+if (!window.CharacterRegistry && typeof require === 'function') {
+  try { require('../entities/characters/bootstrap.js'); } catch (_) {}
+}
+
 class CombatSystem {
   constructor() {
     this.comboCount = 0;
@@ -270,7 +274,7 @@ class CombatSystem {
       const rank = this.getComboRank(this.comboCount);
 
       // Cập nhật giao diện HUD Combo
-      if (window.uiManager) {
+      if (window.uiManager && typeof window.uiManager.updateCombo === 'function') {
         window.uiManager.updateCombo(this.comboCount, rank, this.comboTimer / this.maxComboTimer);
       }
     }
@@ -279,7 +283,7 @@ class CombatSystem {
   resetCombo() {
     this.comboCount = 0;
     this.comboTimer = 0;
-    if (window.uiManager) {
+    if (window.uiManager && typeof window.uiManager.hideCombo === 'function') {
       window.uiManager.hideCombo();
     }
   }
@@ -293,15 +297,29 @@ class CombatSystem {
   }
 
   // Kích Hoạt Né Đòn Hoàn Hảo (Perfect Dodge)
-  triggerPerfectDodge() {
+  triggerPerfectDodge(targetPlayer = null) {
     this.perfectDodgeCount++;
     this.isCounterWindow = true;
     // Thời gian phản đòn theo nhân vật đang chơi (Giang Mạnh có cửa sổ dài hơn)
-    const p = window.game && window.game.player;
+    const p = targetPlayer || (window.game && window.game.player);
     this.counterTimer = (p && p.counterWindow) || 1.8;
 
-    // Né thành công: cooldown 1.25s tính từ đúng thời điểm kích hoạt (không chờ animation)
-    if (p) p.dodgeCooldown = Math.max(p.dodgeCooldown || 0, this.dodgeSuccessCooldown);
+    // Né thành công bằng [L]: giảm 50% thời gian hồi chiêu hiện tại của Né & các chiêu đang hồi
+    if (p) {
+      const curDodgeCd = (typeof p.dodgeCooldown === 'number' && p.dodgeCooldown > 0)
+        ? p.dodgeCooldown
+        : (p.maxDodgeCooldown || 8.0);
+      p.dodgeCooldown = +(curDodgeCd * 0.5).toFixed(2);
+      if (typeof p.counterHandCooldown === 'number' && p.counterHandCooldown > 0) {
+        p.counterHandCooldown = +(p.counterHandCooldown * 0.5).toFixed(2);
+      }
+      if (typeof p.counterLegCooldown === 'number' && p.counterLegCooldown > 0) {
+        p.counterLegCooldown = +(p.counterLegCooldown * 0.5).toFixed(2);
+      }
+      if (typeof p.stanceSkillCooldown === 'number' && p.stanceSkillCooldown > 0) {
+        p.stanceSkillCooldown = +(p.stanceSkillCooldown * 0.5).toFixed(2);
+      }
+    }
 
     // Perfect Dodge = +12 Flow (Counter khi đánh trúng trong cửa sổ = +28 ở resolveHit)
     this.addFlow(12, true);
@@ -315,7 +333,7 @@ class CombatSystem {
       window.effectManager.triggerFlash('#00d2ff', 0.4);
       if (p) {
         window.effectManager.createShockRing(p.x, p.y, '#00d2ff');
-        window.effectManager.addFloatingText('NÉ HOÀN HẢO!', p.x, p.y - 175, 'dodge');
+        window.effectManager.addFloatingText('NÉ HOÀN HẢO! (-50% HỒI CHIÊU)', p.x, p.y - 175, 'dodge');
       }
     }
 
@@ -347,14 +365,21 @@ class CombatSystem {
     if (window.weaponSystem && window.weaponSystem.tryShieldIntercept(this, attacker, defender, attackData)) return true;
 
     // Chỉ trúng khi hai bên đứng cùng "làn" chiều sâu (2.5D)
-    if (Math.abs(attacker.y - defender.y) > 52) return false;
+    if (Math.abs(attacker.y - defender.y) > 58) return false;
 
-    // Tính toán vùng Hitbox của Attacker theo hướng quay mặt
-    const facing = attacker.facing;
-    const hitX = attacker.x + (attackData.offsetX || 40) * facing;
+    // Tính toán vùng Hitbox của Attacker theo hướng quay mặt (mở rộng vào tới tâm attacker.x để không bị điểm mù sát thân, không lan ra sau lưng)
+    const facing = attacker.facing || 1;
+    const rawOffsetX = attackData.offsetX !== undefined ? attackData.offsetX : 40;
     const hitY = attacker.y + (attacker.z || 0) + (attackData.offsetY || -60);
     const hitWidth = attackData.width || 60;
     const hitHeight = attackData.height || 50;
+    const rawHalfW = hitWidth / 2;
+    const reachFront = Math.max(rawOffsetX + rawHalfW, rawHalfW);
+    const reachBack = Math.min(0, rawOffsetX - rawHalfW);
+    const boxMinX = facing >= 0 ? (attacker.x + reachBack) : (attacker.x - reachFront);
+    const boxMaxX = facing >= 0 ? (attacker.x + reachFront) : (attacker.x - reachBack);
+    const hitX = (boxMinX + boxMaxX) * 0.5;
+    const effHalfW = (boxMaxX - boxMinX) * 0.5;
 
     // Hurtbox của Defender (cao ~130px theo kích thước vẽ)
     const defHeight = defender.isBoss ? 150 : 130;
@@ -362,9 +387,23 @@ class CombatSystem {
     const defCenterX = defender.x;
     const defCenterY = defender.y + (defender.z || 0) - defHeight / 2;
 
+    // Kẻ địch khi ra đòn đồng thời quét trúng cả Đối phương / Đồng Minh nếu đứng trong vùng đánh
+    if (attacker.type !== 'player' && !this._checkingAlly) {
+      const ally = (window.allyManager && window.allyManager.activeAlly) || (window.allySystem && window.allySystem.activeAlly);
+      const otherTarget = (defender === ally) ? (window.game && window.game.player) : ally;
+      if (otherTarget && !otherTarget.isDead) {
+        this._checkingAlly = true;
+        try {
+          this.checkAttackHit(attacker, otherTarget, attackData);
+        } finally {
+          this._checkingAlly = false;
+        }
+      }
+    }
+
     // AABB Collision Test
     const isColliding = (
-      Math.abs(hitX - defCenterX) < (hitWidth / 2 + defWidth / 2) &&
+      Math.abs(hitX - defCenterX) < (effHalfW + defWidth / 2) &&
       Math.abs(hitY - defCenterY) < (hitHeight / 2 + defHeight / 2)
     );
 
@@ -398,6 +437,18 @@ class CombatSystem {
     let isWeakPunish = false;
     const weight = attackData.weight || (attackData.knockdown ? 'heavy' : 'light');
 
+    // ===== ĐỐI PHƯƠNG LÀ ĐỒNG MINH HỖ TRỢ (ALLY) =====
+    if (defender.isAlly || defender.type === 'ally') {
+      let dmg = attackData.damage || 25;
+      if (typeof defender.takeDamage === 'function') {
+        const kb = Math.sign(defender.x - attacker.x) * (attackData.knockback ? 8 : 4);
+        defender.takeDamage(dmg, kb, !!attackData.knockdown);
+      }
+      this.registerHit(false, defender, dmg, false);
+      if (window.audioManager) window.audioManager.playPunchHit();
+      return;
+    }
+
     // ===== NHỊP RA ĐÒN (chống spam): đánh dồn dập liên tục -> lực nhạt dần =====
     let staleHit = false;
     if (isPlayerAttacking && typeof attacker.applyHitRhythm === 'function') {
@@ -412,29 +463,26 @@ class CombatSystem {
         defender.activeCounterWindow > 0) {
       
       const dist = Math.hypot(attacker.x - defender.x, (attacker.y - defender.y) * 1.5);
-      const isFacingAttacker = (attacker.x - defender.x) * defender.facing > 0;
-      const isUncounterable = !!(attackData.uncounterable || attackData.isAoE || attackData.isUltimate);
+      // Tự động xoay mặt về hướng đối thủ nếu trong cự ly chạm đòn để counter không bị hụt hướng
+      if (dist < 235 && attacker.x !== defender.x) {
+        defender.facing = Math.sign(attacker.x - defender.x) || defender.facing;
+      }
+      const isFacingAttacker = (attacker.x - defender.x) * defender.facing >= 0;
 
-      // Phải đứng quay mặt về phía đối thủ và trong cự ly chạm đòn (< 155px)
-      if (isFacingAttacker && dist < 155) {
-        if (isUncounterable) {
-          // Đòn nặng/AoE/Nộ của boss: phá vỡ tư thế counter của người chơi!
-          if (window.effectManager) {
-            window.effectManager.addFloatingText('ĐÒN NẶNG — PHÁ COUNTER!', defender.x, defender.y - 170, 'warn');
-            window.effectManager.triggerScreenShake(9, 0.25);
+      // CẢ HAI THẾ COUNTER (U+J VÀ U+K) ĐỀU ĐỠ VÀ PHẢN ĐÒN THÀNH CÔNG TRƯỚC MỌI ĐÒN ĐÁNH
+      // (ĐỠ ĐƯỢC CẢ ĐÒN ĐẤM, ĐÁ, ĐÒN NẶNG BOSS, UNCOUNTERABLE, VŨ KHÍ & AOE)!
+      if (dist < 235) {
+        const counterMatches = (defender.activeCounterType === 'hand' || defender.activeCounterType === 'leg');
+
+        if (counterMatches) {
+          // Phản đòn thành công lập tức phá vỡ Bá Thể Đỏ (Red Hyper Armor) của kẻ địch!
+          if (attacker.auraArmor === 'red') {
+            attacker.clearAuraArmor();
+            if (window.effectManager) {
+              window.effectManager.addFloatingText('💥 PHẢN ĐÒN PHÁ BÁ THỂ ĐỎ!', attacker.x, attacker.y - 180, 'warn');
+              window.effectManager.createShockRing(attacker.x, attacker.y, '#ef4444');
+            }
           }
-          if (window.audioManager) window.audioManager.playWarning();
-          defender.activeCounterWindow = 0;
-          defender.counterSuccess = false;
-          damage = Math.round(damage * 1.25);
-        } else {
-          // Phân loại đòn: Counter Tay bắt đòn tay, Counter Chân bắt đòn chân/húc
-          const isLegAttack = !!(attackData.isKick || attackData.counterType === 'leg');
-          const isHandAttack = !!(attackData.counterType === 'hand' || (!attackData.isKick && attackData.counterType !== 'leg'));
-          const counterMatches = (defender.activeCounterType === 'hand' && isHandAttack) ||
-                                 (defender.activeCounterType === 'leg' && isLegAttack);
-
-          if (counterMatches) {
             // ===== COUNTER VOVINAM THÀNH CÔNG! =====
             defender.counterSuccess = true;
             defender.activeCounterWindow = 0;
@@ -461,85 +509,116 @@ class CombatSystem {
             }
 
             // Micro Hit-stop & Visual/Audio Feedback
-            if (window.game) window.game.hitStop = 0.085;
-            attacker.hitJitterTimer = 0.12;
-            if (window.effectManager) {
-              window.effectManager.triggerFinisherMoment(
-                attacker.x,
-                attacker.y - 75,
-                defender.activeCounterType === 'hand' ? 'PHẢN ĐÒN TAY VOVINAM' : 'PHẢN ĐÒN CHÂN VOVINAM',
-                defender.activeCounterType === 'hand' ? '#38bdf8' : '#ffd700'
-              );
-            }
-
-            defender.addEnergy(16);
-            this.addFlow(defender.activeCounterType === 'leg' ? 24 : 18, true);
+            if (window.game) window.game.hitStop = 0.09;
+            attacker.hitJitterTimer = 0.14;
 
             if (defender.activeCounterType === 'hand') {
-              // Phản đòn tay: Chỏ lật / Bắt tay bẻ khớp Vovinam
+              // ===== U+J: PHẢN ĐÒN TAY THEO TỪNG NHÂN VẬT =====
               defender.setState('counter_hand_strike', 0.36);
-              const counterDmg = Math.round(75 * (defender.dmgMul || 1));
+              defender._lastDamagedEnemy = attacker;
+              const counterDmg = Math.round(90 * (defender.dmgMul || 1) * (defender.counterBonus || 1) * (defender.allyCounterBuff || 1));
               attacker.pendingHit = { isHandCounter: true, weight: 'heavy' };
-              attacker.takeDamage(counterDmg, defender.facing * 4, false);
+              attacker.takeDamage(counterDmg, defender.facing * 6, false);
               attacker.state = 'hurt';
               attacker.stateTimer = 0;
-              attacker.stateDuration = 0.6; // Địch bị khựng lại
+              attacker.stateDuration = 0.65; // Tê liệt chấn động
               if (attacker.isBoss) {
-                attacker.weakWindow = 0.9; // Cửa sổ sơ hở 0.9s cho boss
+                attacker.weakWindow = 1.1;
+                attacker.poise = Math.max(0, (attacker.poise || 120) - 35);
               }
+              defender.addEnergy(25); // Nạp nộ khí
+              this.addFlow(25, true);
+
+              // === NỘI TẠI KÍCH HOẠT KHI COUNTER TAY (TỪ MODULE NHÂN VẬT) ===
+              if (window.CharacterRegistry) {
+                const hpBeforeHandCounter = attacker.isRemotePlayer ? (attacker.hp || 0) : null;
+                window.CharacterRegistry.onHandCounter(defender, attacker, this);
+                if (attacker.isRemotePlayer && hpBeforeHandCounter !== null && attacker.hp < hpBeforeHandCounter &&
+                    window.onlineManager && window.onlineManager.isActive) {
+                  attacker._optimisticHpLockTimer = 0.6;
+                  window.onlineManager.send({ type: 'pvp_hit', damage: Math.round(hpBeforeHandCounter - attacker.hp), bypassInvincible: true });
+                }
+              }
+
+              const _handLabel = (window.CharacterRegistry && window.CharacterRegistry.getSkillMoveLabel)
+                ? window.CharacterRegistry.getSkillMoveLabel(defender, 'counter_hand_strike', 'GẠT QUYỀN PHẢN CHƯỞNG')
+                : 'GẠT QUYỀN PHẢN CHƯỞNG';
               if (window.audioManager) window.audioManager.playHeavyHit();
               if (window.effectManager) {
-                window.effectManager.createHitSparks(attacker.x, attacker.y - 85, 18, true);
-                window.effectManager.createShockRing(defender.x, defender.y, '#38bdf8');
-                window.effectManager.addFloatingText('PHẢN ĐÒN TAY — VÕ THUẬT VOVINAM!', defender.x, defender.y - 175, 'counter');
+                const _tp = (window.CharacterRegistry && window.CharacterRegistry.getTrailProfile) ? window.CharacterRegistry.getTrailProfile(defender, 'counter_hand_strike') : null;
+                const _cHand = (_tp && _tp.primary) ? _tp.primary : '#00d2ff';
+                window.effectManager.triggerFinisherMoment(attacker.x, attacker.y - 75, _handLabel, _cHand);
+                const _handSparks = (window.CharacterRegistry && window.CharacterRegistry.getSparkColors) ? window.CharacterRegistry.getSparkColors(defender) : _cHand;
+                window.effectManager.createHitSparks(attacker.x, attacker.y - 85, 26, true, _handSparks);
+                window.effectManager.createShockRing(defender.x, defender.y, _cHand);
+                window.effectManager.triggerScreenShake(8, 0.22);
+                window.effectManager.addFloatingText('⚡ ' + _handLabel + '!', defender.x, defender.y - 175, 'counter');
                 window.effectManager.addFloatingText(counterDmg, attacker.x, attacker.y - 130, 'crit');
               }
-              if (window.uiManager) window.uiManager.showAlertBanner('VOVINAM HAND COUNTER!');
+              if (window.uiManager) window.uiManager.showAlertBanner('⚡ ' + _handLabel + '!');
             } else {
-              // Phản đòn chân: Gạt chân phá trụ / Quét ngã Vovinam
+              // ===== U+K: PHẢN ĐÒN CHÂN THEO TỪNG NHÂN VẬT =====
               defender.setState('counter_leg_strike', 0.44);
-              const counterDmg = Math.round(88 * (defender.dmgMul || 1));
+              defender._lastDamagedEnemy = attacker;
+              const counterDmg = Math.round(110 * (defender.dmgMul || 1) * (defender.counterBonus || 1) * (defender.allyCounterBuff || 1));
               attacker.pendingHit = { isLegCounter: true, weight: 'heavy' };
+              defender.addEnergy(20);
+              this.addFlow(30, true);
+
+              // === NỘI TẠI KÍCH HOẠT KHI COUNTER CHÂN (TỪ MODULE NHÂN VẬT) ===
+              if (window.CharacterRegistry) {
+                const hpBeforeLegCounter = attacker.isRemotePlayer ? (attacker.hp || 0) : null;
+                window.CharacterRegistry.onLegCounter(defender, attacker, this);
+                if (attacker.isRemotePlayer && hpBeforeLegCounter !== null && attacker.hp < hpBeforeLegCounter &&
+                    window.onlineManager && window.onlineManager.isActive) {
+                  attacker._optimisticHpLockTimer = 0.6;
+                  window.onlineManager.send({ type: 'pvp_hit', damage: Math.round(hpBeforeLegCounter - attacker.hp), bypassInvincible: true });
+                }
+              }
+
               if (attacker.isBoss) {
-                // Boss bị choáng nặng, mở cửa sổ trừng phạt 1.2s
-                attacker.takeDamage(counterDmg, defender.facing * 6, false);
+                // Boss bị quét choáng, sụt 60 điểm Poise và mở cửa sơ hở
+                attacker.takeDamage(counterDmg, defender.facing * 8, false);
                 attacker.state = 'hurt';
                 attacker.stateTimer = 0;
                 attacker.stateDuration = 0.75;
-                attacker.weakWindow = 1.2;
+                attacker.weakWindow = 1.4;
+                attacker.poise = Math.max(0, (attacker.poise || 120) - 60);
               } else {
-                // Lính thường bị quét quật ngã xuống sàn
-                attacker.combatKnockbackTimer = 0.7;
+                // Lính thường bị quét hất tung lên không trung và quật ngã
+                attacker.combatKnockbackTimer = 0.75;
                 attacker.isKnockedBack = true;
-                attacker.takeDamage(counterDmg, defender.facing * 9, true);
+                attacker.vz = 260; // Hất tung lên không
+                attacker.takeDamage(counterDmg, defender.facing * 12, true);
               }
+
+              const _legLabel = (window.CharacterRegistry && window.CharacterRegistry.getSkillMoveLabel)
+                ? window.CharacterRegistry.getSkillMoveLabel(defender, 'counter_leg_strike', 'GẠT TRỤ TRIỆT CƯỚC')
+                : 'GẠT TRỤ TRIỆT CƯỚC';
               if (window.audioManager) window.audioManager.playKick();
               if (window.effectManager) {
-                window.effectManager.createGroundCrack(attacker.x, attacker.y, 80, '#ffd700');
-                window.effectManager.createHitSparks(attacker.x, attacker.y - 50, 22, true);
-                window.effectManager.createShockRing(defender.x, defender.y, '#ffd700');
-                window.effectManager.addFloatingText('PHẢN ĐÒN CHÂN — QUÉT HẠ TRỌNG TÂM!', defender.x, defender.y - 175, 'counter');
+                const _tpL = (window.CharacterRegistry && window.CharacterRegistry.getTrailProfile) ? window.CharacterRegistry.getTrailProfile(defender, 'counter_leg_strike') : null;
+                const _cLeg = (_tpL && (_tpL.secondary || _tpL.primary)) ? (_tpL.secondary || _tpL.primary) : '#ffd700';
+                window.effectManager.triggerFinisherMoment(attacker.x, attacker.y - 75, _legLabel, _cLeg);
+                window.effectManager.createGroundCrack(attacker.x, attacker.y, 110, _cLeg);
+                const _legSparks = (window.CharacterRegistry && window.CharacterRegistry.getSparkColors) ? window.CharacterRegistry.getSparkColors(defender) : _cLeg;
+                window.effectManager.createHitSparks(attacker.x, attacker.y - 50, 28, true, _legSparks);
+                window.effectManager.createShockRing(defender.x, defender.y, _cLeg);
+                window.effectManager.triggerScreenShake(12, 0.28);
+                window.effectManager.addFloatingText('🌪️ ' + _legLabel + '!', defender.x, defender.y - 175, 'counter');
                 window.effectManager.addFloatingText(counterDmg, attacker.x, attacker.y - 130, 'crit');
               }
-              if (window.uiManager) window.uiManager.showAlertBanner('VOVINAM LEG COUNTER!');
+              if (window.uiManager) window.uiManager.showAlertBanner('🌪️ ' + _legLabel + '!');
             }
 
             if (attacker.isBoss && window.uiManager && typeof window.uiManager.updateBossPoise === 'function') {
               window.uiManager.updateBossPoise(attacker.poise ?? 100, attacker.maxPoise ?? 100, attacker.weakWindow || 0);
             }
-            this.registerHit(true, attacker, defender.activeCounterType === 'hand' ? 75 : 88, true);
+            this.registerHit(true, attacker, defender.activeCounterType === 'hand' ? 90 : 110, true);
             return; // Đòn tấn công của địch bị hóa giải hoàn toàn!
-          } else {
-            // Sai loại counter (dùng Counter Tay trước cú đá, hoặc Counter Chân trước cú đấm)!
-            if (window.effectManager) {
-              window.effectManager.addFloatingText('SAI THẾ COUNTER!', defender.x, defender.y - 165, 'stale');
-            }
-            defender.activeCounterWindow = 0;
           }
         }
       }
-    }
-
     // Đòn đỡ có phản kích — cơ chế riêng của nhân vật thủ thế (Triệu Đình An khi chơi được)
     // Giới hạn số lần đỡ / phản kích qua Guard Gauge (tối đa 5-7 đòn liên tiếp)
     if (!isPlayerAttacking && defender.type === 'player' && defender.state === 'guard' && defender.mechRiposte) {
@@ -560,10 +639,14 @@ class CombatSystem {
       const riposteDmg = Math.round((attackData.damage || 20) * 1.15);
       attacker.takeDamage(riposteDmg, -defender.facing * 14, false);
       defender.addEnergy(8);
+      if (window.CharacterRegistry) {
+        window.CharacterRegistry.onGuardReflect(defender, attacker, riposteDmg);
+      }
       const blocksLeft = Math.max(0, Math.ceil(defender.guardGauge / 16));
       if (window.audioManager) window.audioManager.playBlock();
       if (window.effectManager) {
-        window.effectManager.createHitSparks(attacker.x, attacker.y - 90, 16, true);
+        const _riposteSparks = (window.CharacterRegistry && window.CharacterRegistry.getSparkColors) ? window.CharacterRegistry.getSparkColors(defender) : null;
+        window.effectManager.createHitSparks(attacker.x, attacker.y - 90, 16, true, _riposteSparks);
         window.effectManager.addFloatingText('PHẢN CHỦNG! [' + blocksLeft + '/6]', attacker.x, attacker.y - 140, 'counter');
         window.effectManager.triggerScreenShake(7, 0.2);
       }
@@ -575,9 +658,11 @@ class CombatSystem {
 
     // Nếu đang trong cửa sổ Perfect Counter
     if (isPlayerAttacking && this.isCounterWindow) {
-      // Hệ số phản đòn theo nhân vật (Giang Mạnh: 2.6)
-      const bonus = (defender && typeof defender.counterBonus === 'number' && defender.type === 'player') ? defender.counterBonus : 1.85;
-      damage = Math.round(damage * bonus);
+      // Hệ số phản đòn chuẩn của người chơi (attacker); trong PvP giới hạn tối đa 1.85x để cân bằng
+      const rawBonus = (attacker && typeof attacker.counterBonus === 'number') ? attacker.counterBonus : 1.85;
+      const bonus = (defender && defender.isRemotePlayer) ? Math.min(rawBonus, 1.85) : rawBonus;
+      const allyCounterMul = (attacker && typeof attacker.allyCounterBuff === 'number' && attacker.allyCounterBuff > 0) ? attacker.allyCounterBuff : 1.0;
+      damage = Math.round(damage * bonus * allyCounterMul);
       isCrit = true;
       this.isCounterWindow = false; // Tiêu thụ counter window
       if (window.uiManager) {
@@ -603,6 +688,8 @@ class CombatSystem {
     }
 
     // Nếu đối thủ đang Thủ (Guard) — chỉ chặn được đòn tới từ phía mặt (địch bị đánh từ sau lưng không được thủ)
+    const isPvpFight = !!(window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'pvp');
+    const isPvpTarget = !!(defender && defender.isRemotePlayer);
     const guardBehind = defender.type !== 'player' && Math.sign(attacker.x - defender.x) !== (defender.facing || 1);
     if (defender.state === 'guard' && !guardBehind) {
       // Đòn chân kẹp Vovinam, tuyệt kỹ hoặc Perfect Counter không thể bị đỡ!
@@ -632,9 +719,16 @@ class CombatSystem {
         const blockLabel = defender.type === 'player' ? ('ĐỠ ĐÒN [' + blocksLeft + '/6]') : 'BLOCKED';
         if (window.audioManager) window.audioManager.playBlock();
         if (window.effectManager) effectManager.addFloatingText(blockLabel, defender.x, defender.y - 100, 'block');
+        if (isPlayerAttacking && isPvpTarget && typeof attacker.addEnergy === 'function') {
+          attacker.addEnergy(3); // Ép thủ trong PvP vẫn tích nhẹ Nộ
+        }
         // Thủ đúng lúc được tích năng lượng: phòng thủ chủ động có giá trị
         if (defender.type === 'player') {
-          defender.addEnergy(2);
+          defender.addEnergy(isPvpFight ? 6 : 2);
+          // Nội tại phản chấn khi giữ thế thủ (VD: Triệu Đình An — Phụng Hoàng Hộ Tâm)
+          if (window.CharacterRegistry) {
+            window.CharacterRegistry.onGuardReflect(defender, attacker, damage);
+          }
           if (window.tutorialManager && window.tutorialManager.isActive) {
             window.tutorialManager.recordAction('guard_held');
           }
@@ -660,6 +754,16 @@ class CombatSystem {
       defender.isKnockedBack = true;
     }
 
+
+    // Bích Lâm: Phi Thân Lạc Bộ (Next Hit Crit)
+    if (isPlayerAttacking && attacker.nextHitCrit) {
+      damage = Math.round(damage * 1.8);
+      isCrit = true;
+      attacker.nextHitCrit = false;
+      if (window.effectManager) {
+        window.effectManager.addFloatingText('BẠO KÍCH XUYÊN PHÁ!', defender.x, defender.y - 150, 'crit');
+      }
+    }
 
     // Ghi thông tin đòn đánh để đối thủ xử lý siêu giáp (poise) chính xác
     defender.pendingHit = {
@@ -696,11 +800,11 @@ class CombatSystem {
     // Âm thanh phân biệt theo trọng lượng đòn
     if (window.audioManager) {
       if (weight === 'ultimate') {
-        window.audioManager.playHeavyHit();
+        if (typeof window.audioManager.playHeavyHit === 'function') window.audioManager.playHeavyHit();
       } else if (attackData.isKick || weight === 'heavy') {
-        window.audioManager.playKick();
+        if (typeof window.audioManager.playKick === 'function') window.audioManager.playKick();
       } else {
-        window.audioManager.playPunch();
+        if (typeof window.audioManager.playPunch === 'function') window.audioManager.playPunch();
       }
     }
 
@@ -712,7 +816,8 @@ class CombatSystem {
       const sparkCount = Math.max(2, Math.round((isCrit ? 22 : (weight === 'ultimate' ? 26 : (weight === 'heavy' ? 17 : 8))) * soft));
       // Đòn nhẹ không rung camera; đòn trung bình/nặng rung có kiểm soát theo hướng đòn
       const shakeAmt = Math.round((isCrit ? 7 : (weight === 'ultimate' ? 8 : (weight === 'heavy' ? 4.5 : 0))) * soft);
-      window.effectManager.createHitSparks(sparkX, sparkY, sparkCount, isCrit || weight === 'ultimate');
+      const sparkColors = (window.CharacterRegistry && window.CharacterRegistry.getSparkColors) ? window.CharacterRegistry.getSparkColors(attacker) : null;
+      window.effectManager.createHitSparks(sparkX, sparkY, sparkCount, isCrit || weight === 'ultimate', sparkColors);
       if (shakeAmt > 0) window.effectManager.triggerScreenShake(shakeAmt, isCrit ? 0.22 : 0.15, attacker.facing || 1, 0);
       if ((isCrit || weight === 'ultimate') && window.game && typeof window.game.triggerCameraPunch === 'function') {
         window.game.triggerCameraPunch(isCrit ? 1.055 : 1.045, 0.18, defender.x, defender.y);
@@ -750,10 +855,27 @@ class CombatSystem {
 
     // Ghi nhận combo & hồi năng lượng Vovinam cho nhân vật chơi được
     if (isPlayerAttacking) {
+      attacker._lastDamagedEnemy = defender;
       this.registerHit(true, defender, damage, isCrit);
-      const energyGain = attackData.energyGain || 8;
-      // Tuyệt kỹ tích chậm hơn (x0.4); đòn nhạt do spam gần như không tích được
-      attacker.addEnergy(energyGain * 0.4 * (isCrit ? 1.5 : (noStagger ? 0.1 : 1.0)));
+      const energyGain = (typeof attackData.energyGain === 'number' && Number.isFinite(attackData.energyGain)) ? attackData.energyGain : 8;
+      // PvP đối đầu 1v1 chỉ có 1 mục tiêu nên tích Nộ x2.5 lần PvE để kịp tung Tuyệt Kỹ trong hiệp
+      const pvpMult = (isPvpTarget || isPvpFight) ? 2.5 : 1.0;
+      attacker.addEnergy(energyGain * 0.4 * pvpMult * (isCrit ? 1.5 : (noStagger ? 0.1 : 1.0)));
+
+      // === KÍCH HOẠT NỘI TẠI THỰC CHIẾN KHI ĐÒN ĐÁNH TRÚNG ĐÍCH (TỪ MODULE NHÂN VẬT) ===
+      if (window.CharacterRegistry) {
+        const hpBeforePassive = defender.isRemotePlayer ? (defender.hp || 0) : null;
+        window.CharacterRegistry.onAttackHit(attacker, defender, attackData, this);
+        if (defender.isRemotePlayer && hpBeforePassive !== null && defender.hp < hpBeforePassive &&
+            window.onlineManager && window.onlineManager.isActive) {
+          defender._optimisticHpLockTimer = 0.6;
+          window.onlineManager.send({
+            type: 'pvp_hit',
+            damage: Math.round(hpBeforePassive - defender.hp),
+            bypassInvincible: true
+          });
+        }
+      }
     }
   }
 
@@ -775,6 +897,25 @@ class CombatSystem {
     }
     if (window.audioManager && typeof window.audioManager.playHurt === 'function') {
       window.audioManager.playHurt();
+    }
+  }
+
+  /**
+   * Áp dụng hiệu ứng Thiêu Đốt (Burn DoT từ Kiếm Xu & Âm Binh của Thiên Khánh)
+   */
+  applyBurn(target, isPlayerAttacking = true, customDmg = 10, duration = 3.2) {
+    if (!target || target.isDead) return;
+    const tickDmg = customDmg || (isPlayerAttacking ? 10 : 5);
+    const wasBurning = (target.burnTimer > 0);
+    target.burnTimer = Math.max(target.burnTimer || 0, duration || 3.2);
+    if (!wasBurning || !target.burnTickTimer || target.burnTickTimer <= 0) {
+      target.burnTickTimer = 0.7;
+    }
+    target.burnDmg = wasBurning ? Math.max(target.burnDmg || 0, tickDmg) : tickDmg;
+
+    if (!wasBurning && window.effectManager) {
+      window.effectManager.addFloatingText('THIÊU ĐỐT! 🔥', target.x, (target.y || 580) + (target.z || 0) - 155, 'crit');
+      window.effectManager.createHitSparks(target.x, (target.y || 580) + (target.z || 0) - 70, 10, true);
     }
   }
 
@@ -803,7 +944,11 @@ class CombatSystem {
       return;
     }
 
-    const dur = duration || (isPlayerAttacking ? 1.4 : 0.8);
+    let dur = duration || (isPlayerAttacking ? 1.4 : 0.8);
+    // Boss có kháng choáng cao (Boss Poise Resistence): tối đa chỉ bị khựng 0.35s, không thể bị đóng băng dài
+    if (target.isBoss) {
+      dur = Math.min(dur, 0.35);
+    }
     target.stunTimer = Math.max(target.stunTimer || 0, dur);
     target.vx = 0;
     target.vy = 0;

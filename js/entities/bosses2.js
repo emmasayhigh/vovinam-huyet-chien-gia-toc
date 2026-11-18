@@ -38,6 +38,7 @@ class BossBichlam extends BaseEnemy {
   }
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
     super.takeDamage(amount, knockbackX * 0.4, isKnockdown);
     if (window.uiManager) window.uiManager.updateBossHp(this.hp, this.maxHp);
     if (this.isDead) return;
@@ -80,7 +81,7 @@ class BossBichlam extends BaseEnemy {
     } else {
       attackData = { damage: d, offsetX: 54, offsetY: -82, width: 70, height: 55, knockback: 8, counterType: 'hand', weight: 'light' };
     }
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
@@ -110,6 +111,7 @@ class BossDungHai extends BaseEnemy {
   }
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
     super.takeDamage(amount, knockbackX * 0.4, isKnockdown);
     if (window.uiManager) window.uiManager.updateBossHp(this.hp, this.maxHp);
     if (this.isDead) return;
@@ -156,8 +158,12 @@ class BossDungHai extends BaseEnemy {
     }
 
     if (this.state === 'dodge') {
-      // Hủy đòn dối: vừa né xong là lao vào bằng đòn thật
+      // Hủy đòn dối: vừa né xong là lao vào bằng đòn thật nhắm vào mục tiêu yếu % máu hơn
       if (this.stateTimer >= this.stateDuration) {
+        const target = this.selectCombatTarget(player);
+        if (target && Math.abs(target.x - this.x) > 3) {
+          this.facing = target.x >= this.x ? 1 : -1;
+        }
         this.setState('boss_stab', 0.3);
         this.vx = this.facing * 320;
         if (window.audioManager) window.audioManager.playWhoosh();
@@ -249,7 +255,7 @@ class BossDungHai extends BaseEnemy {
       default:
         attackData = { damage: d, offsetX: 56, offsetY: -82, width: 72, height: 55, knockback: 9, counterType: 'hand', weight: 'light' };
     }
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
@@ -289,6 +295,7 @@ class BossHoangAnh extends BaseEnemy {
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
     if (this.isDead || this.invincibleTimer > 0) return;
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
     const counter = window.combatSystem && window.combatSystem.isCounterWindow;
     const unblockable = counter; // phản đòn hoàn hảo luôn xuyên được armor
 
@@ -343,6 +350,10 @@ class BossHoangAnh extends BaseEnemy {
         if (player.z === 0 && Math.abs(player.x - this.x) < 210 && Math.abs(player.y - this.y) < 70) {
           player.takeDamage(70, Math.sign(player.x - this.x) * 11, true);
         }
+        const ally3 = (window.allyManager && window.allyManager.activeAlly) || (window.allySystem && window.allySystem.activeAlly);
+        if (ally3 && !ally3.isDead && Math.abs(ally3.x - this.x) < 210 && Math.abs(ally3.y - this.y) < 70) {
+          ally3.takeDamage(70, Math.sign(ally3.x - this.x) * 11, true);
+        }
         this.openWeakWindow(1.15);
       }
     }
@@ -361,12 +372,13 @@ class BossHoangAnh extends BaseEnemy {
       return;
     }
 
-    // Kết thúc một đòn -> lùi về giữ khoảng cách + lộ sơ hở
+    // Kết thúc một đòn -> lùi về giữ khoảng cách (nếu không bị kẹp) + lộ sơ hở
     if (this.isAttacking && this.stateTimer >= this.stateDuration) {
+      const target = this.selectCombatTarget(player) || player;
       this.setState('idle');
       this.attackCooldown = (this.phase >= 3 ? 0.6 : 0.95) + Math.random() * 0.5;
       this.openWeakWindow(0.95);
-      this.vx = -this.facing * 95;
+      this.vx = this.isSandwichedBy(target, player) ? 0 : (-this.facing * 95);
       if (this.tauntCooldown <= 0 && Math.random() < 0.25) {
         this.taunt(this.tauntLines[Math.floor(Math.random() * this.tauntLines.length)]);
         this.tauntCooldown = 9;
@@ -394,11 +406,12 @@ class BossHoangAnh extends BaseEnemy {
         }
       } else {
         // Hết chuỗi -> khoảng trống lớn nhất của hắn
+        const target = this.selectCombatTarget(player) || player;
         this.setState('idle');
         this.attackCooldown = 1.0 + Math.random() * 0.5;
         this.chainStep = 0;
         this.openWeakWindow(1.35);
-        this.vx = -this.facing * 120;
+        this.vx = this.isSandwichedBy(target, player) ? 0 : (-this.facing * 120);
         if (window.uiManager) window.uiManager.showAlertBanner('KHOẢNG TRỐNG!');
       }
     }
@@ -444,7 +457,7 @@ class BossHoangAnh extends BaseEnemy {
       default:
         attackData = { damage: 52, offsetX: 82, offsetY: -82, width: 104, height: 60, knockback: 12, counterType: 'hand', weight: 'heavy' };
     }
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
@@ -474,6 +487,7 @@ class BossDinhAn extends BaseEnemy {
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
     if (this.isDead || this.invincibleTimer > 0) return;
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
     const counter = window.combatSystem && window.combatSystem.isCounterWindow;
     // Phản đòn hoàn hảo & unblockable không bị giảm
     let actual = amount;
@@ -512,10 +526,12 @@ class BossDinhAn extends BaseEnemy {
 
     if (this.guardCooldown > 0) this.guardCooldown -= dt;
 
-    const playerAttacking = typeof player.state === 'string' &&
+    const target = this.selectCombatTarget(player) || player;
+    const playerAttacking = player && typeof player.state === 'string' &&
       ['punch_straight', 'punch_hook', 'kick_push', 'kick_roundhouse', 'flying_kick'].includes(player.state);
     if ((this.state === 'idle' || this.state === 'walk') && this.guardCooldown <= 0 &&
-        Math.abs(player.x - this.x) < 115 && playerAttacking && Math.random() < 0.12) {
+        Math.abs(player.x - this.x) < 115 && playerAttacking && Math.random() < 0.12 &&
+        !this.isSandwichedBy(target, player)) {
       this.setState('guard', 0.95);
       if (window.audioManager) window.audioManager.playBlock();
       return;
@@ -582,7 +598,7 @@ class BossDinhAn extends BaseEnemy {
       default:
         attackData = { damage: d - 8, offsetX: 58, offsetY: -84, width: 84, height: 58, knockback: 12, counterType: 'hand', weight: 'heavy' };
     }
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
@@ -612,6 +628,7 @@ class BossVinhTam extends BaseEnemy {
   // PARRY: vô hiệu hóa đòn đánh thường rồi phản đòn ngay
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
     if (this.isDead || this.invincibleTimer > 0) return;
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
 
     if (this.state === 'boss_parry') {
       this.invincibleTimer = 0.35;
@@ -694,10 +711,12 @@ class BossVinhTam extends BaseEnemy {
       return;
     }
 
-    const dist = Math.hypot(player.x - this.x, (player.y - this.y) * 1.4);
-    // Đôi khi vào thế thủ để PARRY (chỉ khi người chơi đang ở cự ly tấn công)
-    if (!player.isDead && dist < 130 && Math.abs(player.y - this.y) < 55 &&
-        this.attackCooldown > 0.25 && Math.random() < 0.045) {
+    const target = this.selectCombatTarget(player) || player;
+    const dist = Math.hypot(target.x - this.x, (target.y - this.y) * 1.4);
+    // Đôi khi vào thế thủ để PARRY (chỉ khi không bị kẹp và mục tiêu đang ở cự ly tấn công)
+    if (!target.isDead && dist < 130 && Math.abs(target.y - this.y) < 55 &&
+        this.attackCooldown > 0.25 && Math.random() < 0.045 &&
+        !this.isSandwichedBy(target, player)) {
       this.setState('boss_parry', 0.75);
       if (window.audioManager) window.audioManager.playClick();
       return;
@@ -751,7 +770,7 @@ class BossVinhTam extends BaseEnemy {
       default:
         attackData = { damage: d + 4, offsetX: 58, offsetY: -84, width: 80, height: 56, knockback: 12, counterType: 'hand', weight: 'heavy' };
     }
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
@@ -782,6 +801,7 @@ class BossGiangManh extends BaseEnemy {
   }
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
     super.takeDamage(amount, knockbackX * 0.3, isKnockdown);
     if (window.uiManager) window.uiManager.updateBossHp(this.hp, this.maxHp);
     if (this.isDead) return;
@@ -813,6 +833,10 @@ class BossGiangManh extends BaseEnemy {
     // Né ngang rồi phản công trừng phạt
     if (this.state === 'dodge') {
       if (this.stateTimer >= this.stateDuration) {
+        const target = this.selectCombatTarget(player);
+        if (target && Math.abs(target.x - this.x) > 3) {
+          this.facing = target.x >= this.x ? 1 : -1;
+        }
         this.setState('boss_riposte', 0.32);
         this.vx = this.facing * 300;
         this.counterBonus = true;
@@ -832,12 +856,14 @@ class BossGiangManh extends BaseEnemy {
 
     this.analyzeHabit(player);
 
-    const dist = Math.hypot(player.x - this.x, (player.y - this.y) * 1.4);
-    const playerAttacking = typeof player.state === 'string' &&
+    const target = this.selectCombatTarget(player) || player;
+    const pDist = player ? Math.hypot(player.x - this.x, (player.y - this.y) * 1.4) : 9999;
+    const tDist = Math.hypot(target.x - this.x, (target.y - this.y) * 1.4);
+    const playerAttacking = player && typeof player.state === 'string' &&
       ['punch_straight', 'punch_hook', 'kick_push', 'kick_roundhouse', 'flying_kick'].includes(player.state);
 
     // Phản ứng khi người chơi LẶP LẠI một đòn quá nhiều (có cooldown, xác suất — không né mọi đòn)
-    if (playerAttacking && dist < 125 && this.sidestepCd <= 0 && this.patternReady && Math.random() < 0.3) {
+    if (playerAttacking && pDist < 125 && this.sidestepCd <= 0 && this.patternReady && Math.random() < 0.3) {
       this.sidestepCd = 2.4;
       this.setState('dodge', 0.3);
       this.vy = (player.y <= this.y ? 1 : -1) * 175;
@@ -847,11 +873,12 @@ class BossGiangManh extends BaseEnemy {
       return;
     }
 
-    // Áp sát bất ngờ
-    if (!player.isDead && this.phase >= 2 && this.ambushCd <= 0 && dist > 200 && dist < 420 && Math.random() < 0.02) {
+    // Áp sát bất ngờ vào mục tiêu đang ưu tiên
+    if (!target.isDead && this.phase >= 2 && this.ambushCd <= 0 && tDist > 200 && tDist < 420 && Math.random() < 0.02) {
       this.ambushCd = 7;
+      this.facing = Math.sign(target.x - this.x) || this.facing;
       this.setState('boss_dash', 0.4);
-      this.vx = Math.sign(player.x - this.x) * 520;
+      this.vx = this.facing * 520;
       if (window.audioManager) window.audioManager.playWhoosh();
       if (window.effectManager) window.effectManager.addGhostTrail(this, 'rgba(125,211,252,0.5)');
       return;
@@ -897,11 +924,12 @@ class BossGiangManh extends BaseEnemy {
     } else {
       attackData = { damage: base - 6, offsetX: 54, offsetY: -82, width: 72, height: 54, knockback: 9, counterType: 'hand', weight: 'light' };
     }
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
 window.BossBichlam = BossBichlam;
+window.BossBichLam = BossBichlam;
 window.BossDungHai = BossDungHai;
 window.BossHoangAnh = BossHoangAnh;
 window.BossDinhAn = BossDinhAn;

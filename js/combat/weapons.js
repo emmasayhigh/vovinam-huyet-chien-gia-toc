@@ -107,25 +107,40 @@
       damage: 64, knockback: 380, weight: 'heavy', energyGain: 12,
       weaponEffect: 'bleed', bleedChance: 1.0, bleedDmg: 8,
       box: (t) => ({ offsetX: 62 + 16 * t, offsetY: -66, width: 56, height: 54 })
+    },
+    shield_strike: {
+      state: 'wp_shield_strike', startup: 0.16, active: 0.12, recovery: 0.24,
+      damage: 36, knockback: 290, weight: 'light', energyGain: 7, bossPoiseDmg: 16,
+      box: (t) => ({ offsetX: 46 + 18 * t, offsetY: -78, width: 46, height: 58 })
+    },
+    shield_bash: {
+      state: 'wp_shield_bash', startup: 0.24, active: 0.14, recovery: 0.36, lunge: 260,
+      damage: 58, knockback: 440, weight: 'heavy', knockdown: true, energyGain: 12,
+      weaponEffect: 'stun', stunChance: 0.75, stunDuration: 1.0, bossPoiseDmg: 28,
+      box: (t) => ({ offsetX: 52 + 24 * t, offsetY: -80, width: 54, height: 64 })
+    },
+    weapon_throw: {
+      state: 'wp_throw', startup: 0.105, active: 0.14, recovery: 0.17,
+      damage: 0, knockback: 0, weight: 'light'
     }
   };
 
   // Cấu hình vũ khí nhặt được
   const WEAPON_DEFS = {
     baton: {
-      name: 'CÔN', stance: 'baton', styleWeapon: 'baton', durability: 8, pickable: true,
+      name: 'CÔN', stance: 'baton', styleWeapon: 'baton', durability: 8, pickable: true, color: '#38bdf8',
       effect: 'stun', effectName: 'GÂY CHOÁNG', effectIcon: '💫',
       light: ['baton_sweep', 'baton_sweep'], heavy: ['baton_slam']
     },
     blade: {
-      name: 'MÃ TẤU', stance: 'blade', styleWeapon: 'machete', durability: 9, pickable: true,
+      name: 'MÃ TẤU', stance: 'blade', styleWeapon: 'machete', durability: 9, pickable: true, color: '#f43f5e',
       effect: 'bleed', effectName: 'XUẤT HUYẾT', effectIcon: '🩸',
       light: ['blade_slash', 'blade_chop'], heavy: ['blade_lunge']
     },
     shield: {
-      name: 'KHIÊN', stance: 'shield', styleWeapon: null, durability: 0, pickable: false,
-      effect: 'guard', effectName: 'PHÒNG THỦ', effectIcon: '🛡️',
-      light: [], heavy: []
+      name: 'KHIÊN', stance: 'shield', styleWeapon: 'riot_shield', durability: 10, pickable: true, color: '#38bdf8',
+      effect: 'guard', effectName: 'CHẮN & ĐẨY', effectIcon: '🛡️',
+      light: ['shield_strike'], heavy: ['shield_bash']
     }
   };
 
@@ -162,6 +177,10 @@
       wind:   { torso: -0.26, head: 0.08, hx: -6, lift: -2,  nA: 0.45,  nE: 1.75, fA: 0.5,  fE: 1.85, nT: 0.88, nS: -1.15, fT: -0.72, fS: 0.22 },
       strike: { torso: 0.46,  head: -0.18, hx: 13, lift: -3, nA: 1.38,  nE: 0.35, fA: 0.95, fE: 1.15, nT: 1.12, nS: -0.78, fT: -0.88, fS: 0.15 }
     },
+    wp_throw: {
+      wind:   { torso: -0.35, head: 0.12, hx: -6, lift: 2.5,  nA: -1.55, nE: 1.28, grip: 0.85,  fA: 1.05,  fE: 0.42, nT: 0.48, nS: -0.78, fT: -0.72, fS: 0.18 },
+      strike: { torso: 0.50,  head: -0.14, hx: 10, lift: -3.0, nA: 1.62,  nE: 0.06, grip: -0.95, fA: -0.42, fE: 1.15, nT: 1.18, nS: -0.82, fT: -0.88, fS: 0.16 }
+    },
     // Tư thế tĩnh
     wp_turn:    { statics: { torso: 0.1, head: -0.18, nA: 0.42, nE: 0.85, grip: -0.15, fA: 0.35, fE: 1.1, nT: 0.55, nS: -0.75 }, sway: 1.6 },
     wp_stagger: { statics: { torso: -0.38, head: -0.32, hx: -4, nA: -0.3, nE: 0.8, grip: 0.25, fA: -0.5, fE: 0.7, nT: 0.35, nS: -0.5, fT: -0.7, fS: 0.1 }, sway: 2.2 }
@@ -177,7 +196,7 @@
   };
 
   // Báo cho renderer biết các trạng thái đòn vũ khí là "trạng thái ra đòn"
-  ['wp_baton_sweep', 'wp_baton_slam', 'wp_blade_slash', 'wp_blade_chop', 'wp_blade_lunge', 'wp_shield_strike', 'wp_shield_bash']
+  ['wp_baton_sweep', 'wp_baton_slam', 'wp_blade_slash', 'wp_blade_chop', 'wp_blade_lunge', 'wp_shield_strike', 'wp_shield_bash', 'wp_throw']
     .forEach((s) => { if (window.ATTACK_STATES) window.ATTACK_STATES.add(s); });
 
   // ==========================================================================
@@ -256,7 +275,7 @@
         this._wpActive = true;
         if (a.lunge) this.vx = this.facing * a.lunge;
         const box = a.box(clamp((t - su) / ac));
-        window.combatSystem.checkAttackHit(this, player, {
+        const hitPayload = {
           damage: a.damage, knockback: a.knockback, weight: a.weight,
           knockdown: !!a.knockdown, unblockable: !!a.unblockable,
           isKick: !!a.isKick, counterType: a.counterType || (a.isKick ? 'leg' : 'hand'),
@@ -264,7 +283,12 @@
           bleedChance: a.bleedChance, bleedDmg: a.bleedDmg,
           stunChance: a.stunChance, stunDuration: a.stunDuration, bossPoiseDmg: a.bossPoiseDmg,
           offsetX: box.offsetX, offsetY: box.offsetY, width: box.width, height: box.height
-        });
+        };
+        if (typeof this.deliverAttackHit === 'function') {
+          this.deliverAttackHit(player, hitPayload);
+        } else {
+          window.combatSystem.checkAttackHit(this, player, hitPayload);
+        }
       } else if (t < a.recoveryEff + su + ac) {
         this.phaseName = 'recovery';
         this.isAttacking = false;                // recovery: có thể bị đánh gián đoạn
@@ -314,8 +338,9 @@
       }
       if (!this.armed) return super.updateAI(dt, player);   // tay không: dùng bộ đòn BaseEnemy
 
-      if (this.atk) { this.runAttack(dt, player); return; }
-      this.brain(dt, player);
+      const target = (typeof this.selectCombatTarget === 'function') ? (this.selectCombatTarget(player) || player) : player;
+      if (this.atk) { this.runAttack(dt, target); return; }
+      this.brain(dt, target);
     }
 
     // Di chuyển giữ khoảng cách: wantDist = cự ly ưa thích; trả về dist
@@ -343,6 +368,7 @@
     // ---------------- Nhận sát thương / mất vũ khí ----------------
     takeDamage(amount, knockbackX = 0, isKnockdown = false) {
       if (this.isDead || this.invincibleTimer > 0) return;
+      knockbackX = BaseEnemy.resolveKnockback ? BaseEnemy.resolveKnockback(knockbackX) : (Number.isFinite(knockbackX) ? knockbackX : 0);
       const hit = this.pendingHit || {};
       if (this.armed && this.preDamage && this.preDamage(amount, knockbackX, isKnockdown, hit)) return;
 
@@ -594,6 +620,7 @@
     }
 
     takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+      knockbackX = BaseEnemy.resolveKnockback ? BaseEnemy.resolveKnockback(knockbackX) : (Number.isFinite(knockbackX) ? knockbackX : 0);
       const hit = this.pendingHit || null;
       const weight = hit ? hit.weight : (isKnockdown ? 'heavy' : 'light');
       // Đòn nhẹ: nhận sát thương nhưng KHÔNG bị gián đoạn hoạt ảnh
@@ -619,7 +646,7 @@
         this.vx = this.facing * 360;
         if (window.AnimUtil && AnimUtil.isActive(this)) {
           const hitData = { damage: 38, offsetX: 50, offsetY: -75, width: 85, height: 60, knockback: 12, knockdown: true, unblockable: true, weight: 'heavy' };
-          window.combatSystem.checkAttackHit(this, player, hitData);
+          this.deliverAttackHit(player, hitData);
         }
         if (this.stateTimer >= this.stateDuration) {
           this.setState('idle');
@@ -643,7 +670,7 @@
             window.propSystem.checkAttackHit(this, { damage: 45, weight: 'heavy', width: 95, height: 65, offsetX: 45, offsetY: -50 });
           }
           const hitData = { damage: 46, offsetX: 55, offsetY: -75, width: 95, height: 65, knockback: 9, knockdown: true, weight: 'heavy' };
-          window.combatSystem.checkAttackHit(this, player, hitData);
+          this.deliverAttackHit(player, hitData);
         }
         if (this.stateTimer >= this.stateDuration) {
           this.setState('idle');
@@ -653,13 +680,14 @@
       }
 
       // AI quyết định ra đòn
-      if (!this.isAttacking && this.state !== 'hurt' && this.state !== 'knockdown' && this.state !== 'getup') {
-        const dx = (player.x - this.x) * this.facing;
-        const dy = Math.abs(player.y - this.y);
+      const target = this.selectCombatTarget ? (this.selectCombatTarget(player) || player) : player;
+      if (target && !this.isAttacking && this.state !== 'hurt' && this.state !== 'knockdown' && this.state !== 'getup') {
+        const dx = (target.x - this.x) * this.facing;
+        const dy = Math.abs(target.y - this.y);
 
-        // Đòn húc vai tầm xa khi người chơi cách 130-260px
+        // Đòn húc vai tầm xa khi mục tiêu cách 130-260px
         if (dx > 120 && dx < 260 && dy < 35 && this.chargeCooldown <= 0) {
-          this.facing = Math.sign(player.x - this.x) || this.facing;
+          this.facing = Math.sign(target.x - this.x) || this.facing;
           this.setState('ram_charge', 0.52);
           if (window.audioManager) window.audioManager.playWarning();
           if (window.effectManager) window.effectManager.addFloatingText('!', this.x, this.y - 160, 'crit');
@@ -668,7 +696,7 @@
 
         // Đòn bổ búa cận chiến
         if (dx > 0 && dx < 95 && dy < 45 && this.smashCooldown <= 0) {
-          this.facing = Math.sign(player.x - this.x) || this.facing;
+          this.facing = Math.sign(target.x - this.x) || this.facing;
           this._smashed = false;
           this.setState('overhead_smash', 0.78);
           if (window.audioManager) window.audioManager.playWarning();
@@ -805,7 +833,7 @@
         knockback: isHook ? 8 : 4,
         weight: isHook ? 'heavy' : 'light'
       };
-      window.combatSystem.checkAttackHit(this, player, attackData);
+      this.deliverAttackHit(player, attackData);
     }
   }
 
@@ -889,6 +917,7 @@
     }
 
     takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+      knockbackX = BaseEnemy.resolveKnockback ? BaseEnemy.resolveKnockback(knockbackX) : (Number.isFinite(knockbackX) ? knockbackX : 0);
       // Bị ngắt chiêu khi đang hồi phục
       if (this.state === 'channel_heal') {
         if (window.effectManager) {
@@ -988,14 +1017,44 @@
   const MAX_DROPS = 5;
   const DROP_LIFE = 22;
 
+  // Vẽ hình chữ nhật bo góc tương thích an toàn trên mọi Canvas context
+  function drawRoundedRect(ctx, x, y, width, height, radius) {
+    if (!ctx) return;
+    if (typeof ctx.beginPath !== 'function') return;
+    if (typeof ctx.roundRect === 'function') {
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, radius);
+      return;
+    }
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + width - r, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+    ctx.lineTo(x + width, y + height - r);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    ctx.lineTo(x + r, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
   const weaponSystem = {
     drops: [],
+    thrownWeapons: [],
+    throwArcs: [],
     _nearest: null,
 
     reset(player) {
       this.drops = [];
+      this.thrownWeapons = [];
+      this.throwArcs = [];
       this._nearest = null;
-      if (player) this.clearPlayerWeapon(player);
+      if (player) {
+        player._pendingThrow = null;
+        this.clearPlayerWeapon(player);
+      }
     },
 
     // Vũ khí rơi thành vật thể: có vị trí, hướng, vận tốc, nảy một lần rồi nằm yên trên nền
@@ -1011,7 +1070,9 @@
         rot: 0, rotV: dir * (7 + Math.random() * 5), landed: false, bounced: false, age: 0, pickable: def.pickable
       });
       if (this.drops.length > MAX_DROPS) this.drops.shift();
-      if (window.audioManager) window.audioManager.playBlock();
+      if (window.audioManager && typeof window.audioManager.playBlock === 'function') {
+        window.audioManager.playBlock();
+      }
     },
 
     // Nhặt tay: vũ khí bị người chơi giữ thì có độ bền hữu hạn (kế thừa đúng độ bền khi nhặt)
@@ -1021,18 +1082,272 @@
       const currentDur = (dur !== null && dur !== undefined) 
         ? Math.max(1, Math.min(dur, def.durability)) 
         : def.durability;
-      player.weapon = { type, dur: currentDur, max: def.durability, step: 0, lastAt: -99 };
+      const wpObj = {
+        type,
+        _dur: currentDur,
+        max: def.durability,
+        step: 0,
+        lastAt: -99,
+        get dur() {
+          return this._dur;
+        },
+        set dur(val) {
+          this._dur = Math.max(0, typeof val === 'number' ? val : 0);
+          if (this._dur <= 0 && window.weaponSystem && player && player.weapon) {
+            window.weaponSystem.breakWeapon(player, this);
+          }
+          if (window.uiManager && typeof window.uiManager.updateWeaponHUD === 'function') {
+            window.uiManager.updateWeaponHUD(player);
+          }
+        }
+      };
+      player.weapon = wpObj;
       player.heldWeapon = type;
       player.stance = def.stance;
       player.atk = null;
+      if (window.uiManager && typeof window.uiManager.updateWeaponHUD === 'function') {
+        window.uiManager.updateWeaponHUD(player);
+      }
     },
 
-    clearPlayerWeapon(player) {
-      player.weapon = null; player.heldWeapon = null; player.stance = null; player.atk = null;
+    clearPlayerWeapon(player, opts = null) {
+      if (!player) return;
+      player.weapon = null;
+      player.heldWeapon = null;
+      player.stance = null;
+      if (!opts || !opts.preserveThrow) {
+        player.atk = null;
+        player._pendingThrow = null;
+      }
+      player._wpActive = false;
+      if (window.uiManager && typeof window.uiManager.updateWeaponHUD === 'function') {
+        window.uiManager.updateWeaponHUD(player);
+      }
+    },
+
+    // Ném / phi vũ khí trên tay [Phím E]: 3 pha gồng thu tay giữ vũ khí -> vung tay giải phóng -> theo đà thu thế
+    throwWeapon(player, enemies) {
+      if (!player || !player.weapon || player.weapon.dur <= 0 || player.isDead || player._pendingThrow) return false;
+      const w = player.weapon;
+      const type = w.type;
+      const def = WEAPON_DEFS[type] || {};
+      const currentDur = Math.max(1, w.dur);
+      const maxDur = w.max || def.durability || 8;
+      const facing = player.facing || 1;
+      const atkDef = PLAYER_ATTACKS.weapon_throw;
+      const totalDur = atkDef.startup + atkDef.active + atkDef.recovery;
+
+      // Bước lùi nhẹ lấy đà và vặn mình co tay vẫn đang nắm chặt vũ khí
+      player.atk = Object.assign({}, atkDef, { key: 'weapon_throw', recoveryEff: atkDef.recovery });
+      player.comboStep = 0;
+      player._pendingThrow = {
+        type,
+        dur: currentDur,
+        maxDur,
+        facing,
+        startup: atkDef.startup,
+        totalDur,
+        elapsed: 0,
+        wsTime: 0,
+        sawPlayerUpdate: false,
+        released: false
+      };
+      if (typeof player.vx === 'number') {
+        player.vx = -facing * 48;
+      }
+      if (typeof player.setState === 'function') {
+        player.setState('wp_throw', totalDur);
+      } else {
+        player.state = 'wp_throw';
+        player.stateTimer = 0;
+        player.stateDuration = totalDur;
+      }
+
+      // Vòng tụ lực sau vai trong pha kéo tay (charge arc)
+      this.throwArcs.push({
+        kind: 'charge',
+        player,
+        x: player.x - facing * 14,
+        y: player.y,
+        z: (player.z || 0) - 64,
+        facing,
+        color: def.color || '#38bdf8',
+        age: 0,
+        life: atkDef.startup + 0.04
+      });
+
+      if (window.audioManager) {
+        if (typeof window.audioManager.playWhoosh === 'function') {
+          window.audioManager.playWhoosh();
+        } else if (typeof window.audioManager.playSwing === 'function') {
+          window.audioManager.playSwing();
+        }
+      }
+      return true;
+    },
+
+    _releasePendingThrow(player) {
+      const pt = player && player._pendingThrow;
+      if (!pt || pt.released) return false;
+      pt.released = true;
+
+      const facing = player.facing || pt.facing || 1;
+      const type = (player.weapon && player.weapon.type) || pt.type;
+      const currentDur = Math.max(1, (player.weapon && player.weapon.dur) || pt.dur || 1);
+      const def = WEAPON_DEFS[type] || {};
+      const maxDur = (player.weapon && player.weapon.max) || pt.maxDur || def.durability || 8;
+      const throwAtk = player.atk;
+
+      // Thu hồi vũ khí khỏi tay đúng thời điểm cánh tay vung qua trước, giữ nguyên player.atk để đi hết pha theo đà!
+      this.clearPlayerWeapon(player, { preserveThrow: true });
+      player.atk = throwAtk || Object.assign({}, PLAYER_ATTACKS.weapon_throw, { key: 'weapon_throw', recoveryEff: PLAYER_ATTACKS.weapon_throw.recovery });
+      if (typeof player.vx === 'number') {
+        player.vx = facing * 135;
+      }
+
+      const releaseX = player.x + facing * 40;
+      const releaseY = player.y;
+      const releaseZ = (player.z || 0) - 56;
+
+      // Vệt quất khí động học khi rời tay + hiệu ứng rung & bụi đất
+      this.throwArcs.push({
+        kind: 'whip',
+        x: player.x + facing * 18,
+        y: releaseY,
+        z: releaseZ - 4,
+        facing,
+        type,
+        color: type === 'blade' ? '#fb7185' : '#38bdf8',
+        age: 0,
+        life: 0.22
+      });
+
+      if (window.effectManager) {
+        if (typeof window.effectManager.addFloatingText === 'function') {
+          window.effectManager.addFloatingText('PHI ' + (def.name || 'VŨ KHÍ') + '!', player.x, player.y - 150, 'skill');
+        }
+        if (typeof window.effectManager.createDust === 'function') {
+          window.effectManager.createDust(player.x + facing * 16, player.y, 7, 24);
+        }
+        if (typeof window.effectManager.createShockRing === 'function') {
+          window.effectManager.createShockRing(releaseX, releaseY, def.color || '#38bdf8');
+        }
+      }
+
+      const isBlade = type === 'blade';
+      const isShield = type === 'shield';
+      const thrown = {
+        type,
+        x: releaseX,
+        y: releaseY,
+        z: releaseZ,
+        vx: facing * (isShield ? 800 : 860),
+        vy: 0,
+        vz: isShield ? 48 : 60,
+        gravity: isShield ? 880 : 940,
+        rot: facing * (isShield ? 0.15 : -0.35),
+        rotV: facing * (isShield ? 20 : (isBlade ? 29 : 25)),
+        facing,
+        dur: currentDur,
+        maxDur,
+        age: 0,
+        trail: [],
+        hitEnemies: new Set(),
+        active: true
+      };
+      this.thrownWeapons.push(thrown);
+      return true;
+    },
+
+    _tickPendingThrow(player, dt, fromPlayerUpdate = false) {
+      const pt = player && player._pendingThrow;
+      if (!pt) return;
+
+      // Hủy an toàn nếu người chơi bị đánh ngắt / gục ngã trong lúc kéo tay
+      if (player.isDead || player.state !== 'wp_throw') {
+        player._pendingThrow = null;
+        return;
+      }
+
+      if (fromPlayerUpdate) {
+        pt.sawPlayerUpdate = true;
+        pt.elapsed = player.stateTimer || 0;
+      } else {
+        pt.wsTime += dt;
+        if (!pt.sawPlayerUpdate) {
+          player.stateTimer = pt.wsTime;
+          pt.elapsed = pt.wsTime;
+        }
+      }
+
+      if (!pt.released && pt.elapsed >= pt.startup) {
+        this._releasePendingThrow(player);
+      }
+
+      if (!pt.sawPlayerUpdate && pt.elapsed >= pt.totalDur) {
+        player._pendingThrow = null;
+        player.atk = null;
+        player._wpActive = false;
+        if (typeof player.setState === 'function') {
+          player.setState('idle');
+        } else {
+          player.state = 'idle';
+        }
+      }
+    },
+
+    // Xử lý vũ khí gãy: tạo hiệu ứng tóe lửa, âm thanh, chữ "VŨ KHÍ GÃY!" và thu hồi vũ khí an toàn
+    breakWeapon(player, w) {
+      const weapon = w || (player && player.weapon);
+      if (!weapon) return;
+      const def = WEAPON_DEFS[weapon.type];
+      const name = (def && def.name) ? def.name : 'VŨ KHÍ';
+      if (window.effectManager && player) {
+        if (typeof window.effectManager.addFloatingText === 'function') {
+          window.effectManager.addFloatingText(name + ' GÃY!', player.x, player.y - 170, 'warn');
+        }
+        if (typeof window.effectManager.createHitSparks === 'function') {
+          window.effectManager.createHitSparks(player.x + (player.facing || 1) * 40, player.y - 80, 12, false);
+        }
+      }
+      if (window.audioManager && typeof window.audioManager.playHeavyHit === 'function') {
+        window.audioManager.playHeavyHit();
+      }
+      if (player) {
+        player._wpActive = false;
+        this.clearPlayerWeapon(player);
+        if (player.state && typeof player.state === 'string' && player.state.startsWith('wp_')) {
+          player.setState('idle');
+        }
+      }
+      if (window.uiManager && typeof window.uiManager.updateWeaponHUD === 'function') {
+        window.uiManager.updateWeaponHUD(player);
+      }
     },
 
     update(dt, player, enemies) {
+      // Bảo hộ an toàn tuyệt đối: nếu vũ khí của người chơi đã hết độ bền (<= 0), gãy ngay lập tức
+      if (player && player.weapon && player.weapon.dur <= 0) {
+        this.breakWeapon(player, player.weapon);
+      }
+      if (player && player._pendingThrow) {
+        this._tickPendingThrow(player, dt, false);
+      }
+      if (this.throwArcs && this.throwArcs.length > 0) {
+        for (let i = this.throwArcs.length - 1; i >= 0; i--) {
+          const arc = this.throwArcs[i];
+          arc.age += dt;
+          if (arc.player) {
+            arc.x = arc.player.x - (arc.facing || 1) * 14;
+            arc.y = arc.player.y;
+            arc.z = (arc.player.z || 0) - 64;
+          }
+          if (arc.age >= arc.life) this.throwArcs.splice(i, 1);
+        }
+      }
       this._nearest = null;
+
+      // 1. Cập nhật các vũ khí rơi trên mặt đất
       for (let i = this.drops.length - 1; i >= 0; i--) {
         const d = this.drops[i];
         d.age += dt;
@@ -1043,13 +1358,174 @@
           d.rot += d.rotV * dt;
           if (d.z >= 0) {
             d.z = 0;
-            if (!d.bounced) { d.bounced = true; d.vz = 120; d.vx *= 0.4; d.rotV *= 0.4; if (window.effectManager) window.effectManager.createDust(d.x, d.y, 4, 20); }
-            else { d.landed = true; d.vz = 0; d.vx = 0; d.rotV = 0; d.rot = Math.round(d.rot / Math.PI) * Math.PI + 0.12; }
+            if (!d.bounced) {
+              d.bounced = true;
+              d.vz = 120;
+              d.vx *= 0.4;
+              d.rotV *= 0.4;
+              if (window.effectManager && typeof window.effectManager.createDust === 'function') {
+                window.effectManager.createDust(d.x, d.y, 4, 20);
+              }
+            } else {
+              d.landed = true;
+              d.vz = 0;
+              d.vx = 0;
+              d.rotV = 0;
+              d.rot = Math.round(d.rot / Math.PI) * Math.PI + 0.12;
+            }
           }
         }
         if (d.age > DROP_LIFE || (!d.pickable && d.age > 7)) this.drops.splice(i, 1);
       }
 
+      // 2. Cập nhật các vũ khí phi / ném đang bay tốc độ cao
+      if (this.thrownWeapons && this.thrownWeapons.length > 0) {
+        for (let i = this.thrownWeapons.length - 1; i >= 0; i--) {
+          const tw = this.thrownWeapons[i];
+          tw.age += dt;
+          tw.x += tw.vx * dt;
+          tw.y += tw.vy * dt;
+          tw.z -= tw.vz * dt;
+          tw.vz -= tw.gravity * dt;
+          tw.rot += tw.rotV * dt;
+
+          // Lưu vệt bóng mờ sau lưng (motion trail)
+          tw.trail.push({ x: tw.x, y: tw.y, z: tw.z, rot: tw.rot, alpha: 0.72 });
+          if (tw.trail.length > 8) tw.trail.shift();
+          for (const tr of tw.trail) {
+            tr.alpha -= dt * 2.5;
+          }
+
+          // Kiểm tra va chạm với đối thủ
+          let removed = false;
+          if (tw.active && enemies && enemies.length > 0) {
+            for (const enemy of enemies) {
+              if (!enemy || enemy.isDead || tw.hitEnemies.has(enemy)) continue;
+              const dy = Math.abs(tw.y - enemy.y);
+              const dx = Math.abs(tw.x - enemy.x);
+              if (dy <= 38 && dx <= 44) {
+                tw.hitEnemies.add(enemy);
+                const def = WEAPON_DEFS[tw.type];
+                const isBlade = tw.type === 'blade';
+                const isShield = tw.type === 'shield';
+                const baseDmg = isBlade ? 112 : (isShield ? 96 : 90);
+                const dmg = Math.round(baseDmg * (0.95 + Math.random() * 0.12));
+                const throwDir = tw.facing || 1;
+                const kbX = throwDir * (enemy.isBoss ? (isShield ? 260 : 220) : (isShield ? 410 : 340));
+                const shouldKnockdown = !enemy.isBoss;
+
+                enemy.pendingHit = {
+                  weight: 'heavy',
+                  isCrit: true,
+                  knockdown: shouldKnockdown,
+                  fromX: tw.x - throwDir * 24,
+                  unblockable: false,
+                  attackerState: 'weapon_throw'
+                };
+
+                if (typeof enemy.takeDamage === 'function') {
+                  const isRealEntity = (typeof window.BaseEnemy === 'function' && enemy instanceof window.BaseEnemy) || typeof enemy.setState === 'function';
+                  if (isRealEntity) {
+                    enemy.takeDamage(dmg, kbX, shouldKnockdown);
+                  } else {
+                    enemy.takeDamage(dmg, {
+                      knockback: true,
+                      force: kbX,
+                      hitStun: 0.55,
+                      type: isBlade ? 'slash' : 'blunt',
+                      critical: true
+                    }, shouldKnockdown);
+                  }
+                } else if (typeof enemy.hp === 'number') {
+                  enemy.hp = Math.max(0, enemy.hp - dmg);
+                }
+
+                if (enemy.isBoss && window.uiManager) {
+                  if (typeof window.uiManager.updateBossHp === 'function') {
+                    window.uiManager.updateBossHp(enemy.hp, enemy.maxHp);
+                  }
+                  if (typeof window.uiManager.updateBossPoise === 'function') {
+                    window.uiManager.updateBossPoise(enemy.poise ?? 100, enemy.maxPoise ?? 100, enemy.weakWindow || 0);
+                  }
+                }
+
+                if (window.combatSystem && typeof window.combatSystem.registerHit === 'function') {
+                  window.combatSystem.registerHit(true, enemy, dmg, true);
+                }
+
+                if (isBlade && !enemy.isDead) {
+                  if (window.combatSystem && typeof window.combatSystem.applyBleed === 'function') {
+                    window.combatSystem.applyBleed(enemy, true, 6);
+                  } else if (typeof enemy.applyBleed === 'function') {
+                    enemy.applyBleed(5, 4);
+                  }
+                }
+
+                if (window.audioManager) {
+                  if (isBlade && typeof window.audioManager.playSlash === 'function') {
+                    window.audioManager.playSlash();
+                  } else if (typeof window.audioManager.playHeavyHit === 'function') {
+                    window.audioManager.playHeavyHit();
+                  }
+                }
+                if (window.effectManager) {
+                  if (typeof window.effectManager.createHitSparks === 'function') {
+                    window.effectManager.createHitSparks(tw.x, tw.y + tw.z, 16, true);
+                  }
+                  if (typeof window.effectManager.triggerScreenShake === 'function') {
+                    window.effectManager.triggerScreenShake(7, 0.22);
+                  } else if (typeof window.effectManager.screenShake === 'function') {
+                    window.effectManager.screenShake(7, 0.22);
+                  }
+                  if (typeof window.effectManager.addFloatingText === 'function') {
+                    window.effectManager.addFloatingText(`-${dmg} BẠO KÍCH!`, tw.x, tw.y + tw.z - 30, 'crit');
+                  }
+                }
+
+                // Giảm 2 độ bền khi ném trúng mục tiêu
+                tw.dur = Math.max(0, tw.dur - 2);
+
+                if (tw.dur <= 0) {
+                  if (window.effectManager) {
+                    if (typeof window.effectManager.addFloatingText === 'function') {
+                      window.effectManager.addFloatingText((def ? def.name : 'VŨ KHÍ') + ' VỠ NÁT!', tw.x, tw.y + tw.z - 50, 'warn');
+                    }
+                    if (typeof window.effectManager.createHitSparks === 'function') {
+                      window.effectManager.createHitSparks(tw.x, tw.y + tw.z, 22, false);
+                    }
+                  }
+                  this.thrownWeapons.splice(i, 1);
+                  removed = true;
+                } else {
+                  tw.active = false;
+                  this.spawnDrop(tw.type, tw.x, tw.y, -throwDir * 0.7, tw.dur);
+                  this.thrownWeapons.splice(i, 1);
+                  removed = true;
+                }
+                break;
+              }
+            }
+          }
+          if (removed) continue;
+
+          // Kiểm tra tiếp đất (z >= 0)
+          if (tw.z >= 0) {
+            tw.z = 0;
+            this.spawnDrop(tw.type, tw.x, tw.y, tw.facing * 0.4, tw.dur);
+            if (window.effectManager && typeof window.effectManager.createDust === 'function') {
+              window.effectManager.createDust(tw.x, tw.y, 4, 18);
+            }
+            this.thrownWeapons.splice(i, 1);
+            continue;
+          }
+
+          if (tw.age > 4.5 || tw.x < -300 || tw.x > 6000) {
+            this.thrownWeapons.splice(i, 1);
+          }
+        }
+      }
+
+      // 3. Xử lý tương tác phím [E] cho người chơi (Nhặt vũ khí HOẶC Ném vũ khí)
       const free = player && ['idle', 'walk', 'run', 'guard'].includes(player.state) && !player.isDead;
       if (free) {
         let best = null, bd = 85;
@@ -1066,31 +1542,51 @@
           (typeof inp.isJustPressed === 'function' && inp.isJustPressed('KeyE')) ||
           (typeof inp.isActionJustPressed === 'function' && inp.isActionJustPressed('interact'))
         );
-        if (best && ePressed) {
-          // Kiểm tra hợp lệ phía xử lý gameplay: khoảng cách và trạng thái
-          const realDist = Math.hypot(best.x - player.x, (best.y - player.y) * 1.6);
-          if (realDist <= 85 && best.pickable && best.landed) {
-            // Nếu người chơi đang cầm vũ khí cũ thì rơi vũ khí cũ ra thế giới, giữ nguyên độ bền còn lại
-            if (player.weapon) {
-              this.spawnDrop(player.weapon.type, player.x - player.facing * 28, player.y, -player.facing, player.weapon.dur);
+        if (ePressed) {
+          if (best) {
+            // Khi có vũ khí dưới đất: [E] là NHẶT VŨ KHÍ (hoặc đổi vũ khí)
+            const realDist = Math.hypot(best.x - player.x, (best.y - player.y) * 1.6);
+            if (realDist <= 85 && best.pickable && best.landed) {
+              if (player.weapon && player.weapon.dur > 0) {
+                this.spawnDrop(player.weapon.type, player.x - player.facing * 28, player.y, -player.facing, player.weapon.dur);
+              }
+              this.setPlayerWeapon(player, best.type, best.dur);
+              const idx = this.drops.indexOf(best);
+              if (idx !== -1) this.drops.splice(idx, 1);
+              this._nearest = null;
+              const def = WEAPON_DEFS[best.type];
+              const effTxt = def && def.effectName ? ` — ${def.effectName} ${def.effectIcon || ''}` : '';
+              if (window.audioManager && typeof window.audioManager.playClick === 'function') {
+                window.audioManager.playClick();
+              }
+              if (window.effectManager && typeof window.effectManager.addFloatingText === 'function') {
+                window.effectManager.addFloatingText('NHẶT ' + (def ? def.name : 'VŨ KHÍ') + ` (${player.weapon.dur}/${player.weapon.max})${effTxt}!`, player.x, player.y - 170, 'heal');
+              }
             }
-            this.setPlayerWeapon(player, best.type, best.dur);
-            const idx = this.drops.indexOf(best);
-            if (idx !== -1) this.drops.splice(idx, 1);
-            this._nearest = null;
-            const def = WEAPON_DEFS[best.type];
-            const effTxt = def && def.effectName ? ` — ${def.effectName} ${def.effectIcon || ''}` : '';
-            if (window.audioManager) window.audioManager.playClick();
-            if (window.effectManager) window.effectManager.addFloatingText('NHẶT ' + (def ? def.name : 'VŨ KHÍ') + ` (${player.weapon.dur}/${player.weapon.max})${effTxt}!`, player.x, player.y - 170, 'heal');
+          } else if (player.weapon && player.weapon.dur > 0) {
+            // Khi KHÔNG có vũ khí dưới đất để nhặt: [E] là NÉM VŨ KHÍ!
+            const stageEv = window.game && window.game.stageEvidence;
+            const nearEvidence = stageEv && !stageEv.collected && Math.abs(player.x - stageEv.x) < 85;
+            if (!nearEvidence) {
+              this.throwWeapon(player, enemies);
+            }
           }
         }
+      }
+
+      // Đồng bộ HUD hiển thị vũ khí liên tục
+      if (window.uiManager && typeof window.uiManager.updateWeaponHUD === 'function') {
+        window.uiManager.updateWeaponHUD(player);
       }
     },
 
     // ----- Người chơi tấn công bằng vũ khí -----
     startPlayerAttack(player, kind) {
       const w = player.weapon;
-      if (!w) return false;
+      if (!w || w.dur <= 0) {
+        if (w && w.dur <= 0) this.breakWeapon(player, w);
+        return false;
+      }
       const def = WEAPON_DEFS[w.type];
       let key;
       if (kind === 'heavy') key = def.heavy[0];
@@ -1113,8 +1609,25 @@
 
     updatePlayerAttack(player, dt, enemies) {
       const a = player.atk;
+      if (player.state === 'wp_throw' && a && a.state === 'wp_throw') {
+        if (player._pendingThrow) {
+          this._tickPendingThrow(player, dt, true);
+        }
+        if (player.stateTimer >= a.startup + a.active + a.recovery) {
+          player.atk = null;
+          player._wpActive = false;
+          player._pendingThrow = null;
+          player.setState('idle');
+        }
+        return;
+      }
       const w = player.weapon;
-      if (!a || !w) { player._wpActive = false; player.setState('idle'); return; }
+      if (!a || !w || w.dur <= 0) {
+        if (w && w.dur <= 0) this.breakWeapon(player, w);
+        player._wpActive = false;
+        player.setState('idle');
+        return;
+      }
       const t = player.stateTimer;
       const su = a.startup, ac = a.active;
       player._wpActive = (t >= su && t < su + ac + 0.08);
@@ -1143,7 +1656,12 @@
         }
         if (connected && !a.counted) {
           a.counted = true;
-          w.dur--;
+          w.dur = Math.max(0, (w.dur || 0) - 1);
+          if (w.dur <= 0) {
+            w.dur = 0;
+            this.breakWeapon(player, w);
+            return;
+          }
         }
       }
       if (t >= su + ac + a.recovery) {
@@ -1151,14 +1669,10 @@
         player._wpActive = false;
         player.comboWindowTimer = 0;
         if (w.dur <= 0) {
-          if (window.effectManager) {
-            window.effectManager.addFloatingText(WEAPON_DEFS[w.type].name + ' GÃY!', player.x, player.y - 170, 'warn');
-            window.effectManager.createHitSparks(player.x + player.facing * 40, player.y - 80, 10, false);
-          }
-          if (window.audioManager) window.audioManager.playHeavyHit();
-          this.clearPlayerWeapon(player);
+          this.breakWeapon(player, w);
+        } else {
+          player.setState('idle');
         }
-        player.setState('idle');
       }
     },
 
@@ -1184,80 +1698,488 @@
       return false;
     },
 
-    // ----- Vẽ -----
+    // ----- Vẽ hình dáng vũ khí dùng chung (rơi & đang bay) -----
+    renderWeaponShape(ctx, type, isGhost = false) {
+      if (type === 'baton') {
+        // Côn tác chiến hợp kim: thân vát cạnh kim loại, đai khóa đỏ, đầu tungsten phát sáng, cán nhám & tua đỏ
+        ctx.fillStyle = isGhost ? 'rgba(56, 189, 248, 0.55)' : '#090d16';
+        ctx.beginPath();
+        ctx.moveTo(-28, -3.8); ctx.lineTo(10, -4.4); ctx.lineTo(28, -5.2); ctx.lineTo(30, 0);
+        ctx.lineTo(28, 5.2); ctx.lineTo(10, 4.4); ctx.lineTo(-28, 3.8);
+        ctx.closePath(); ctx.fill();
+
+        const bg = ctx.createLinearGradient(0, -4.2, 0, 4.2);
+        bg.addColorStop(0, isGhost ? 'rgba(125,211,252,0.75)' : '#64748b');
+        bg.addColorStop(0.45, isGhost ? 'rgba(56,189,248,0.6)' : '#1e293b');
+        bg.addColorStop(1, isGhost ? 'rgba(14,116,144,0.6)' : '#0f172a');
+        ctx.fillStyle = bg;
+        ctx.fillRect(-26.5, -3.4, 38, 6.8);
+
+        // Đầu thép tungsten vát cạnh + rãnh phát quang cyan
+        const hg = ctx.createLinearGradient(0, -5, 0, 5);
+        hg.addColorStop(0, isGhost ? 'rgba(255,255,255,0.85)' : '#f8fafc');
+        hg.addColorStop(0.5, isGhost ? 'rgba(186,230,253,0.7)' : '#94a3b8');
+        hg.addColorStop(1, isGhost ? 'rgba(56,189,248,0.65)' : '#475569');
+        ctx.fillStyle = hg;
+        ctx.beginPath();
+        ctx.moveTo(11, -4.4); ctx.lineTo(27.2, -4.8); ctx.lineTo(29.2, 0); ctx.lineTo(27.2, 4.8); ctx.lineTo(11, 4.4);
+        ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = isGhost ? 'rgba(125,211,252,0.85)' : '#38bdf8';
+        ctx.fillRect(14, -1.3, 12, 2.6);
+        ctx.fillStyle = isGhost ? 'rgba(255,255,255,0.7)' : '#ef4444';
+        ctx.fillRect(9.2, -4.6, 2.4, 9.2);
+
+        // Cán nhám + vòng chốt bên + tua dây đỏ
+        ctx.strokeStyle = isGhost ? 'rgba(255,255,255,0.5)' : '#94a3b8'; ctx.lineWidth = 1.1;
+        for (let x = -24; x < -2; x += 3.2) {
+          ctx.beginPath(); ctx.moveTo(x, -3); ctx.lineTo(x + 1.8, 3); ctx.stroke();
+        }
+        ctx.fillStyle = isGhost ? 'rgba(255,255,255,0.6)' : '#cbd5e1';
+        ctx.fillRect(-4, -6.2, 3, 12.4);
+        ctx.fillStyle = isGhost ? 'rgba(250,204,21,0.7)' : '#eab308';
+        ctx.beginPath(); ctx.arc(-28, 0, 3.2, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = isGhost ? 'rgba(255,255,255,0.5)' : '#dc2626'; ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.moveTo(-29, 0); ctx.quadraticCurveTo(-36, 6, -32, 12); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.52)';
+        ctx.fillRect(-24, -2.6, 50, 1.1);
+      } else if (type === 'blade') {
+        // Mã tấu rèn chiến trận: sống dày có răng cưa, rãnh máu sâu, chắn tay chữ S đồng vàng, chuôi quấn đỏ
+        const bladeG = ctx.createLinearGradient(0, -7, 0, 7);
+        bladeG.addColorStop(0, isGhost ? 'rgba(254,205,211,0.9)' : '#f8fafc');
+        bladeG.addColorStop(0.45, isGhost ? 'rgba(244,63,94,0.8)' : '#cbd5e1');
+        bladeG.addColorStop(1, isGhost ? 'rgba(159,18,57,0.75)' : '#475569');
+
+        ctx.fillStyle = isGhost ? 'rgba(0,0,0,0.3)' : '#090d16';
+        ctx.beginPath();
+        ctx.moveTo(-5, -5.8); ctx.lineTo(13, -5.4); ctx.lineTo(15, -7.2); ctx.lineTo(18.5, -5.4);
+        ctx.lineTo(20.5, -7.4); ctx.lineTo(24.5, -5.6); ctx.lineTo(35, -3.5);
+        ctx.lineTo(40, 2.2); ctx.quadraticCurveTo(28, 7.2, -5, 5.4);
+        ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = bladeG;
+        ctx.beginPath();
+        ctx.moveTo(-5, -4.7); ctx.lineTo(13, -4.4); ctx.lineTo(15, -6.1); ctx.lineTo(18.2, -4.4);
+        ctx.lineTo(20.2, -6.2); ctx.lineTo(24.2, -4.5); ctx.lineTo(34, -2.7);
+        ctx.lineTo(38.5, 1.8); ctx.quadraticCurveTo(27, 6.1, -5, 4.4);
+        ctx.closePath(); ctx.fill();
+
+        // Sống đao thép sẫm + rãnh máu
+        ctx.fillStyle = isGhost ? 'rgba(255,255,255,0.65)' : '#334155';
+        ctx.fillRect(-5, -4.7, 30, 1.9);
+        ctx.strokeStyle = isGhost ? 'rgba(255,255,255,0.6)' : 'rgba(15,23,42,0.65)'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(-2, -0.4); ctx.quadraticCurveTo(16, -0.2, 31, 0.5); ctx.stroke();
+
+        // Mép lưỡi chém sáng sắc
+        ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.lineWidth = 1.15;
+        ctx.beginPath(); ctx.moveTo(-4, 4.3); ctx.quadraticCurveTo(27, 6.0, 38.5, 1.8); ctx.stroke();
+
+        // Chắn tay chữ S đồng vàng + tán tâm
+        ctx.fillStyle = isGhost ? 'rgba(253,224,71,0.75)' : '#92400e';
+        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-9.5, -8.5, 5.2, 17, 2) : ctx.rect(-9.5, -8.5, 5.2, 17); ctx.fill();
+        ctx.fillStyle = isGhost ? 'rgba(254,240,138,0.85)' : '#fbbf24';
+        ctx.fillRect(-8.4, -7.4, 2.8, 14.8);
+        ctx.fillStyle = '#fef3c7';
+        ctx.beginPath(); ctx.arc(-7, 0, 1.5, 0, Math.PI * 2); ctx.fill();
+
+        // Chuôi quấn dây đỏ & khuyên đồng cuối cán
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(-25.5, -3.5, 16.5, 7);
+        ctx.strokeStyle = isGhost ? 'rgba(244,63,94,0.8)' : '#dc2626'; ctx.lineWidth = 2;
+        for (let x = -23.5; x < -10.5; x += 3.5) {
+          ctx.beginPath(); ctx.moveTo(x, -3.5); ctx.lineTo(x + 2, 3.5); ctx.stroke();
+        }
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath(); ctx.arc(-27, 0, 3.4, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = isGhost ? 'rgba(251,113,133,0.7)' : '#dc2626'; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(-29, 1); ctx.quadraticCurveTo(-36, 7, -33, 13); ctx.stroke();
+      } else {
+        // Khiên chiến thuật vát góc 2.5D: tấm giáp titan nhiều tầng, kính cường lực polycarbonate, đinh tán lục giác & vạch cảnh giới
+        ctx.fillStyle = isGhost ? 'rgba(56, 189, 248, 0.45)' : '#090d16';
+        ctx.beginPath();
+        ctx.moveTo(-8, -30); ctx.lineTo(8, -30); ctx.lineTo(12, -23);
+        ctx.lineTo(12, 23); ctx.lineTo(8, 30); ctx.lineTo(-8, 30);
+        ctx.lineTo(-12, 23); ctx.lineTo(-12, -23);
+        ctx.closePath(); ctx.fill();
+
+        const sg = ctx.createLinearGradient(-10, -28, 10, 28);
+        sg.addColorStop(0, isGhost ? 'rgba(186,230,253,0.85)' : '#94a3b8');
+        sg.addColorStop(0.45, isGhost ? 'rgba(56,189,248,0.72)' : '#334155');
+        sg.addColorStop(1, isGhost ? 'rgba(14,116,144,0.75)' : '#0f172a');
+        ctx.fillStyle = sg;
+        ctx.beginPath();
+        ctx.moveTo(-6.8, -28); ctx.lineTo(6.8, -28); ctx.lineTo(10.2, -21.8);
+        ctx.lineTo(10.2, 21.8); ctx.lineTo(6.8, 28); ctx.lineTo(-6.8, 28);
+        ctx.lineTo(-10.2, 21.8); ctx.lineTo(-10.2, -21.8);
+        ctx.closePath(); ctx.fill();
+
+        // Kính quan sát bọc khung thép & ánh chói chéo
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-7, -23, 14, 17);
+        const vg = ctx.createLinearGradient(-6, -22, 6, -7);
+        vg.addColorStop(0, 'rgba(186,230,253,0.92)');
+        vg.addColorStop(1, 'rgba(14,165,233,0.72)');
+        ctx.fillStyle = vg;
+        ctx.fillRect(-5.8, -21.8, 11.6, 14.6);
+        ctx.fillStyle = 'rgba(255,255,255,0.52)';
+        ctx.beginPath(); ctx.moveTo(-5.8, -21.8); ctx.lineTo(1, -21.8); ctx.lineTo(-5.8, -11); ctx.closePath(); ctx.fill();
+
+        // Đường rãnh giáp & 3 vạch cảnh giới vàng/cyan
+        ctx.strokeStyle = 'rgba(15,23,42,0.75)'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(-9.5, -2); ctx.lineTo(9.5, -2); ctx.stroke();
+        ctx.fillStyle = isGhost ? '#7dd3fc' : '#eab308';
+        for (let i = 0; i < 3; i++) ctx.fillRect(-7.5, 4 + i * 6, 15, 2.8);
+
+        // Viền thép sáng + đinh tán 4 góc
+        ctx.strokeStyle = isGhost ? '#7dd3fc' : '#cbd5e1'; ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(-6.8, -28); ctx.lineTo(6.8, -28); ctx.lineTo(10.2, -21.8);
+        ctx.lineTo(10.2, 21.8); ctx.lineTo(6.8, 28); ctx.lineTo(-6.8, 28);
+        ctx.lineTo(-10.2, 21.8); ctx.lineTo(-10.2, -21.8);
+        ctx.closePath(); ctx.stroke();
+        ctx.fillStyle = '#f8fafc';
+        for (const [rx, ry] of [[-7, -24.5], [7, -24.5], [-7, 24.5], [7, 24.5]]) {
+          ctx.beginPath(); ctx.arc(rx, ry, 1.15, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    },
+
+    // ----- Vẽ các thực thể vũ khí trong thế giới -----
     render(ctx, camera) {
+      const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+
+      // 1. Vẽ các vũ khí rơi trên sàn
       for (const d of this.drops) {
         const sx = d.x - camera.x, sy = d.y - camera.y;
         if (sx < -80 || sx > 1700) continue;
         const blink = d.age > DROP_LIFE - 4 && Math.floor(d.age * 6) % 2 === 0;
         if (blink) continue;
         ctx.save();
-        // bóng
+        // Bóng dưới nền đất
         ctx.fillStyle = 'rgba(0,0,0,0.38)';
-        ctx.beginPath(); ctx.ellipse(sx, sy + 2, 22, 6, 0, 0, Math.PI * 2); ctx.fill();
-        // vòng sáng nhận biết vật nhặt được
+        ctx.beginPath();
+        ctx.ellipse(sx, sy + 2, 22, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Vòng sáng nhận biết vật có thể nhặt
         if (d.pickable && d.landed) {
-          const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.006);
+          const pulse = 0.5 + 0.5 * Math.sin(now * 0.006);
           ctx.fillStyle = `rgba(250, 204, 21, ${0.10 + 0.10 * pulse})`;
-          ctx.beginPath(); ctx.ellipse(sx, sy, 30 + 4 * pulse, 9 + pulse, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(sx, sy, 30 + 4 * pulse, 9 + pulse, 0, 0, Math.PI * 2);
+          ctx.fill();
         }
+
         ctx.translate(sx, sy + d.z - 6);
         ctx.rotate(d.rot);
-        if (d.type === 'baton') {
-          ctx.fillStyle = '#1f2330'; ctx.fillRect(-26, -3, 52, 6);
-          ctx.fillStyle = '#9aa5b1'; ctx.fillRect(14, -3.6, 12, 7.2);
-          ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(-24, -2.4, 40, 1.4);
-        } else if (d.type === 'blade') {
-          ctx.fillStyle = '#dbe4ee';
-          ctx.beginPath(); ctx.moveTo(-6, -4); ctx.lineTo(30, -3); ctx.lineTo(34, 0); ctx.lineTo(-6, 4); ctx.closePath(); ctx.fill();
-          ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(-4, -2.6, 32, 1.4);
-          ctx.fillStyle = '#3b2a1a'; ctx.fillRect(-22, -3, 16, 6);
-          ctx.fillStyle = '#c1121f'; ctx.fillRect(-14, -3.4, 3, 6.8);
-        } else {
-          ctx.fillStyle = '#4b5d73'; ctx.fillRect(-9, -26, 18, 52);
-          ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2; ctx.strokeRect(-9, -26, 18, 52);
-          ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(-5, -20, 4, 18);
-        }
+        this.renderWeaponShape(ctx, d.type, false);
         ctx.restore();
+      }
+
+      // 2. Vẽ hiệu ứng tụ lực & quất khí động học khi phóng vũ khí (throwArcs)
+      if (this.throwArcs && this.throwArcs.length > 0) {
+        for (const arc of this.throwArcs) {
+          const p = clamp(arc.age / Math.max(0.01, arc.life));
+          const sx = arc.x - camera.x;
+          const sy = arc.y - camera.y + (arc.z || 0);
+          ctx.save();
+          ctx.translate(sx, sy);
+          ctx.scale(arc.facing || 1, 1);
+          if (arc.kind === 'charge') {
+            const rad = 28 * (1 - p * 0.45);
+            ctx.globalAlpha = 0.72 * (1 - p * 0.5);
+            ctx.strokeStyle = arc.color || '#38bdf8';
+            ctx.lineWidth = 3.2 * (1 - p * 0.4);
+            ctx.beginPath();
+            ctx.arc(-6, -4, rad, Math.PI * 0.75, Math.PI * 1.65);
+            ctx.stroke();
+          } else {
+            const rad = 34 + 34 * p;
+            ctx.globalAlpha = Math.max(0, 0.85 * (1 - p));
+            ctx.strokeStyle = arc.color || '#38bdf8';
+            ctx.lineWidth = 5.5 * (1 - p);
+            ctx.beginPath();
+            ctx.arc(8, 0, rad, -Math.PI * 0.42, Math.PI * 0.36);
+            ctx.stroke();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.2 * (1 - p);
+            ctx.beginPath();
+            ctx.arc(12, 0, rad * 0.82, -Math.PI * 0.32, Math.PI * 0.28);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+      }
+
+      // 3. Vẽ các vũ khí phi / ném đang bay tốc độ cao
+      if (this.thrownWeapons && this.thrownWeapons.length > 0) {
+        for (const tw of this.thrownWeapons) {
+          const sx = tw.x - camera.x;
+          const sy = tw.y - camera.y + tw.z;
+          const isBlade = tw.type === 'blade';
+          const trailCol = isBlade ? '#fb7185' : '#38bdf8';
+
+          // Dải vệt gió liên tục theo quỹ đạo bay
+          if (tw.trail && tw.trail.length > 1) {
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            for (let tIdx = 1; tIdx < tw.trail.length; tIdx++) {
+              const p0 = tw.trail[tIdx - 1];
+              const p1 = tw.trail[tIdx];
+              const ratio = tIdx / tw.trail.length;
+              ctx.globalAlpha = Math.max(0, Math.min(0.65, (p1.alpha || 0.4) * ratio));
+              ctx.strokeStyle = trailCol;
+              ctx.lineWidth = (isBlade ? 8 : 10) * ratio;
+              ctx.beginPath();
+              ctx.moveTo(p0.x - camera.x, p0.y - camera.y + p0.z);
+              ctx.lineTo(p1.x - camera.x, p1.y - camera.y + p1.z);
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
+
+          // Vệt bóng mờ sau lưng (motion trail)
+          if (tw.trail && tw.trail.length > 0) {
+            for (const tr of tw.trail) {
+              if (tr.alpha <= 0.05) continue;
+              ctx.save();
+              ctx.translate(tr.x - camera.x, tr.y - camera.y + tr.z);
+              ctx.rotate(tr.rot);
+              ctx.globalAlpha = Math.max(0, Math.min(1, tr.alpha * 0.38));
+              this.renderWeaponShape(ctx, tw.type, true);
+              ctx.restore();
+            }
+          }
+
+          // Bóng trên mặt đất
+          const floorSy = tw.y - camera.y;
+          ctx.save();
+          ctx.fillStyle = 'rgba(0,0,0,0.28)';
+          ctx.beginPath();
+          ctx.ellipse(sx, floorSy, 20, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // Thân vũ khí đang bay xoay tròn kèm vòng gió xoay
+          ctx.save();
+          ctx.translate(sx, sy);
+          ctx.rotate(tw.rot);
+          ctx.strokeStyle = isBlade ? 'rgba(251,113,133,0.6)' : 'rgba(56,189,248,0.6)';
+          ctx.lineWidth = 2.4;
+          const spinR = tw.type === 'shield' ? 32 : 34;
+          ctx.beginPath(); ctx.arc(0, 0, spinR, 0.2, Math.PI * 0.95); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, spinR, Math.PI + 0.2, Math.PI * 1.95); ctx.stroke();
+          ctx.shadowColor = isBlade ? '#f43f5e' : '#38bdf8';
+          ctx.shadowBlur = 14;
+          this.renderWeaponShape(ctx, tw.type, false);
+          ctx.restore();
+        }
       }
     },
 
-    // Chữ gợi ý nhặt + độ bền vũ khí đang cầm (vẽ sau thực thể để không bị che)
+    // Bảng gợi ý nhặt + bảng chỉ số vũ khí nổi trên đầu người chơi
     renderHud(ctx, camera, player) {
+      const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+
+      // 1. BẢNG GỢI Ý NHẶT VŨ KHÍ DƯỚI ĐẤT (FLOATING PICKUP BADGE)
       if (this._nearest) {
         const d = this._nearest;
-        const sx = d.x - camera.x, sy = d.y - camera.y - 44;
-        ctx.save();
-        ctx.font = '800 13px "Montserrat", sans-serif';
-        ctx.textAlign = 'center';
+        const hoverOffset = Math.sin(now * 0.006) * 3;
+        const sx = d.x - camera.x;
+        const sy = d.y - camera.y - 48 + hoverOffset;
         const def = WEAPON_DEFS[d.type];
         const wName = (def && def.name) ? def.name : 'VŨ KHÍ';
         const durText = (d.dur !== undefined && d.maxDur) ? ` (${d.dur}/${d.maxDur})` : '';
         const effIcon = (def && def.effectIcon) ? ` ${def.effectIcon}` : '';
-        const txt = 'E — NHẶT ' + wName + durText + effIcon;
-        const w = ctx.measureText(txt).width + 18;
-        ctx.fillStyle = 'rgba(8,10,18,0.85)'; ctx.fillRect(sx - w / 2, sy - 14, w, 24);
-        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.5; ctx.strokeRect(sx - w / 2 + 0.5, sy - 13.5, w - 1, 23);
-        ctx.fillStyle = '#fde68a'; ctx.fillText(txt, sx, sy + 3);
+        const actionText = `NHẶT ${wName}${durText}${effIcon}`;
+
+        ctx.save();
+        ctx.font = '800 12px "Montserrat", sans-serif';
+        const textW = (ctx.measureText && ctx.measureText(actionText).width) || 120;
+        const badgeW = Math.max(130, textW + 46);
+        const badgeH = 26;
+        const badgeX = sx - badgeW / 2;
+        const badgeY = sy - badgeH / 2;
+
+        // Shadow & Glow
+        ctx.shadowColor = 'rgba(250, 204, 21, 0.45)';
+        ctx.shadowBlur = 10;
+
+        // Background Glass
+        drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 6);
+        ctx.fillStyle = 'rgba(10, 15, 28, 0.92)';
+        if (typeof ctx.fill === 'function') ctx.fill();
+
+        // Border
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 1.5;
+        if (typeof ctx.stroke === 'function') ctx.stroke();
+
+        ctx.shadowBlur = 0;
+
+        // Keycap [ E ] Badge on left
+        const keyW = 20, keyH = 18;
+        const keyX = badgeX + 5, keyY = badgeY + 4;
+        drawRoundedRect(ctx, keyX, keyY, keyW, keyH, 4);
+        ctx.fillStyle = 'rgba(234, 179, 8, 0.28)';
+        if (typeof ctx.fill === 'function') ctx.fill();
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 1.2;
+        if (typeof ctx.stroke === 'function') ctx.stroke();
+
+        ctx.font = '900 11px "Montserrat", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        if (typeof ctx.fillText === 'function') ctx.fillText('E', keyX + keyW / 2, keyY + keyH / 2 + 0.5);
+
+        // Text label
+        ctx.font = '800 11.5px "Montserrat", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#fef08a';
+        if (typeof ctx.fillText === 'function') ctx.fillText(actionText, keyX + keyW + 7, badgeY + badgeH / 2 + 0.5);
+
         ctx.restore();
       }
+
+      // 2. THANH TRẠNG THÁI VŨ KHÍ NỔI TRÊN ĐẦU NGƯỜI CHƠI (OVERHEAD WEAPON HUD)
       if (player && player.weapon && !player.isDead) {
         const w = player.weapon;
+        if (!w || w.dur <= 0) return;
+        const displayDur = Math.max(0, Math.floor(w.dur));
+        if (displayDur <= 0) return;
+
         const def = WEAPON_DEFS[w.type];
-        const sx = player.x - camera.x, sy = player.y + (player.z || 0) - camera.y - 128 * 1.3 / 1.3 - 36;
+        const isBlade = w.type === 'blade';
+        const isShield = w.type === 'shield';
+        const maxDur = Math.max(1, w.max || (def ? def.durability : 8));
+        const sx = player.x - camera.x;
+        const sy = player.y + (player.z || 0) - camera.y - 128 * 1.3 / 1.3 - 44;
+
         ctx.save();
-        ctx.translate(Math.round(sx - 28), Math.round(sy));
-        ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(-2, -2, 60, 9);
-        ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(0, 0, 56, 5);
-        ctx.fillStyle = w.dur <= 2 ? '#ef4444' : '#facc15';
-        ctx.fillRect(0, 0, 56 * clamp(w.dur / w.max), 5);
-        ctx.font = '800 9px "Montserrat", sans-serif';
+        const cardW = 104;
+        const cardH = 35;
+        const cardX = Math.round(sx - cardW / 2);
+        const cardY = Math.round(sy - cardH / 2);
+
+        // Theme colors & Low alert pulse
+        const isLow = displayDur <= 2;
+        const pulse = isLow ? (0.6 + 0.4 * Math.sin(now * 0.012)) : 0.8;
+
+        // Outer Glow
+        ctx.shadowColor = isLow ? `rgba(239, 68, 68, ${pulse})` : (isBlade ? 'rgba(244, 63, 94, 0.45)' : (isShield ? 'rgba(56, 189, 248, 0.5)' : 'rgba(0, 210, 255, 0.45)'));
+        ctx.shadowBlur = isLow ? 10 : 7;
+
+        // Card Background Glass
+        drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 6);
+        ctx.fillStyle = 'rgba(11, 19, 36, 0.94)';
+        if (typeof ctx.fill === 'function') ctx.fill();
+
+        // Card Border
+        ctx.strokeStyle = isLow ? `rgba(239, 68, 68, ${pulse})` : (isBlade ? 'rgba(244, 63, 94, 0.78)' : (isShield ? 'rgba(250, 204, 21, 0.72)' : 'rgba(0, 210, 255, 0.78)'));
+        ctx.lineWidth = 1.4;
+        if (typeof ctx.stroke === 'function') ctx.stroke();
+
+        ctx.shadowBlur = 0;
+
+        // Row 1: Icon + Name & Durability Number
+        const icon = isBlade ? '⚔️' : (isShield ? '🛡️' : '🦯');
+        const name = (def && def.name) ? def.name : (isBlade ? 'MÃ TẤU' : (isShield ? 'KHIÊN' : 'CÔN'));
+
+        ctx.font = '800 9.5px "Montserrat", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#ffffff';
+        if (typeof ctx.fillText === 'function') ctx.fillText(`${icon} ${name}`, cardX + 7, cardY + 5);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = isLow ? '#f87171' : (displayDur <= maxDur * 0.5 ? '#facc15' : '#38bdf8');
+        if (typeof ctx.fillText === 'function') ctx.fillText(`${displayDur}/${maxDur}`, cardX + cardW - 7, cardY + 5);
+
+        // Row 2: Segmented Energy Pips
+        const pipAreaX = cardX + 7;
+        const pipAreaY = cardY + 18.5;
+        const pipAreaW = cardW - 14;
+        const pipGap = 2;
+        const pipW = Math.max(3, (pipAreaW - (maxDur - 1) * pipGap) / maxDur);
+        const pipH = 4.5;
+
+        for (let i = 0; i < maxDur; i++) {
+          const px = pipAreaX + i * (pipW + pipGap);
+          drawRoundedRect(ctx, px, pipAreaY, pipW, pipH, 1.5);
+          if (i < displayDur) {
+            if (isLow) {
+              ctx.fillStyle = `rgba(239, 68, 68, ${pulse})`;
+            } else if (displayDur <= maxDur * 0.5) {
+              ctx.fillStyle = '#f59e0b';
+            } else if (isBlade) {
+              ctx.fillStyle = '#f43f5e';
+            } else if (isShield) {
+              ctx.fillStyle = '#38bdf8';
+            } else {
+              ctx.fillStyle = '#00d2ff';
+            }
+          } else {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+          }
+          if (typeof ctx.fill === 'function') ctx.fill();
+        }
+
+        // Row 3: Action Cue: [E] PHI / [U] CHẮN
+        const cueLabel = isShield ? '[E] PHI · [U] CHẮN' : '[E] PHI VŨ KHÍ';
+        const cueW = isShield ? 80 : 62, cueH = 11;
+        const cueX = cardX + (cardW - cueW) / 2;
+        const cueY = cardY + cardH - 8.5;
+        drawRoundedRect(ctx, cueX, cueY, cueW, cueH, 3);
+        ctx.fillStyle = isShield ? 'rgba(56, 189, 248, 0.22)' : 'rgba(234, 179, 8, 0.22)';
+        if (typeof ctx.fill === 'function') ctx.fill();
+        ctx.strokeStyle = isShield ? 'rgba(56, 189, 248, 0.72)' : 'rgba(250, 204, 21, 0.72)';
+        ctx.lineWidth = 0.8;
+        if (typeof ctx.stroke === 'function') ctx.stroke();
+
+        ctx.font = '900 7px "Montserrat", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#fde68a';
-        const effIcon = (def && def.effectIcon) ? ` ${def.effectIcon}` : '';
-        ctx.fillText(((def && def.name) ? def.name : 'VŨ KHÍ') + effIcon + ' ' + w.dur + '/' + w.max, 28, -5);
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = isShield ? '#bae6fd' : '#fef08a';
+        if (typeof ctx.fillText === 'function') ctx.fillText(cueLabel, cueX + cueW / 2, cueY + cueH / 2);
+
         ctx.restore();
       }
+    },
+
+    // Biểu tượng SVG vector dùng chung cho HUD cầm tay & Kho Đồ
+    getIconSvg(type) {
+      if (type === 'blade') {
+        return `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M5 24L8.5 27.5L13 23L9.5 19.5L5 24Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1"/>
+          <circle cx="5.2" cy="26.8" r="2" fill="#facc15" stroke="#78350f" stroke-width="0.9"/>
+          <rect x="8.8" y="16.5" width="7.2" height="2.6" rx="1.2" transform="rotate(-45 8.8 16.5)" fill="#fbbf24" stroke="#78350f" stroke-width="0.9"/>
+          <path d="M12.2 19.8L25.8 6.2L27.5 4.2L26.2 9.4L23.5 12.2L24.5 14L20.5 16L21.5 17.6L16.5 22.8C15 24.2 12.8 23.2 12.2 19.8Z" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M13.5 21L26.6 7.8L27.2 4.9L13.5 18.6Z" fill="#f8fafc" opacity="0.88"/>
+          <path d="M15.4 17.5L23.2 9.7" stroke="#334155" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>`;
+      }
+      if (type === 'shield') {
+        return `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M8 5L24 5L26 9V18.5C26 23.4 20.8 27.2 16 29C11.2 27.2 6 23.4 6 18.5V9L8 5Z" fill="#1e293b" stroke="#cbd5e1" stroke-width="1.4" stroke-linejoin="round"/>
+          <path d="M9.5 7H22.5L23.8 10V18.2C23.8 21.8 19.6 24.8 16 26.5C12.4 24.8 8.2 21.8 8.2 18.2V10L9.5 7Z" fill="#334155"/>
+          <rect x="10.2" y="8.8" width="11.6" height="6.2" rx="1.2" fill="#7dd3fc" stroke="#0f172a" stroke-width="1"/>
+          <path d="M10.8 9.2H15.2L11.8 14.5H10.8V9.2Z" fill="#ffffff" opacity="0.65"/>
+          <rect x="9.6" y="17.2" width="12.8" height="2.2" rx="0.8" fill="#eab308"/>
+          <rect x="11" y="21" width="10" height="2" rx="0.8" fill="#eab308"/>
+          <circle cx="9.6" cy="7.6" r="0.9" fill="#f8fafc"/>
+          <circle cx="22.4" cy="7.6" r="0.9" fill="#f8fafc"/>
+        </svg>`;
+      }
+      return `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M4.5 25.5L9.5 20.5" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="5.2" cy="26.2" r="2" fill="#eab308" stroke="#78350f" stroke-width="0.8"/>
+        <path d="M7.5 23L24 6.5L26.8 5.2L25.5 8L9 24.5Z" fill="#1e293b" stroke="#0f172a" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M16.5 14L24.2 6.3L26.5 5.4L25.6 7.7L17.9 15.4Z" fill="#cbd5e1"/>
+        <path d="M18.6 13.8L24.6 7.8" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/>
+        <rect x="14.6" y="13.2" width="2.4" height="4.8" rx="0.8" transform="rotate(-45 14.6 13.2)" fill="#ef4444"/>
+        <rect x="11" y="15.8" width="2" height="5.5" rx="0.8" transform="rotate(-45 11 15.8)" fill="#94a3b8"/>
+      </svg>`;
     }
   };
   window.weaponSystem = weaponSystem;

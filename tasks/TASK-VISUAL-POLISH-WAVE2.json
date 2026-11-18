@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-VISUAL-POLISH-WAVE2",
+  "title": "Costume Silhouette Polish, Unique Elbow Strikes & Elemental Hit-Sparks",
+  "author": "Antigravity Senior Technical Artist",
+  "date": "2026-11-14",
+  "objective": "Refine costume tailoring, Portrait HUD clarity, character-specific elbow_strike poses, asymmetric uppercut balancing, character-signature hit-sparks, and eliminate remaining 404 favicon requests on Canvas preview pages.",
+  "requestedBehavior": "1. Costume & Portrait Polish: widen dinhAn's golden lion pauldrons horizontally while lifting his golden helmet brim slightly off brows for crisp Portrait HUD clarity; break up drapedOvercoat's stiff trapezoidal silhouette with waist taper and a swallow-tail coat vent; refine vanAnh's cigar angle/weight; compact nghi's chest name-tag; sculpt bichLam's sleeveless gi V-taper. 2. Unique elbow_strike & dunghai.uppercut symmetry fix: update fallback elbow_strike to protrude elbow forward with forearm folded down-back safely below chin, add bespoke elbow_strike poses to all 7 remaining heroes (nghi, vananh, tiendang, huavudai, bichlam, dunghai, giangmanh), and counterbalance dunghai.uppercut rear arm asymmetrically. 3. Elemental Hit-Sparks: add optional colorOpts parameter to EffectManager.prototype.createHitSparks and CharacterRegistry.getSparkColors(entity), wiring signature aura sparks in combat.js and preview_skill_showcase.html. 4. Eliminate 404 /favicon.ico request on harness/preview_character_canvas.html.",
+  "allowedFiles": [
+    "js/entities/animation/animationBody.js",
+    "js/entities/animation/animationArchetypes.js",
+    "js/entities/animation/animationPose.js",
+    "js/entities/characters/characterRegistry.js",
+    "js/entities/characters/nghi.js",
+    "js/entities/characters/vananh.js",
+    "js/entities/characters/tiendang.js",
+    "js/entities/characters/huavudai.js",
+    "js/entities/characters/bichlam.js",
+    "js/entities/characters/hoanganh.js",
+    "js/entities/characters/dunghai.js",
+    "js/entities/characters/giangmanh.js",
+    "js/core/effects.js",
+    "js/combat/combat.js",
+    "harness/preview_character_canvas.html",
+    "harness/preview_skill_showcase.html",
+    "tests/test_character_visual_fidelity.js",
+    "tasks/TASK-VISUAL-POLISH-WAVE2.json"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-ANM-001",
+    "FEAT-VFX-001",
+    "FEAT-VSN-001"
+  ],
+  "dependencies": [
+    "CharacterRegistry",
+    "EffectManager",
+    "CombatManager",
+    "SkeletalRendererPose",
+    "SkeletalRendererArchetypes",
+    "SkeletalRendererBody"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 200,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "tests/validate_index_scripts.js",
+    "tests/test_character_visual_fidelity.js",
+    "tests/test_skill_animation_overhaul.js",
+    "tests/test_combat.js"
+  ],
+  "acceptanceCriteria": [
+    "All 9 characters maintain 0 geometric face/eye/nose/mouth/chin overlaps across idle and all combat poses including custom elbow_strike",
+    "Each of the 9 characters defines an individualized elbow_strike pose clearly separated from punch_straight",
+    "dunghai.uppercut renders asymmetrically without V-framing the head",
+    "CharacterRegistry.getSparkColors and EffectManager.createHitSparks produce distinct per-character impact starbursts and shockwaves while keeping default behavior backward-compatible",
+    "Playwright captures across preview pages and index.html pass with 0 console errors and 0 HTTP 404 responses"
+  ]
+}

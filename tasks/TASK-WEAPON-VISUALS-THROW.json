@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-20261115-WEAPON-VISUALS-THROW",
+  "title": "Playable Shield (Khiên), Choreographed Throw [E] Animation & In-Hand/HUD Weapon Visual Overhaul",
+  "author": "Antigravity Senior Combat Animator & Frontend/Canvas Engineer",
+  "date": "2026-11-15",
+  "objective": "1. Cho phép người chơi nhặt và sử dụng Khiên (WEAPON_DEFS.shield) để đánh nhẹ/nặng [J]/[K], tăng cường đỡ đòn [U] và phi khiên [E]. 2. Nâng cấp animation ném vũ khí [E] thành chuỗi động tác wp_throw 3 pha (vặn mình gồng tay giữ vũ khí -> vung tay ném dứt khoát giải phóng vật thể + vòng khí nổ -> theo đà thu thế) thay vì lỗi setState('punch1') không tồn tại khiến vũ khí tự bay ra. 3. Nâng cấp tạo hình chi tiết 2.5D cho Côn, Mã Tấu và Khiên cả trên tay nhân vật lẫn dưới sàn/đang bay, khôi phục #hud-weapon-card trong index.html và đồng bộ biểu tượng SVG sắc nét trên HUD & Kho Đồ.",
+  "requestedBehavior": "1. Địch Khiên Giáp rơi Khiên có thể nhặt bằng [E]; người chơi cầm Khiên hiển thị thật trên cẳng tay với tạo hình mới, dùng được [J] (shield_strike), [K] (shield_bash), [U] (giảm sâu sát thương lọt + tia lửa kim loại), và [E] (phi khiên). 2. Bấm [E] ném vũ khí có pha gồng kéo tay về sau giữ nguyên vũ khí trên tay trước khi quất tay phóng ra ở ~0.085s, rồi theo đà thu thế. 3. Côn, Mã Tấu, Khiên có đồ họa Canvas nhiều lớp (vân kim loại, rãnh máu, răng cưa sống đao, kính chắn bạo động góc cạnh, dây tua) và thẻ HUD/Kho Đồ có SVG đồng bộ.",
+  "allowedFiles": [
+    "index.html",
+    "css/hud.css",
+    "css/ui-overhaul.css",
+    "js/combat/weapons.js",
+    "js/entities/animation/animationBase.js",
+    "js/entities/animation/animationPose.js",
+    "js/entities/animation/animationWeapon.js",
+    "js/entities/player/playerDamage.js",
+    "js/ui/ui.js",
+    "js/ui/menu/collections.js",
+    "tests/test_weapons_durability.js",
+    "tests/test_weapon_shield_throw_visuals.js",
+    "docs/FEATURE_REGISTRY.md",
+    "tasks/TASK-WEAPON-VISUALS-THROW.json"
+  ],
+  "relatedFeatures": [
+    "FEAT-CMB-006",
+    "FEAT-CMB-007",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "WeaponSystem",
+    "SkeletalRendererBase",
+    "SkeletalRendererPose",
+    "SkeletalRendererWeapon",
+    "PlayerDamage",
+    "UIManager",
+    "MenuManagerCollections"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 90,
+    "authorizedRemovals": [
+      {
+        "name": "Replace broken punch1/instant weapon clear in throwWeapon with staged wp_throw windup-release pipeline, upgrade flat weapon draw shapes, and update 2 immediate-spawn frames in test_weapons_durability.js to step through the 0.085s windup",
+        "file": "js/combat/weapons.js"
+      }
+    ]
+  },
+  "requiredTests": [
+    "tests/test_weapons_durability.js",
+    "tests/test_boss_targeting_and_weapon_throw.js",
+    "tests/test_weapon_shield_throw_visuals.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "WEAPON_DEFS.shield co pickable=true, durability=10, light=['shield_strike'], heavy=['shield_bash'], styleWeapon='riot_shield'",
+    "throwWeapon su dung pose wp_throw voi 3 pha ro rang va giai phong vu khi o thoi diem vung tay",
+    "Ca 9 nhan vat khi nhat Con/Ma Tau/Khien deu hien thi dung vu khi nhat voi do hoa nang cap (khong bi de boi frostBlade)",
+    "#hud-weapon-card duoc khoi phuc trong index.html, an khi tay khong va hien SVG + pips chuan khi cam vu khi",
+    "Toan bo regression suites va Playwright browser smoke dat 0 loi"
+  ]
+}
+

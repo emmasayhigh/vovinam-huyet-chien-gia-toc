@@ -7,17 +7,24 @@ class GameStory extends window.GameFlow {
   // Thoại nảy sinh NGAY GIỮA trận đấu (không cần đợt địch mới)
   playInlineDialogue(list, onDone) {
     if (!list || !list.length) { if (onDone) onDone(); return; }
+
+    // Nếu đang tạm dừng trong menu Pause (ESC), hoãn lại cho đến khi tiếp tục
+    if (this.state === 'PAUSED') {
+      this.later(() => this.playInlineDialogue(list, onDone), 300);
+      return;
+    }
+
+    this.state = 'CUTSCENE';
     const resume = () => {
       this.state = 'PLAYING';
       if (onDone) onDone();
     };
-    if (this.state !== 'PLAYING') {
-      // Đang có cutscene khác -> nối tiếp bằng cách chờ
-      this.later(() => this.playInlineDialogue(list, onDone), 400);
-      return;
+
+    if (window.stageManager && typeof window.stageManager.playDialogueSequence === 'function') {
+      window.stageManager.playDialogueSequence(list, resume);
+    } else {
+      resume();
     }
-    this.state = 'CUTSCENE';
-    window.stageManager.playDialogueSequence(list, resume);
   }
 
   // Hiệp ước với Đình Bích Lâm (không cần giết anh ta)
@@ -198,7 +205,7 @@ class GameStory extends window.GameFlow {
             inv.adjustTrust('mocdang', -15, 'Mộc Đăng phát hiện bạn không chấp hành lệnh');
             inv.collectEvidence('DOC_AUDIO_MOCDANG');
           }
-          window.game.playInlineDialogue([
+          this.playInlineDialogue([
             {
               speaker: 'PHÓ DUNG HẢI', role: 'KẺ BỊ KHAI TRỪ', avatar: 'dunghai',
               text: 'Cậu không giống những con chó săn khác của Hứa Vũ Đại. Cầm lấy chiếc bộ đàm này — nó có đoạn ghi âm Mộc Đăng muốn thủ tiêu cả hai chúng ta.'
@@ -208,7 +215,10 @@ class GameStory extends window.GameFlow {
               text: 'Tôi sẽ lên Thập Vạn Đại Sơn tìm Hoàng Anh để đối chứng. Rời khỏi thành phố đi trước khi người của Mộc Đăng đến.'
             }
           ], () => {
-            if (window.saveManager) window.saveManager.unlockCharacter('dunghai');
+            if (window.saveManager) {
+              window.saveManager.unlockCharacter('dunghai');
+              window.saveManager.unlockAlly('dunghai');
+            }
             this.triggerStageVictory();
           });
         } else if (optId === 'confront') {
@@ -216,9 +226,11 @@ class GameStory extends window.GameFlow {
             inv.adjustTrust('dunghai', +40, 'Bạn chứng minh được sự ngụy tạo của lệnh khai trừ');
             inv.collectEvidence('DOC_AUDIO_MOCDANG');
             inv.ensureState(window.saveManager);
-            window.saveManager.data.allyAvailability.dunghai = true;
+            if (window.saveManager && window.saveManager.data && window.saveManager.data.allyAvailability) {
+              window.saveManager.data.allyAvailability.dunghai = true;
+            }
           }
-          window.game.playInlineDialogue([
+          this.playInlineDialogue([
             {
               speaker: 'NGÔ NHẤT NGHỊ', role: 'ĐỐI CHẤT', avatar: 'nghi',
               text: 'Nhìn cho kỹ: Lệnh khai trừ anh đề ngày 14, nhưng kho dữ liệu bị tấn công ngày 19. Mộc Đăng đã chuẩn bị bản án này từ trước.'
@@ -232,13 +244,17 @@ class GameStory extends window.GameFlow {
               text: 'Nghị, tôi nợ cậu một mạng. Bất cứ khi nào cậu cần, tôi sẽ yểm trợ cậu bằng sương mù và ảo ảnh Vovinam!'
             }
           ], () => {
-            if (window.saveManager) window.saveManager.unlockCharacter('dunghai');
+            if (window.saveManager) {
+              window.saveManager.unlockCharacter('dunghai');
+              window.saveManager.unlockAlly('dunghai');
+            }
             this.triggerStageVictory();
           });
         } else {
           // B. Subdue: Chiến đấu với cơ chế khống chế đòn chân kẹp
           if (inv) inv.adjustTrust('dunghai', -20, 'Bạn chọn dùng vũ lực áp chế');
           this.dungHaiSubdueMode = true;
+          this.dungHaiSubdued = false;
           this.state = 'PLAYING';
           this.currentWaveIndex++;
         }
@@ -247,12 +263,19 @@ class GameStory extends window.GameFlow {
   }
 
   triggerDungHaiSubdued() {
+    if (this.dungHaiSubdued) return;
+    this.dungHaiSubdued = true;
+
     const boss = this.currentBoss;
-    boss.isDead = true;
-    boss.setState('knockdown', 2.0);
+    if (boss) {
+      boss.isDead = true;
+      boss.hp = 0;
+      boss.setState('knockdown', 2.0);
+      boss.vx = 0;
+    }
     this.state = 'CUTSCENE';
 
-    window.game.playInlineDialogue([
+    this.playInlineDialogue([
       {
         speaker: 'NGÔ NHẤT NGHỊ', role: 'KHỐNG CHẾ ĐÒN CHÂN KẸP', avatar: 'nghi',
         text: 'Dừng lại! Tôi đã có thể bẻ gãy cổ anh bằng đòn kẹp cổ Vovinam. Tôi không đến đây để giết anh.'
@@ -264,7 +287,10 @@ class GameStory extends window.GameFlow {
     ], () => {
       const inv = window.investigationManager;
       if (inv) inv.collectEvidence('DOC_AUDIO_MOCDANG');
-      if (window.saveManager) window.saveManager.unlockCharacter('dunghai');
+      if (window.saveManager) {
+        window.saveManager.unlockCharacter('dunghai');
+        window.saveManager.unlockAlly('dunghai');
+      }
       this.triggerStageVictory();
     });
   }

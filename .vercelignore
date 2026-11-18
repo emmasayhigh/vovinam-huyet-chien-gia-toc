@@ -1,0 +1,25 @@
+# Non-runtime / development / server-only files (root-anchored so js/data/ is preserved!)
+/node_modules/
+/.git/
+/.vercel/
+/.env*
+/.playwright-mcp/
+/data/
+/docs/
+/harness/
+/tasks/
+/tests/
+/backup/
+/.dockerignore
+/Dockerfile
+/AGENTS.md
+/README.md
+/render.yaml
+/server.js
+/start_game.bat
+/package.json
+/package-lock.json
+/*.md
+/*.rtf
+/*.log
+/*.bat

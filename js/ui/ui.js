@@ -54,7 +54,6 @@ class UIManager {
 
     // Screens & Modals
     this.titleScreen = document.getElementById('title-screen');
-    this.stageSelectModal = document.getElementById('stage-select-modal');
     this.controlsModal = document.getElementById('controls-modal');
     this.pauseModal = document.getElementById('pause-modal');
     this.stageClearModal = document.getElementById('stage-clear-modal');
@@ -84,7 +83,22 @@ class UIManager {
 
     // Chân dung nhân vật vẽ bằng canvas
     this.playerPortrait = document.getElementById('player-portrait');
-    if (window.skeletalRenderer) window.skeletalRenderer.drawPortrait(this.playerPortrait, 'player');
+    this.hudPassiveWidget = document.getElementById('hud-passive-widget');
+    this.hudPassiveOrb = document.getElementById('hud-passive-orb');
+    this.hudPassiveName = document.getElementById('hud-passive-name');
+    this.hudPassiveState = document.getElementById('hud-passive-state');
+    this.hudPassivePips = document.getElementById('hud-passive-pips');
+    this.badgeStanceWu = document.getElementById('badge-stance-wu');
+    this.cdStanceWuText = document.getElementById('cd-stance-wu-text');
+    this.labelStanceWu = document.getElementById('label-stance-wu');
+    this.labelDodge = document.getElementById('label-dodge');
+    this.labelCounterHand = document.getElementById('label-counter-hand');
+    this.labelCounterLeg = document.getElementById('label-counter-leg');
+    this.hudDebuffsBar = document.getElementById('hud-debuffs-bar');
+    this.bossDebuffsBar = document.getElementById('boss-debuffs-bar');
+    const curChar = (window.saveManager && window.saveManager.data && window.saveManager.data.selectedCharacter) || 'nghi';
+    const initPortraitType = this.portraitType(curChar);
+    if (window.skeletalRenderer) window.skeletalRenderer.drawPortrait(this.playerPortrait, initPortraitType);
   }
 
   // Map loại avatar trong kịch bản -> kiểu nhân vật
@@ -103,18 +117,52 @@ class UIManager {
   // Cập nhật HUD theo nhân vật đang điều khiển
   setCharacterHUD(char) {
     if (!char) return;
+    if (!this.playerPortrait) this.playerPortrait = document.getElementById('player-portrait');
     if (this.hudCharName) this.hudCharName.textContent = (char.name || '').toUpperCase();
     if (this.hudCharTitle) this.hudCharTitle.textContent = (char.title || '').toUpperCase();
+    
+    const charKey = char.charId || char.characterId || (window.saveManager && window.saveManager.data && window.saveManager.data.selectedCharacter) || 'nghi';
+    const pType = char.styleType || this.portraitType(charKey);
+    const equippedSkin = charKey !== 'nghi' && window.saveManager && typeof window.saveManager.getEquippedSkin === 'function'
+      ? window.saveManager.getEquippedSkin(charKey)
+      : (charKey !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(charKey, 'vovinam') ? 'vovinam' : 'default');
+    const isVovinam = equippedSkin === 'vovinam';
+    
     if (window.skeletalRenderer && this.playerPortrait) {
-      window.skeletalRenderer.drawPortrait(this.playerPortrait, char.styleType || char.type || 'player');
+      window.skeletalRenderer.drawPortrait(this.playerPortrait, pType, false, isVovinam, equippedSkin);
     }
+
+    // Cập nhật màu đai HUD (.avatar-belt) theo nhân vật
+    const beltEl = (typeof document !== 'undefined' && typeof document.querySelector === 'function') ? document.querySelector('.player-avatar .avatar-belt') : null;
+    if (beltEl) {
+      const beltColors = {
+        nghi: 'linear-gradient(90deg, #cbd5e1, #ffffff, #f1f5f9)',
+        dunghai: 'linear-gradient(90deg, #7f1d1d, #ef4444, #991b1b)',
+        bichlam: 'linear-gradient(90deg, #14532d, #22c55e, #16a34a)',
+        hoanganh: 'linear-gradient(90deg, #78350f, #f59e0b, #d97706)',
+        dinhan: 'linear-gradient(90deg, #334155, #64748b, #475569)',
+        huavudai: 'linear-gradient(90deg, #581c87, #a855f7, #7e22ce)',
+        giangmanh: 'linear-gradient(90deg, #4c1d95, #8b5cf6, #6d28d9)',
+        vananh: 'linear-gradient(90deg, #92400e, #f59e0b, #fbbf24)',
+        tiendang: 'linear-gradient(90deg, #0369a1, #22d3ee, #38bdf8)',
+        thienkhanh: 'linear-gradient(90deg, #7f1d1d, #dc2626, #f59e0b)'
+      };
+      beltEl.style.background = beltColors[charKey] || beltColors.nghi;
+      beltEl.style.boxShadow = `0 0 8px ${charKey === 'dunghai' ? 'rgba(239, 68, 68, 0.8)' : 'rgba(255, 255, 255, 0.85)'}`;
+    }
+
     // Nhãn năng lượng theo nhân vật (Hứa Vũ Đại không dùng thuật ngữ Vovinam)
-    const label = char.charId === 'nghi' ? 'VOVINAM' : 'NĂNG LƯỢNG';
+    const label = (char.charId || char.characterId) === 'nghi' ? 'VOVINAM' : 'NĂNG LƯỢNG';
     const energyText = document.getElementById('player-energy-text');
-    if (energyText && energyText.dataset.kind !== char.charId) {
-      energyText.dataset.kind = char.charId || '';
+    if (energyText && energyText.dataset.kind !== (char.charId || char.characterId)) {
+      energyText.dataset.kind = (char.charId || char.characterId) || '';
       energyText.dataset.label = label;
     }
+    if (typeof char.hp === 'number' && typeof char.maxHp === 'number' && this.playerHpFill && this.playerHpText) {
+      this.updatePlayerHp(char.hp, char.maxHp);
+    }
+    this.updatePlayerEnergy(char.energy, char.maxEnergy);
+    this.updatePassiveHUD(char);
   }
 
   showHUD() {
@@ -125,9 +173,18 @@ class UIManager {
     if (!window.game || !window.game.currentBoss || window.game.currentBoss.isDead || window.game.state === 'TRAINING') {
       this.hideBossHUD();
     }
-    if (window.skeletalRenderer) {
+    if (window.game && window.game.player) {
+      this.setCharacterHUD(window.game.player);
+    } else if (window.skeletalRenderer) {
       if (!this.playerPortrait) this.playerPortrait = document.getElementById('player-portrait');
-      if (this.playerPortrait) window.skeletalRenderer.drawPortrait(this.playerPortrait, 'player');
+      if (this.playerPortrait) {
+        const curChar = (window.saveManager && window.saveManager.data && window.saveManager.data.selectedCharacter) || 'nghi';
+        const pType = this.portraitType(curChar);
+        const eqSkin = curChar !== 'nghi' && window.saveManager && typeof window.saveManager.getEquippedSkin === 'function'
+          ? window.saveManager.getEquippedSkin(curChar)
+          : (curChar !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(curChar, 'vovinam') ? 'vovinam' : 'default');
+        window.skeletalRenderer.drawPortrait(this.playerPortrait, pType, false, eqSkin === 'vovinam', eqSkin);
+      }
     }
     this.updateSkillCooldowns();
   }
@@ -137,6 +194,8 @@ class UIManager {
     this.hideBossHUD();
     const topControls = document.getElementById('top-controls');
     if (topControls) topControls.classList.add('hidden');
+    if (this.hudWeaponCard) this.hudWeaponCard.classList.add('hidden');
+    if (this.hudDebuffsBar) this.hudDebuffsBar.classList.add('hidden');
   }
 
   // Cập nhật Thanh Máu Người Chơi (với Chip Damage Delay)
@@ -155,15 +214,20 @@ class UIManager {
 
   // Cập nhật Thanh Năng Lượng Vovinam
   updatePlayerEnergy(currentEnergy, maxEnergy) {
-    const percent = Math.max(0, Math.min(100, (currentEnergy / maxEnergy) * 100));
-    this.playerEnergyFill.style.width = percent + '%';
+    const safeCur = (typeof currentEnergy === 'number' && Number.isFinite(currentEnergy)) ? currentEnergy : 0;
+    const safeMax = (typeof maxEnergy === 'number' && Number.isFinite(maxEnergy)) ? maxEnergy : 100;
+    const rawPct = safeMax > 0 ? (safeCur / safeMax) * 100 : 0;
+    const percent = Number.isFinite(rawPct) ? Math.max(0, Math.min(100, rawPct)) : 0;
+    if (this.playerEnergyFill) this.playerEnergyFill.style.width = percent + '%';
     const label = (this.playerEnergyText && this.playerEnergyText.dataset && this.playerEnergyText.dataset.label) || 'VOVINAM';
-    this.playerEnergyText.textContent = `${label}: ${Math.round(percent)}%`;
+    if (this.playerEnergyText) this.playerEnergyText.textContent = `${label}: ${Math.round(percent)}%`;
 
-    if (percent >= 100) {
-      this.ultimateBadge.classList.remove('hidden');
-    } else {
-      this.ultimateBadge.classList.add('hidden');
+    if (this.ultimateBadge) {
+      if (percent >= 100 && safeMax > 0) {
+        this.ultimateBadge.classList.remove('hidden');
+      } else {
+        this.ultimateBadge.classList.add('hidden');
+      }
     }
   }
 
@@ -188,6 +252,19 @@ class UIManager {
     }
   }
 
+  _syncCooldownBadge(badgeEl, textEl, cacheKey, cd) {
+    if (!badgeEl || !textEl) return;
+    const isCd = cd > 0;
+    const label = isCd ? `${cd.toFixed(1)}s` : 'SẴN SÀNG';
+    if (this[cacheKey] === label) return;
+    this[cacheKey] = label;
+    if (badgeEl.classList) {
+      badgeEl.classList.toggle('cooldown', isCd);
+      badgeEl.classList.toggle('ready', !isCd);
+    }
+    textEl.textContent = label;
+  }
+
   // Đồng bộ thời gian hồi chiêu kỹ năng Vovinam lên HUD
   updateSkillCooldowns(player) {
     if (!player) return;
@@ -195,48 +272,263 @@ class UIManager {
     // Né Thân Pháp (L) — Hồi chiêu 8.0s
     if (!this.badgeDodge) this.badgeDodge = document.getElementById('badge-dodge');
     if (!this.cdDodgeText) this.cdDodgeText = document.getElementById('cd-dodge-text');
-    if (this.badgeDodge && this.cdDodgeText) {
-      const cd = player.dodgeCooldown || 0;
-      if (cd > 0) {
-        this.badgeDodge.classList.remove('ready');
-        this.badgeDodge.classList.add('cooldown');
-        this.cdDodgeText.textContent = `${cd.toFixed(1)}s`;
-      } else {
-        this.badgeDodge.classList.remove('cooldown');
-        this.badgeDodge.classList.add('ready');
-        this.cdDodgeText.textContent = 'SẴN SÀNG';
-      }
-    }
+    this._syncCooldownBadge(this.badgeDodge, this.cdDodgeText, '_lastCdDodge', player.dodgeCooldown || 0);
 
     // Phản Đòn Tay Vovinam (U + J) — Hồi chiêu 2.5s
     if (!this.badgeCounterHand) this.badgeCounterHand = document.getElementById('badge-counter-hand');
     if (!this.cdCounterHandText) this.cdCounterHandText = document.getElementById('cd-counter-hand-text');
-    if (this.badgeCounterHand && this.cdCounterHandText) {
-      const cd = player.counterHandCooldown || 0;
-      if (cd > 0) {
-        this.badgeCounterHand.classList.remove('ready');
-        this.badgeCounterHand.classList.add('cooldown');
-        this.cdCounterHandText.textContent = `${cd.toFixed(1)}s`;
-      } else {
-        this.badgeCounterHand.classList.remove('cooldown');
-        this.badgeCounterHand.classList.add('ready');
-        this.cdCounterHandText.textContent = 'SẴN SÀNG';
-      }
-    }
+    this._syncCooldownBadge(this.badgeCounterHand, this.cdCounterHandText, '_lastCdHand', player.counterHandCooldown || 0);
 
     // Phản Đòn Chân Vovinam (U + K) — Hồi chiêu 3.5s
     if (!this.badgeCounterLeg) this.badgeCounterLeg = document.getElementById('badge-counter-leg');
     if (!this.cdCounterLegText) this.cdCounterLegText = document.getElementById('cd-counter-leg-text');
-    if (this.badgeCounterLeg && this.cdCounterLegText) {
-      const cd = player.counterLegCooldown || 0;
-      if (cd > 0) {
-        this.badgeCounterLeg.classList.remove('ready');
-        this.badgeCounterLeg.classList.add('cooldown');
-        this.cdCounterLegText.textContent = `${cd.toFixed(1)}s`;
+    this._syncCooldownBadge(this.badgeCounterLeg, this.cdCounterLegText, '_lastCdLeg', player.counterLegCooldown || 0);
+
+    // Thế Chiêu Đặc Trưng (W + U) — Hồi chiêu 6.0s
+    if (!this.badgeStanceWu) this.badgeStanceWu = document.getElementById('badge-stance-wu');
+    if (!this.cdStanceWuText) this.cdStanceWuText = document.getElementById('cd-stance-wu-text');
+    this._syncCooldownBadge(this.badgeStanceWu, this.cdStanceWuText, '_lastCdWu', player.stanceSkillCooldown || 0);
+
+    // Đồng bộ Cục Nội Tại & Nhãn chiêu theo từng nhân vật
+    this.updatePassiveHUD(player);
+
+    // Đồng bộ Card vũ khí cầm tay trên HUD
+    this.updateWeaponHUD(player);
+  }
+
+  // Cập nhật Cục Nội Tại & Tích Tầng trực quan dưới thanh Máu/Năng Lượng
+  updatePassiveHUD(player) {
+    if (!player || !window.CharacterRegistry || typeof window.CharacterRegistry.getPassiveHudStatus !== 'function') return;
+    if (!this.hudPassiveWidget) this.hudPassiveWidget = document.getElementById('hud-passive-widget');
+    if (!this.hudPassiveOrb) this.hudPassiveOrb = document.getElementById('hud-passive-orb');
+    if (!this.hudPassiveName) this.hudPassiveName = document.getElementById('hud-passive-name');
+    if (!this.hudPassiveState) this.hudPassiveState = document.getElementById('hud-passive-state');
+    if (!this.hudPassivePips) this.hudPassivePips = document.getElementById('hud-passive-pips');
+    if (!this.labelDodge) this.labelDodge = document.getElementById('label-dodge');
+    if (!this.labelCounterHand) this.labelCounterHand = document.getElementById('label-counter-hand');
+    if (!this.labelCounterLeg) this.labelCounterLeg = document.getElementById('label-counter-leg');
+    if (!this.labelStanceWu) this.labelStanceWu = document.getElementById('label-stance-wu');
+
+    const st = window.CharacterRegistry.getPassiveHudStatus(player, window.game && window.game.enemies);
+    if (!st) return;
+
+    if (this.hudPassiveWidget) {
+      if (this._lastPassiveAccent !== st.accentColor && this.hudPassiveWidget.style && typeof this.hudPassiveWidget.style.setProperty === 'function') {
+        this._lastPassiveAccent = st.accentColor;
+        this.hudPassiveWidget.style.setProperty('--passive-accent', st.accentColor || '#38bdf8');
+      }
+      if (this.hudPassiveWidget.classList && typeof this.hudPassiveWidget.classList.toggle === 'function') {
+        this.hudPassiveWidget.classList.toggle('passive-active', !!st.isBuffActive);
+      }
+    }
+    if (this.hudPassiveOrb && this._lastPassiveIcon !== st.icon) {
+      this._lastPassiveIcon = st.icon;
+      this.hudPassiveOrb.textContent = st.icon;
+    }
+    if (this.hudPassiveName && this._lastPassiveName !== st.name) {
+      this._lastPassiveName = st.name;
+      this.hudPassiveName.textContent = st.name;
+    }
+    if (this.hudPassiveState && this._lastPassiveState !== st.statusText) {
+      this._lastPassiveState = st.statusText;
+      this.hudPassiveState.textContent = st.statusText;
+    }
+
+    if (this.hudPassivePips && typeof document !== 'undefined' && typeof document.createElement === 'function') {
+      const maxPips = Math.max(1, st.pipsMax || 3);
+      if (this._lastPassivePipsMax !== maxPips || !this.hudPassivePips.children || this.hudPassivePips.children.length !== maxPips) {
+        this.hudPassivePips.innerHTML = '';
+        for (let i = 0; i < maxPips; i++) {
+          const pip = document.createElement('span');
+          pip.className = 'passive-pip';
+          this.hudPassivePips.appendChild(pip);
+        }
+        this._lastPassivePipsMax = maxPips;
+        this._lastPassivePipsFilled = -1;
+      }
+      const filled = Math.max(0, Math.min(maxPips, st.pipsFilled || 0));
+      if (this._lastPassivePipsFilled !== filled && this.hudPassivePips.children) {
+        this._lastPassivePipsFilled = filled;
+        for (let i = 0; i < maxPips; i++) {
+          const pip = this.hudPassivePips.children[i];
+          if (pip && pip.classList && typeof pip.classList.toggle === 'function') {
+            pip.classList.toggle('filled', i < filled);
+          }
+        }
+      }
+    }
+
+    if (this.labelDodge && st.dodgeLabel && this._lastLabelDodge !== st.dodgeLabel) {
+      this._lastLabelDodge = st.dodgeLabel;
+      this.labelDodge.textContent = st.dodgeLabel;
+    }
+    if (this.labelCounterHand && st.handCounterLabel && this._lastLabelHand !== st.handCounterLabel) {
+      this._lastLabelHand = st.handCounterLabel;
+      this.labelCounterHand.textContent = st.handCounterLabel;
+    }
+    if (this.labelCounterLeg && st.legCounterLabel && this._lastLabelLeg !== st.legCounterLabel) {
+      this._lastLabelLeg = st.legCounterLabel;
+      this.labelCounterLeg.textContent = st.legCounterLabel;
+    }
+    if (this.labelStanceWu && st.wuLabel && this._lastLabelWu !== st.wuLabel) {
+      this._lastLabelWu = st.wuLabel;
+      this.labelStanceWu.textContent = st.wuLabel;
+    }
+
+    // Đồng bộ thanh Hiệu Ứng Bất Lợi dưới thanh máu Player (CHỈ hiện debuff mà bản thân Player đang bị dính)
+    if (!this.hudDebuffsBar && typeof document !== 'undefined') {
+      this.hudDebuffsBar = document.getElementById('hud-debuffs-bar');
+    }
+    if (this.hudDebuffsBar) {
+      const selfDebuffs = Array.isArray(st.selfDebuffs) ? st.selfDebuffs : [];
+      const sig = selfDebuffs.map((d) => `${d.id}:${d.shortText}`).join('|');
+      if (!sig) {
+        if (this._lastHudDebuffsSig !== sig) {
+          this._lastHudDebuffsSig = sig;
+          this.hudDebuffsBar.classList.add('hidden');
+          this.hudDebuffsBar.innerHTML = '';
+        }
+      } else if (this._lastHudDebuffsSig !== sig) {
+        this._lastHudDebuffsSig = sig;
+        this.hudDebuffsBar.classList.remove('hidden');
+        this.hudDebuffsBar.innerHTML = this._buildDebuffPillsHtml(selfDebuffs, '', true);
+      }
+    }
+
+    // Đồng bộ thanh Hiệu Ứng Bất Lợi trên Boss HUD (hiện ngay dưới thanh máu của Boss bị dính)
+    if (!this.bossDebuffsBar && typeof document !== 'undefined') {
+      this.bossDebuffsBar = document.getElementById('boss-debuffs-bar');
+    }
+    if (this.bossDebuffsBar) {
+      const boss = (window.game && window.game.currentBoss && !window.game.currentBoss.isDead)
+        ? window.game.currentBoss
+        : ((window.game && Array.isArray(window.game.enemies))
+          ? window.game.enemies.find((e) => e && !e.isDead && (e.isBoss || (typeof e.type === 'string' && e.type.startsWith('boss_'))))
+          : null);
+      const bossDebuffs = (boss && window.CharacterRegistry && typeof window.CharacterRegistry.getEntityDebuffs === 'function')
+        ? window.CharacterRegistry.getEntityDebuffs(boss)
+        : [];
+      const bSig = bossDebuffs.map((d) => `${d.id}:${d.shortText}`).join('|');
+      if (!bSig) {
+        if (this._lastBossDebuffsSig !== bSig) {
+          this._lastBossDebuffsSig = bSig;
+          this.bossDebuffsBar.classList.add('hidden');
+          this.bossDebuffsBar.innerHTML = '';
+        }
+      } else if (this._lastBossDebuffsSig !== bSig) {
+        this._lastBossDebuffsSig = bSig;
+        this.bossDebuffsBar.classList.remove('hidden');
+        this.bossDebuffsBar.innerHTML = this._buildDebuffPillsHtml(bossDebuffs, '', false);
+      }
+    }
+  }
+
+  _buildDebuffPillsHtml(list, scopeLabel, isSelf) {
+    if (!Array.isArray(list) || list.length === 0) return '';
+    return list.map((d) => {
+      const scopeHtml = scopeLabel ? `<span class="debuff-scope">${scopeLabel}</span>` : '';
+      return `<span class="debuff-pill ${isSelf ? 'self-debuff' : 'target-debuff'}" style="--debuff-color:${d.color};--debuff-bg:${d.bg}" title="${d.name}">${scopeHtml}<span>${d.icon} ${d.name}</span><span class="debuff-val">${d.shortText}</span></span>`;
+    }).join('');
+  }
+
+  // Cập nhật Card Trạng Thái Vũ Khí trên Screen HUD
+  updateWeaponHUD(player) {
+    if (!this.hudWeaponCard) this.hudWeaponCard = document.getElementById('hud-weapon-card');
+    if (!this.hudWeaponCard) return;
+
+    const p = player || (window.game && window.game.player);
+    const w = p && p.weapon && p.weapon.dur > 0 && !p.isDead ? p.weapon : null;
+    if (!w) {
+      if (this._weaponHudVisible !== false) {
+        this._weaponHudVisible = false;
+        this._lastWeaponSig = '';
+        this.hudWeaponCard.classList.add('hidden');
+      }
+      return;
+    }
+    if (this._weaponHudVisible !== true) {
+      this._weaponHudVisible = true;
+      this.hudWeaponCard.classList.remove('hidden');
+    }
+
+    const curDur0 = Math.max(0, Math.floor(w.dur));
+    const def0 = window.WEAPON_DEFS ? window.WEAPON_DEFS[w.type] : null;
+    const maxDur0 = Math.max(1, w.max || (def0 ? def0.durability : 8));
+    const wSig = `${w.type}:${curDur0}:${maxDur0}`;
+    if (this._lastWeaponSig === wSig) return;
+    this._lastWeaponSig = wSig;
+
+    if (!this.hudWeaponIcon) this.hudWeaponIcon = document.getElementById('hud-weapon-icon');
+    if (!this.hudWeaponName) this.hudWeaponName = document.getElementById('hud-weapon-name');
+    if (!this.hudWeaponBadge) this.hudWeaponBadge = document.getElementById('hud-weapon-badge');
+    if (!this.hudWeaponDurText) this.hudWeaponDurText = document.getElementById('hud-weapon-dur-text');
+    if (!this.hudWeaponSegments) this.hudWeaponSegments = document.getElementById('hud-weapon-segments');
+    if (!this.hudWeaponGuardPill) this.hudWeaponGuardPill = document.getElementById('hud-weapon-guard-pill');
+
+    const def = window.WEAPON_DEFS ? window.WEAPON_DEFS[w.type] : null;
+    const isBlade = w.type === 'blade';
+    const isShield = w.type === 'shield';
+    const curDur = Math.max(0, Math.floor(w.dur));
+    const maxDur = Math.max(1, w.max || (def ? def.durability : 8));
+
+    this.hudWeaponCard.classList.toggle('blade-theme', isBlade);
+    this.hudWeaponCard.classList.toggle('shield-theme', isShield);
+    this.hudWeaponCard.classList.toggle('danger-theme', curDur <= 2);
+
+    if (this.hudWeaponGuardPill) {
+      this.hudWeaponGuardPill.classList.toggle('hidden', !isShield);
+    }
+
+    if (this.hudWeaponIcon && this._lastHudIconType !== w.type) {
+      this._lastHudIconType = w.type;
+      if (window.weaponSystem && typeof window.weaponSystem.getIconSvg === 'function') {
+        this.hudWeaponIcon.innerHTML = window.weaponSystem.getIconSvg(w.type);
       } else {
-        this.badgeCounterLeg.classList.remove('cooldown');
-        this.badgeCounterLeg.classList.add('ready');
-        this.cdCounterLegText.textContent = 'SẴN SÀNG';
+        this.hudWeaponIcon.textContent = isBlade ? '⚔️' : (isShield ? '🛡️' : '🥢');
+      }
+    }
+    if (this.hudWeaponName) {
+      this.hudWeaponName.textContent = def ? def.name : (isBlade ? 'MÃ TẤU' : (isShield ? 'KHIÊN' : 'CÔN'));
+    }
+    if (this.hudWeaponBadge) {
+      this.hudWeaponBadge.textContent = def && def.effectName ? def.effectName : (isBlade ? 'CHÉM SÂU' : (isShield ? 'CHẮN & ĐẨY' : 'CHOÁNG'));
+      this.hudWeaponBadge.style.color = isBlade ? '#fb7185' : (isShield ? '#bae6fd' : '#38bdf8');
+      this.hudWeaponBadge.style.borderColor = isBlade ? 'rgba(244, 63, 94, 0.45)' : (isShield ? 'rgba(250, 204, 21, 0.48)' : 'rgba(56, 189, 248, 0.45)');
+      this.hudWeaponBadge.style.background = isBlade ? 'rgba(244, 63, 94, 0.16)' : (isShield ? 'rgba(14, 165, 233, 0.2)' : 'rgba(56, 189, 248, 0.15)');
+    }
+    if (this.hudWeaponDurText) {
+      this.hudWeaponDurText.textContent = `${curDur} / ${maxDur}`;
+      this.hudWeaponDurText.style.color = curDur <= 2 ? '#ef4444' : (curDur <= maxDur * 0.5 ? '#f59e0b' : '#38bdf8');
+    }
+
+    // Render các vạch năng lượng độ bền (segmented pips)
+    if (this.hudWeaponSegments) {
+      if (this._lastPipMax !== maxDur || this.hudWeaponSegments.children.length !== maxDur) {
+        this.hudWeaponSegments.innerHTML = '';
+        for (let i = 0; i < maxDur; i++) {
+          const pip = document.createElement('div');
+          pip.className = 'hud-weapon-pip';
+          this.hudWeaponSegments.appendChild(pip);
+        }
+        this._lastPipMax = maxDur;
+      }
+      const pips = this.hudWeaponSegments.children;
+      for (let i = 0; i < maxDur; i++) {
+        const pip = pips[i];
+        if (!pip) continue;
+        pip.className = 'hud-weapon-pip';
+        if (i < curDur) {
+          pip.classList.add('filled');
+          if (curDur <= 2) {
+            pip.classList.add('critical');
+          } else if (curDur <= maxDur * 0.5) {
+            pip.classList.add('low');
+          } else if (isBlade) {
+            pip.classList.add('blade');
+          } else if (isShield) {
+            pip.classList.add('shield');
+          }
+        }
       }
     }
   }
@@ -263,6 +555,11 @@ class UIManager {
 
   hideBossHUD() {
     this.bossHud.classList.add('hidden');
+    if (this.bossDebuffsBar) {
+      this.bossDebuffsBar.classList.add('hidden');
+      this.bossDebuffsBar.innerHTML = '';
+      this._lastBossDebuffsSig = '';
+    }
   }
 
   updateBossHp(currentHp, maxHp) {
@@ -388,6 +685,9 @@ class UIManager {
     this.titleScreen.classList.remove('hidden');
     const topControls = document.getElementById('top-controls');
     if (topControls) topControls.classList.add('hidden');
+    if (window.menuManager && typeof window.menuManager.updateMenuPlayerBar === 'function') {
+      window.menuManager.updateMenuPlayerBar();
+    }
   }
 
   hideTitleScreen() {
@@ -396,11 +696,14 @@ class UIManager {
   }
 
   showStageSelect() {
-    this.stageSelectModal.classList.remove('hidden');
+    if (window.menuManager && typeof window.menuManager.showChapterMap === 'function') {
+      window.menuManager.showChapterMap();
+    }
   }
 
   hideStageSelect() {
-    this.stageSelectModal.classList.add('hidden');
+    const modal = document.getElementById('stage-select-modal');
+    if (modal) modal.classList.add('hidden');
   }
 
   showControls() {
@@ -408,23 +711,30 @@ class UIManager {
       this._returnToPauseOnCloseControls = true;
       this.pauseModal.classList.add('hidden');
     }
-    this.controlsModal.classList.remove('hidden');
+    if (window.uiCore) window.uiCore.showModal(this.controlsModal);
+    else this.controlsModal.classList.remove('hidden');
   }
 
   hideControls() {
-    this.controlsModal.classList.add('hidden');
+    if (window.uiCore) window.uiCore.hideModal(this.controlsModal);
+    else this.controlsModal.classList.add('hidden');
     if (this._returnToPauseOnCloseControls || (window.game && window.game.state === 'PAUSED')) {
       this._returnToPauseOnCloseControls = false;
-      if (this.pauseModal) this.pauseModal.classList.remove('hidden');
+      if (this.pauseModal) {
+        if (window.uiCore) window.uiCore.showModal(this.pauseModal);
+        else this.pauseModal.classList.remove('hidden');
+      }
     }
   }
 
   showPause() {
-    this.pauseModal.classList.remove('hidden');
+    if (window.uiCore) window.uiCore.showModal(this.pauseModal);
+    else this.pauseModal.classList.remove('hidden');
   }
 
   hidePause() {
-    this.pauseModal.classList.add('hidden');
+    if (window.uiCore) window.uiCore.hideModal(this.pauseModal);
+    else this.pauseModal.classList.add('hidden');
   }
 
   showGameOver() {
@@ -575,20 +885,26 @@ class UIManager {
     if (this.endingModal) this.endingModal.classList.add('hidden');
   }
 
-  // Thông báo thành tích / mở khóa (hiện góc màn hình)
+  // Thông báo thành tích / mở khóa (hiện góc màn hình, giới hạn tối đa 4 toast đồng thời)
   showToast(msg) {
     if (!this.toastStack) return;
+    while (this.toastStack.children && this.toastStack.children.length >= 4 && this.toastStack.firstElementChild) {
+      this.toastStack.removeChild(this.toastStack.firstElementChild);
+    }
     const el = document.createElement('div');
     el.className = 'toast-item';
     el.textContent = msg;
     this.toastStack.appendChild(el);
-    setTimeout(() => { el.classList.add('toast-out'); }, 2600);
-    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 3100);
+    setTimeout(() => { el.classList.add('toast-out'); }, 2400);
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 2850);
   }
 
   // Thông báo Cúp & Thành Tựu Vinh Quang (Golden Trophy Toast Banner)
   showAchievementToast(achName, achDesc = '') {
     if (!this.toastStack) return;
+    while (this.toastStack.children && this.toastStack.children.length >= 4 && this.toastStack.firstElementChild) {
+      this.toastStack.removeChild(this.toastStack.firstElementChild);
+    }
     const el = document.createElement('div');
     el.className = 'toast-item toast-achievement';
     el.innerHTML = `
@@ -603,8 +919,8 @@ class UIManager {
     if (window.audioManager && typeof window.audioManager.playAchievementFanfare === 'function') {
       window.audioManager.playAchievementFanfare();
     }
-    setTimeout(() => { el.classList.add('toast-out'); }, 3800);
-    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 4400);
+    setTimeout(() => { el.classList.add('toast-out'); }, 3600);
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 4150);
   }
 
   updateAudioButton(isMuted) {
@@ -617,3 +933,4 @@ class UIManager {
 // Global UI Manager Instance
 const uiManager = new UIManager();
 window.uiManager = uiManager;
+window.UIManager = UIManager;

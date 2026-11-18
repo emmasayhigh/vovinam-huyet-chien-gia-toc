@@ -11,6 +11,17 @@ class GameFlow extends window.GameCamera {
     if (this.state === 'STAGE_CLEAR' || this.stageCompletedPending) return;
     this.stageCompletedPending = true;
     this.state = 'STAGE_CLEAR';
+    this.cancelGameOverTimer();
+    this.projectiles = [];
+    if (this.player) {
+      if (typeof this.player.clearAllDebuffs === 'function') {
+        this.player.clearAllDebuffs();
+      } else {
+        this.player.bleedTimer = 0;
+        this.player.stunTimer = 0;
+      }
+      this.player.invincibleTimer = Math.max(this.player.invincibleTimer || 0, 5.0);
+    }
     if (window.allyManager && typeof window.allyManager.reset === 'function') {
       window.allyManager.reset();
     }
@@ -25,6 +36,17 @@ class GameFlow extends window.GameCamera {
 
     // Lưu tiến trình, mở khóa nhân vật, thành tích
     this.recordStageProgress(currentStageNum, stageData);
+
+    const om = window.onlineManager;
+    if (om && om.isActive && om.mode === 'coop') {
+      om._roundOver = true;
+      if (typeof om._resetRematchButton === 'function' && !om._rematchRequested) {
+        om._resetRematchButton(true);
+      }
+      if (typeof om.send === 'function') {
+        om.send({ type: 'coop_stage_ended', result: 'victory' });
+      }
+    }
 
     const proceed = () => {
       // Màn cuối -> dòng kết thúc theo lựa chọn của người chơi
@@ -51,10 +73,17 @@ class GameFlow extends window.GameCamera {
       }, 600);
     };
 
-    // CAO TRÀO ĐẶC BIỆT MÀN 10: Sau khi hạ Triệu Vinh Tâm, kích hoạt BA NGƯỜI, BA SỰ THẬT
-    if (currentStageNum === 10 && window.clanConfrontation) {
-      window.clanConfrontation.startConfrontation((verdict) => {
-        proceed();
+    // CAO TRÀO ĐẶC BIỆT HỒI IV (TRIỆU VINH TÂM): Sau khi hạ Triệu Vinh Tâm, kích hoạt BA NGƯỜI, BA SỰ THẬT
+    const metaCur = window.STORY_META && window.STORY_META.stages ? window.STORY_META.stages[currentStageNum] : null;
+    const isVinhTamStage = currentStageNum === 17 || (currentStageNum === 10 && stageData && stageData.bossType === 'vinhtam') || (metaCur && metaCur.boss === 'vinhtam');
+    const hasConfrontationModal = typeof document !== 'undefined' && typeof document.getElementById === 'function' && !!document.getElementById('confrontation-modal');
+    if (isVinhTamStage && window.clanConfrontation && hasConfrontationModal) {
+      window.clanConfrontation.startConfrontation(() => {
+        if (stageData.postChoice && !(window.saveManager && window.saveManager.getChoice(stageData.postChoice))) {
+          this.showStoryChoice(stageData.postChoice, proceed);
+        } else {
+          proceed();
+        }
       });
       return;
     }
@@ -78,17 +107,18 @@ class GameFlow extends window.GameCamera {
 
     const meta = window.STORY_META && window.STORY_META.stages ? window.STORY_META.stages[stageNum] : null;
 
-    // Mở khóa nhân vật theo meta
-    if (meta && meta.unlockChar) {
-      const name = (window.CHARACTERS && window.CHARACTERS[meta.unlockChar]) ? window.CHARACTERS[meta.unlockChar].name : meta.unlockChar;
-      if (sm.unlockCharacter(meta.unlockChar)) {
+    // Mở khóa nhân vật theo meta hoặc stageData hoặc Màn cuối Ngô Giang Mạnh
+    const charToUnlock = (meta && meta.unlockChar) || (stageData && stageData.unlockChar) || ((stageNum === 20 || stageNum === 11 || (meta && meta.boss === 'giangmanh')) ? 'giangmanh' : null);
+    if (charToUnlock) {
+      const name = (window.CHARACTERS && window.CHARACTERS[charToUnlock]) ? window.CHARACTERS[charToUnlock].name : (charToUnlock === 'giangmanh' ? 'Ngô Giang Mạnh' : charToUnlock);
+      if (sm.unlockCharacter(charToUnlock)) {
         this.toast('MỞ KHÓA NHÂN VẬT: ' + name.toUpperCase());
       }
     }
 
     // Nhiệm vụ phụ
     if (meta && meta.type === 'side') sm.completeMission('side_' + stageNum);
-    if (stageData.escape) {
+    if (stageData && stageData.escape) {
       if (sm.unlockAchievement('escape_hud')) this.toast('THÀNH TÍCH: THOÁT HIỂM');
       sm.completeMission('escape_' + stageNum);
     }
@@ -99,7 +129,10 @@ class GameFlow extends window.GameCamera {
       sm.defeatBoss(meta.boss);
       if (meta.boss === 'hoanganh' && sm.unlockAchievement('beat_hoanganh')) this.toast('THÀNH TÍCH: TRẬN CHIẾN TRÊN NÚI');
       if (meta.boss === 'vinhtam' && sm.unlockAchievement('beat_vinhtam')) this.toast('THÀNH TÍCH: ĐẠI ĐIỆN ĐÃ RỤNG');
-      if (meta.boss === 'giangmanh' && sm.unlockAchievement('beat_giangmanh')) this.toast('THÀNH TÍCH: ĐOẠN NGHĨA');
+      if (meta.boss === 'giangmanh') {
+        sm.unlockCharacter('giangmanh');
+        if (sm.unlockAchievement('beat_giangmanh')) this.toast('THÀNH TÍCH: ĐOẠN NGHĨA');
+      }
     }
 
     // Thành tích theo thành tích chiến đấu
@@ -142,6 +175,8 @@ class GameFlow extends window.GameCamera {
     const ending = (window.getEnding || (() => null))(endingId);
 
     if (sm && ending) {
+      // Đảm bảo Ngô Giang Mạnh được mở khóa và lưu trữ vĩnh viễn trước khi kiểm tra toàn bộ nhân vật
+      sm.unlockCharacter('giangmanh');
       const isNew = sm.unlockEnding(ending.id);
       const playable = ['nghi', 'huavudai', 'hoanganh', 'giangmanh', 'dunghai', 'bichlam', 'dinhan'];
       const allPlayable = playable.every((id) => sm.isCharacterUnlocked(id));
@@ -196,17 +231,46 @@ class GameFlow extends window.GameCamera {
   }
 
   triggerGameOver() {
-    // Bỏ qua nếu người chơi đã chơi lại, về menu hoặc không còn ở trạng thái gục
+    // Bỏ qua nếu người chơi đã chơi lại, về menu, đã thắng hoặc Boss chiến dịch vừa gục
     if (!this.player || !this.player.isDead) return;
-    if (this.state === 'MENU' || this.state === 'GAME_OVER') return;
+    if (
+      this.state === 'MENU' ||
+      this.state === 'GAME_OVER' ||
+      this.state === 'STAGE_CLEAR' ||
+      this.state === 'CHOICE' ||
+      this.state === 'CUTSCENE' ||
+      this.state === 'GRAND_VICTORY' ||
+      this.stageCompletedPending ||
+      this.endingShown ||
+      (!this.isBossRush && this.currentBoss && this.currentBoss.isDead)
+    ) {
+      return;
+    }
     // Đang tạm dừng: chờ người chơi tiếp tục rồi mới hiện màn thua (tránh chồng modal / kẹt không có game over)
     if (this.state === 'PAUSED') { this.scheduleGameOver(300); return; }
     this.state = 'GAME_OVER';
+    const om = window.onlineManager;
+    if (om && om.isActive && om.mode === 'coop') {
+      om._roundOver = true;
+      if (typeof om._resetRematchButton === 'function' && !om._rematchRequested) {
+        om._resetRematchButton(true);
+      }
+      if (typeof om.send === 'function') {
+        om.send({ type: 'coop_stage_ended', result: 'defeat' });
+      }
+    }
     if (window.audioManager) window.audioManager.stopBGM();
     if (window.uiManager) window.uiManager.showGameOver();
   }
 
   pauseGame() {
+    const isOnline = !!(window.onlineManager && window.onlineManager.isActive);
+    if (isOnline && (this.state === 'PLAYING' || this.state === 'TRAINING' || this.state === 'TUTORIAL')) {
+      // Online real-time: mở bảng ESC nhưng KHÔNG đóng băng game loop / hất tung / sát thương
+      this._onlinePauseOpen = true;
+      if (window.uiManager) window.uiManager.showPause();
+      return;
+    }
     if (this.state === 'PLAYING' || this.state === 'TRAINING' || this.state === 'TUTORIAL') {
       this.previousState = this.state;
       this.state = 'PAUSED';
@@ -215,27 +279,21 @@ class GameFlow extends window.GameCamera {
   }
 
   resumeGame() {
+    this._onlinePauseOpen = false;
     if (this.state === 'PAUSED') {
       this.state = this.previousState || 'PLAYING';
-      if (window.uiManager) window.uiManager.hidePause();
     }
+    if (window.uiManager) window.uiManager.hidePause();
   }
 
   returnToMenu() {
-    if (window.trainingManager) {
-      window.trainingManager.isActive = false;
-      window.trainingManager.noCooldown = false;
-      window.trainingManager.hideOverlay();
+    this._onlinePauseOpen = false;
+    if (typeof this.resetTransientModes === 'function') {
+      this.resetTransientModes();
+    } else {
+      this.cancelGameOverTimer();
+      this.clearLaterTimers();
     }
-    if (window.tutorialManager) {
-      window.tutorialManager.isActive = false;
-      window.tutorialManager.hideOverlay();
-    }
-    if (window.allyManager && typeof window.allyManager.reset === 'function') {
-      window.allyManager.reset();
-    }
-    this.cancelGameOverTimer();
-    this.clearLaterTimers();
     this.state = 'MENU';
     this.previousState = 'MENU';
     this._pausedNoModalTimer = 0;
@@ -243,6 +301,13 @@ class GameFlow extends window.GameCamera {
     this.currentBoss = null;
     this.projectiles = [];
     this.arenaLocked = false;
+    if (this.player) {
+      this.player._summonedFiends = [];
+      if (typeof this.player.clearAllDebuffs === 'function') this.player.clearAllDebuffs();
+    }
+    if (window.effectManager && typeof window.effectManager.clearCombatEffects === 'function') {
+      window.effectManager.clearCombatEffects();
+    }
     if (window.uiManager) {
       window.uiManager.hidePause();
       window.uiManager.hideGameOver();

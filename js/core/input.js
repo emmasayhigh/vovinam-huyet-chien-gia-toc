@@ -136,8 +136,28 @@ class InputManager {
     return code;
   }
 
+  // Kiểm tra người chơi đang gõ chữ trong ô nhập liệu hoặc đang ở cổng đăng nhập
+  isTypingInInput(e) {
+    const target = (e && e.target) || (typeof document !== 'undefined' ? document.activeElement : null);
+    if (target) {
+      const tag = String(target.tagName || '').toUpperCase();
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable) {
+        return true;
+      }
+    }
+    if (typeof document !== 'undefined' && typeof document.getElementById === 'function') {
+      const gate = document.getElementById('login-gate-overlay');
+      if (gate && gate.classList && typeof gate.classList.contains === 'function' && !gate.classList.contains('hidden')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   bindEvents() {
     window.addEventListener('keydown', (e) => {
+      if (this.isTypingInInput(e)) return;
+
       const code = e.code;
       const resolved = this.resolveActionCode(code);
 
@@ -152,6 +172,14 @@ class InputManager {
         if (resolved !== code) {
           this.justPressed[resolved] = true;
           this.lastKeyDownTime[resolved] = performance.now();
+        }
+
+        // Khi người chơi bấm J hoặc K trong lúc đang giữ U, mở khóa debounce để counter kích hoạt tức thì
+        if (resolved === 'KeyJ' || code === 'KeyJ') {
+          this._counterHandHandled = false;
+        }
+        if (resolved === 'KeyK' || code === 'KeyK') {
+          this._counterLegHandled = false;
         }
 
         // Đưa đòn đánh vào buffer để nhận diện combo & tổ hợp mượt mà
@@ -175,6 +203,8 @@ class InputManager {
     });
 
     window.addEventListener('keyup', (e) => {
+      if (this.isTypingInInput(e)) return;
+
       const code = e.code;
       const resolved = this.resolveActionCode(code);
       this.keys[code] = false;
@@ -238,36 +268,46 @@ class InputManager {
 
   // ==========================================================================
   // PHÁT HIỆN TỔ HỢP PHÍM COUNTER: U + J (TAY) VÀ U + K (CHÂN)
-  // Độc lập hoàn toàn với thứ tự nhấn U trước hay J/K trước
+  // Hỗ trợ hoàn hảo:
+  // 1. Giữ U (Guard) + bấm J hoặc K bất kỳ lúc nào
+  // 2. Nhấn U và J/K cùng lúc (chord window 350ms)
+  // 3. Độc lập hoàn toàn với thứ tự bấm U trước hay J/K trước
   // Tiêu thụ đồng thời cả 2 phím để không bị rò rỉ thành đấm / đá / đỡ thường
   // ==========================================================================
   consumeCounterHand() {
     if (this._counterHandHandled) return false;
     const now = performance.now();
-    const chordTolerance = 220; // 220ms cửa sổ kết hợp 2 phím
+    const chordTolerance = 350; // 350ms cửa sổ kết hợp 2 phím mượt mà
 
-    const uDown = !!this.keys['KeyU'];
-    const jDown = !!this.keys['KeyJ'];
-    const uJust = !!this.justPressed['KeyU'];
-    const jJust = !!this.justPressed['KeyJ'];
+    const blockCode = (this.bindings && this.bindings.block) || 'KeyU';
+    const punchCode = (this.bindings && this.bindings.punch) || 'KeyJ';
 
-    const uTime = this.lastKeyDownTime['KeyU'] || 0;
-    const jTime = this.lastKeyDownTime['KeyJ'] || 0;
-    const closeTogether = Math.abs(uTime - jTime) <= chordTolerance && (now - Math.max(uTime, jTime)) <= 350;
+    const uDown = !!this.keys['KeyU'] || !!this.keys[blockCode];
+    const jDown = !!this.keys['KeyJ'] || !!this.keys[punchCode];
+    const uJust = !!this.justPressed['KeyU'] || !!this.justPressed[blockCode];
+    const jJust = !!this.justPressed['KeyJ'] || !!this.justPressed[punchCode];
+
+    const uTime = this.lastKeyDownTime['KeyU'] || this.lastKeyDownTime[blockCode] || 0;
+    const jTime = this.lastKeyDownTime['KeyJ'] || this.lastKeyDownTime[punchCode] || 0;
+    const closeTogether = Math.abs(uTime - jTime) <= chordTolerance && (now - Math.max(uTime, jTime)) <= 450;
 
     // Kích hoạt khi:
     // 1. Cả U và J đang được nhấn cùng lúc (bất kể thứ tự bấm)
-    // 2. Hoặc một phím đang giữ và phím còn lại vừa mới nhấn trong frame này
-    // 3. Hoặc cả hai phím xuất hiện trong buffer gần sát nhau
-    const isChord = (uDown && jDown && (uJust || jJust || closeTogether)) ||
-                    (uDown && jJust) || (jDown && uJust);
+    // 2. Hoặc đang giữ U (Guard) và vừa bấm J trong frame này
+    // 3. Hoặc bấm J trước rồi bấm U bồi trong cửa sổ chord
+    const isChord = (uDown && jJust) || (jDown && uJust) ||
+                    (uDown && jDown && (uJust || jJust || closeTogether));
 
     if (isChord) {
-      this._counterHandHandled = true; // Khóa debounce cho đến khi nhả phím
+      this._counterHandHandled = true; // Khóa debounce cho đến nhịp tiếp theo
       this.justPressed['KeyU'] = false;
       this.justPressed['KeyJ'] = false;
+      if (blockCode) this.justPressed[blockCode] = false;
+      if (punchCode) this.justPressed[punchCode] = false;
       this.consumeBufferedAction('KeyU');
       this.consumeBufferedAction('KeyJ');
+      if (blockCode) this.consumeBufferedAction(blockCode);
+      if (punchCode) this.consumeBufferedAction(punchCode);
       return true;
     }
     return false;
@@ -276,26 +316,33 @@ class InputManager {
   consumeCounterLeg() {
     if (this._counterLegHandled) return false;
     const now = performance.now();
-    const chordTolerance = 220;
+    const chordTolerance = 350;
 
-    const uDown = !!this.keys['KeyU'];
-    const kDown = !!this.keys['KeyK'];
-    const uJust = !!this.justPressed['KeyU'];
-    const kJust = !!this.justPressed['KeyK'];
+    const blockCode = (this.bindings && this.bindings.block) || 'KeyU';
+    const kickCode = (this.bindings && this.bindings.kick) || 'KeyK';
 
-    const uTime = this.lastKeyDownTime['KeyU'] || 0;
-    const kTime = this.lastKeyDownTime['KeyK'] || 0;
-    const closeTogether = Math.abs(uTime - kTime) <= chordTolerance && (now - Math.max(uTime, kTime)) <= 350;
+    const uDown = !!this.keys['KeyU'] || !!this.keys[blockCode];
+    const kDown = !!this.keys['KeyK'] || !!this.keys[kickCode];
+    const uJust = !!this.justPressed['KeyU'] || !!this.justPressed[blockCode];
+    const kJust = !!this.justPressed['KeyK'] || !!this.justPressed[kickCode];
 
-    const isChord = (uDown && kDown && (uJust || kJust || closeTogether)) ||
-                    (uDown && kJust) || (kDown && uJust);
+    const uTime = this.lastKeyDownTime['KeyU'] || this.lastKeyDownTime[blockCode] || 0;
+    const kTime = this.lastKeyDownTime['KeyK'] || this.lastKeyDownTime[kickCode] || 0;
+    const closeTogether = Math.abs(uTime - kTime) <= chordTolerance && (now - Math.max(uTime, kTime)) <= 450;
+
+    const isChord = (uDown && kJust) || (kDown && uJust) ||
+                    (uDown && kDown && (uJust || kJust || closeTogether));
 
     if (isChord) {
       this._counterLegHandled = true;
       this.justPressed['KeyU'] = false;
       this.justPressed['KeyK'] = false;
+      if (blockCode) this.justPressed[blockCode] = false;
+      if (kickCode) this.justPressed[kickCode] = false;
       this.consumeBufferedAction('KeyU');
       this.consumeBufferedAction('KeyK');
+      if (blockCode) this.consumeBufferedAction(blockCode);
+      if (kickCode) this.consumeBufferedAction(kickCode);
       return true;
     }
     return false;

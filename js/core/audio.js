@@ -43,6 +43,43 @@ class SoundEngine {
 
     // Chủ đề nhạc theo PHE PHÁI của màn chơi
     this.theme = BGM_THEMES.vovinam;
+    // Kho track âm thanh ngoài (Howler.js / Audio HTML5 nếu nạp thêm .mp3/.ogg)
+    this.externalTracks = {};
+  }
+
+  /**
+   * Đăng ký file âm thanh thật (.mp3/.ogg) qua Howler.js (nếu có) hoặc HTMLAudioElement.
+   */
+  registerTrack(key, src, opts = {}) {
+    if (!key || !src || typeof window === 'undefined') return null;
+    if (typeof window.Howl === 'function') {
+      this.externalTracks[key] = { kind: 'howl', track: new window.Howl({ src: [src], loop: !!opts.loop, volume: opts.volume ?? this.sfxVolume }) };
+    } else if (typeof Audio !== 'undefined') {
+      const a = new Audio(src);
+      a.loop = !!opts.loop;
+      this.externalTracks[key] = { kind: 'html', track: a };
+    }
+    return this.externalTracks[key] || null;
+  }
+
+  playExternalTrack(key, volume = null) {
+    if (this.isMuted) return false;
+    const entry = this.externalTracks && this.externalTracks[key];
+    if (!entry) return false;
+    const vol = Math.max(0, Math.min(1, (volume ?? this.sfxVolume) * (this.masterVolume ?? 0.75)));
+    try {
+      if (entry.kind === 'howl') {
+        entry.track.volume(vol);
+        entry.track.play();
+      } else {
+        entry.track.currentTime = 0;
+        entry.track.volume = vol;
+        entry.track.play().catch(() => {});
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   init() {
@@ -75,7 +112,10 @@ class SoundEngine {
   unlock() {
     if (!this.initialized) this.init();
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      try {
+        const p = this.ctx.resume();
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      } catch (err) {}
     }
     // Đồng bộ âm lượng với cài đặt đã lưu (chỉ làm lần đầu sau khi init)
     if (this._settingsApplied) return;
@@ -1098,6 +1138,37 @@ class SoundEngine {
       noise.connect(filter); filter.connect(g); g.connect(this.musicGain);
       noise.start(now, 0, 0.15);
     }
+
+    // 8. ÂM HƯỞNG NGŨ CUNG VÕ HIỆP (Vovinam / Triệu Gia)
+    if ((theme === BGM_THEMES.vovinam || theme === BGM_THEMES.trieu) && (step === 0 || step === 6 || step === 12 || step === 18)) {
+      const pluck = this.ctx.createOscillator();
+      const pg = this.ctx.createGain();
+      const pentatonic = [523.25, 587.33, 659.25, 783.99, 880.0];
+      pluck.type = 'triangle';
+      pluck.frequency.setValueAtTime(pentatonic[(step / 6) % pentatonic.length], now);
+      pg.gain.setValueAtTime(0.085 * amp, now);
+      pg.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+      pluck.connect(pg); pg.connect(this.musicGain);
+      pluck.start(now); pluck.stop(now + 0.24);
+    }
+  }
+
+  /** Hiệu ứng leng keng đồng xu + lửa táp cho Kiếm Xu Thiên Khánh */
+  playCoinSwordSlash() {
+    if (this.playExternalTrack('coin_sword_slash')) return;
+    if (!this.initialized || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    [1380, 2090].forEach((freq, idx) => {
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq, now + idx * 0.03);
+      o.frequency.exponentialRampToValueAtTime(freq * 1.18, now + 0.14);
+      g.gain.setValueAtTime(0.12, now + idx * 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      o.connect(g); g.connect(this.sfxGain);
+      o.start(now + idx * 0.03); o.stop(now + 0.2);
+    });
   }
 }
 

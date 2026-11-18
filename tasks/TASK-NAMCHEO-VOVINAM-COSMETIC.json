@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-20261117-NAMCHEO-VOVINAM-COSMETIC",
+  "title": "Skin Ông Năm Chèo (Đình Bích Lâm) trong Shop & Thuần Ngoại Hình Võ Phục Vovinam",
+  "author": "Antigravity Engineer",
+  "date": "2026-11-17",
+  "objective": "Bổ sung trang phục đổi hiệu ứng Ông Năm Chèo cho Đình Bích Lâm bày bán trong Cửa Hàng Gia Tộc, đồng thời chuyển toàn bộ trang phục Võ Phục Vovinam sang thuần thay đổi áo võ bên ngoài, giữ nguyên chiêu thức, chỉ số và nội tại gốc của từng nhân vật.",
+  "requestedBehavior": [
+    "All Vovinam skins only change clothing appearance while preserving each character's own skills, combat stats, weapons, finisher, ultimate, and passives.",
+    "Add 'namcheo' (Ông Năm Chèo — Thủy Bá Bến Cảng) skin for bichlam in the Shop (1,800 Gold) with custom portrait art, tidal appearance overrides, water VFX/particles/trails, passive HUD orb, and Cửu Long Cuộn Sóng ultimate cinematic."
+  ],
+  "allowedFiles": [
+    "assets/images/characters/char_bichlam_namcheo.png",
+    "css/char-select.css",
+    "css/modals-chronicles.css",
+    "css/ui-overhaul.css",
+    "index.html",
+    "js/combat/combat.js",
+    "js/core/effects.js",
+    "js/core/gameRender.js",
+    "js/core/save.js",
+    "js/data/stages.js",
+    "js/entities/allySystem.js",
+    "js/entities/characters/characterRegistry.js",
+    "js/entities/characters/bichlam.js",
+    "js/entities/characters/nghi.js",
+    "js/entities/enemy/baseEnemy.js",
+    "js/entities/enemy/enemyBosses.js",
+    "js/entities/player/playerBase.js",
+    "js/entities/player/playerDamage.js",
+    "js/entities/player/playerInput.js",
+    "js/entities/animation/animationBase.js",
+    "js/entities/animation/animationBody.js",
+    "js/entities/animation/animationRenderBase.js",
+    "js/ui/ui.js",
+    "js/ui/menu/menuBase.js",
+    "js/ui/menu/collections.js",
+    "js/ui/menu/charselect/charSelectCore.js",
+    "js/ui/menu/charselect/charSelectDemo.js",
+    "js/ui/menu/charselect/charSelectDeployment.js",
+    "tests/test_boss_targeting_and_weapon_throw.js",
+    "tests/test_v5_ally_and_moves.js",
+    "tests/test_vovinam_skin_skills.js",
+    "tests/test_skill_animation_overhaul.js",
+    "tests/test_passives_real.js",
+    "tasks/TASK-NAMCHEO-VOVINAM-COSMETIC.json"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-ANM-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "CharacterRegistry",
+    "SaveManager",
+    "PlayerBase",
+    "SkeletalRenderer",
+    "MenuManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 80,
+    "authorizedRemovals": [
+      "Vovinam skin stat/skill/move redirect logic replaced by purely cosmetic outfit application"
+    ]
+  },
+  "requiredTests": [
+    "tests/test_vovinam_skin_skills.js",
+    "tests/test_skill_animation_overhaul.js",
+    "tests/test_passives_real.js",
+    "tests/test_character_visual_fidelity.js",
+    "tests/test_combat.js"
+  ],
+  "acceptanceCriteria": [
+    "Mặc Võ Phục Vovinam chỉ thay áo lam võ đạo & huy hiệu Vovinam, giữ nguyên 100% chiêu thức, vũ khí, tốc độ và nội tại gốc",
+    "Skin Ông Năm Chèo mua được trong Shop (1,800 Vàng), hiển thị trong Kho Đồ & Chọn Tướng và thay đổi đầy đủ ngoại hình + hiệu ứng sóng nước",
+    "Tất cả 25 test suite & headless browser smoke test đạt PASS 100%"
+  ]
+}

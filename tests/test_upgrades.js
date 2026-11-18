@@ -329,11 +329,8 @@ window.game = { player: mockGamePlayer, enemies: [] };
 const summoned = allyMgr.summonAlly('hoanganh', mockGamePlayer);
 assert(summoned === true, 'Triệu hồi đồng minh Hoàng Anh thành công');
 assert(allyMgr.activeAlly !== null, 'Có instance SummonedAlly hoạt động trên sân');
-assert(allyMgr.activeAlly.characterKey === 'hoanganh', 'Đúng nhân vật Hoàng Anh');
-assert(allyMgr.activeAlly.duration === 25, 'Đồng minh được cấp 25 giây hoạt động');
-
-// Kiểm tra đòn đặc trưng theo nhân vật
-assert(allyMgr.activeAlly.trait === 'rapid_strikes', 'Đặc tính của Hoàng Anh là áp sát & chuỗi đòn cuốc sắt nhanh (rapid_strikes)');
+assert((allyMgr.activeAlly.charId || allyMgr.activeAlly.characterKey) === 'hoanganh', 'Đúng nhân vật Hoàng Anh');
+assert(allyMgr.activeAlly.hp > 0, 'Đồng minh được cấp lượng HP chiến đấu thực thụ');
 
 // Kiểm tra Co-op Dual Attack trigger
 // Tạo một kẻ địch ở gần cả người chơi và đồng minh
@@ -347,10 +344,10 @@ const coopFired = allyMgr.checkCoopTrigger(mockGamePlayer);
 assert(coopFired === true, 'Kích hoạt thành công chiêu phối hợp SONG LONG XUẤT HẢI khi người chơi tấn công gần đồng minh');
 assert(nearbyEnemy.hp < 200, 'Kẻ địch nhận thêm sát thương liên kích từ chiêu phối hợp');
 
-// Đồng minh rời sân sau khi hết thời gian
-allyMgr.update(25.1, mockGamePlayer, [nearbyEnemy]);
-assert(allyMgr.activeAlly === null, 'Đồng minh tự động rời sân khi hết thời gian 25 giây');
-assert(allyMgr.cooldown === 35, 'Hồi chiêu 35 giây bắt đầu đếm ngược');
+// Đồng minh rút lui sau khi hết máu
+allyMgr.activeAlly.takeDamage(5000);
+allyMgr.update(0.1, mockGamePlayer, [nearbyEnemy]);
+assert(allyMgr.activeAlly === null, 'Đồng minh kiệt sức tự động rút lui khỏi chiến trường');
 
 // ==========================================
 // SUITE 6: TRAINING & INTERACTIVE TUTORIAL

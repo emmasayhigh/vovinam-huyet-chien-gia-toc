@@ -42,7 +42,7 @@ class EnemyDodger extends BaseEnemy {
 
   checkAttackPlayer(player) {
     const attackData = { damage: 31, offsetX: 58, offsetY: -75, width: 76, height: 55, knockback: 7, isKick: true, counterType: 'leg' };
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
@@ -87,7 +87,7 @@ class EnemyGuard extends BaseEnemy {
 
   checkAttackPlayer(player) {
     const attackData = { damage: 36, offsetX: 55, offsetY: -80, width: 66, height: 55, knockback: 6, counterType: 'hand' };
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 

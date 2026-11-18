@@ -326,11 +326,11 @@ require('../js/ui/training/trainingModes.js');
 require('../js/ui/training/trainingManagerOverlay.js');
 require('../js/ui/training.js');
 
-test('Võ Đường có đầy đủ toàn bộ 7 võ sĩ có thể chơi được', () => {
+test('Võ Đường có đầy đủ toàn bộ 10 võ sĩ (mở full kể cả nhân vật Cửa Hàng)', () => {
   const chars = global.TRAINING_CHARACTERS;
   assert(Array.isArray(chars), 'TRAINING_CHARACTERS phải là một mảng');
-  assert.strictEqual(chars.length, 7, 'Phải có đủ 7 nhân vật trong Võ Đường');
-  const expectedIds = ['nghi', 'dinhan', 'hoanganh', 'bichlam', 'dunghai', 'huavudai', 'giangmanh'];
+  assert.strictEqual(chars.length, 10, 'Phải có đủ 10 nhân vật trong Võ Đường');
+  const expectedIds = ['nghi', 'dinhan', 'hoanganh', 'bichlam', 'dunghai', 'huavudai', 'giangmanh', 'vananh', 'tiendang', 'thienkhanh'];
   const actualIds = chars.map(c => c.id);
   for (const id of expectedIds) {
     assert(actualIds.includes(id), `Thiếu võ sĩ ${id} trong Võ Đường`);
@@ -349,7 +349,7 @@ test('Mỗi nhân vật trong Võ Đường có đầy đủ metadata hình ản
   }
 });
 
-test('Chuyển đổi võ sĩ trong Võ Đường (setPlayerCharacter) áp dụng cho cả 7 nhân vật và reset cooldown', () => {
+test('Chuyển đổi võ sĩ trong Võ Đường (setPlayerCharacter) áp dụng cho cả 9 nhân vật và reset cooldown', () => {
   const dummyPlayer = {
     setCharacter(charId) { this.characterId = charId; this.maxHp = 1000; this.maxEnergy = 100; },
     maxHp: 1000,
@@ -364,7 +364,7 @@ test('Chuyển đổi võ sĩ trong Võ Đường (setPlayerCharacter) áp dụn
   global.game = { player: dummyPlayer };
   const tm = new global.TrainingManager();
 
-  const allIds = ['nghi', 'dinhan', 'hoanganh', 'bichlam', 'dunghai', 'huavudai', 'giangmanh'];
+  const allIds = ['nghi', 'dinhan', 'hoanganh', 'bichlam', 'dunghai', 'huavudai', 'giangmanh', 'vananh', 'tiendang', 'thienkhanh'];
   for (const id of allIds) {
     tm.setPlayerCharacter(id);
     assert.strictEqual(dummyPlayer.characterId, id, `Nhân vật phải là ${id}`);

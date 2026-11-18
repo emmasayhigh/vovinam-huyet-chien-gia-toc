@@ -1,0 +1,15 @@
+node_modules
+.git
+.vscode
+.playwright-mcp
+.vercel
+.env*
+backup
+archive
+harness
+tests
+tasks
+docs
+Biên Niên*
+*.rtf
+.DS_Store

@@ -4,99 +4,63 @@
  */
 
 window.addEventListener('DOMContentLoaded', () => {
-  // 1. Kết Nối Sự Kiện Các Nút Trên Màn Hình Chính
-  const btnStart = document.getElementById('btn-start-game');
-  if (btnStart) {
-    btnStart.addEventListener('click', () => {
-      unlockAudio();
-      if (window.tutorialManager && window.tutorialManager.isTutorialNeeded()) {
-        window.tutorialManager.showInviteModal(
-          () => {
-            if (window.uiManager) window.uiManager.hideTitleScreen();
-            window.tutorialManager.startTutorial();
-          },
-          () => {
-            if (window.saveManager) window.saveManager.skipTutorial();
-            if (window.uiManager) window.uiManager.hideTitleScreen();
-            if (window.menuManager) window.menuManager.openCharSelect(1);
-            else window.game.startStage(1);
-          }
-        );
-      } else {
-        if (window.uiManager) window.uiManager.hideTitleScreen();
-        if (window.menuManager) window.menuManager.openCharSelect(1);
-        else window.game.startStage(1);
-      }
-    });
-  }
-
-  // Tiếp tục chiến dịch ở màn chơi gần nhất (theo dữ liệu lưu)
-  const btnContinue = document.getElementById('btn-continue-game');
-  if (btnContinue) {
-    btnContinue.addEventListener('click', () => {
-      unlockAudio();
-      const stage = (window.saveManager && window.saveManager.data.currentStage) || 1;
-      // Nếu đã đánh xong màn cuối (currentStage vượt danh sách) -> quay lại màn cuối để xem kết thúc again
-      const keys = window.stageManager && window.stageManager.stages
-        ? Object.keys(window.stageManager.stages).map(Number) : [];
-      const maxStage = keys.length ? Math.max(...keys) : stage;
-      const targetStage = Math.min(stage, maxStage);
-      if (window.uiManager) window.uiManager.hideTitleScreen();
-      if (window.menuManager) window.menuManager.openCharSelect(targetStage);
-      else window.game.startStage(targetStage);
-    });
-  }
-
-  // Các màn hình menu mới (Chọn nhân vật / Bản đồ chương / Hồ sơ / Bộ sưu tập / Thành tích / Cài đặt / Luyện võ / Tái đấu / Suy luận)
+  // 1. Kết Nối Sự Kiện Các Nút Trên Màn Hình Chính Điện Ảnh (Cinematic Menu)
   const openMenu = (fn) => () => { unlockAudio(); fn(); };
   const menu = () => window.menuManager;
   const bind = (id, fn) => {
     const el = document.getElementById(id);
+    if (!el || el.__vovClickBound) return;
+    el.__vovClickBound = true;
     if (el) el.addEventListener('click', openMenu(fn));
   };
+
   bind('btn-campaign-hub', () => { if (menu()) menu().showCampaignHub(); });
-  bind('btn-char-select', () => { menu().openCharSelect(null); });
-  bind('btn-chronicles', () => menu().showChronicles());
-  bind('btn-quick-chronicles', () => menu().showChronicles());
-  bind('btn-chapter-map', () => menu().showChapterMap());
-  bind('btn-dossier', () => menu().showDossier());
-  bind('btn-collection', () => menu().showCollection());
-  bind('btn-achievements', () => menu().showAchievements());
-  bind('btn-settings', () => menu().showSettings());
+  bind('btn-char-select', () => { if (menu()) menu().openCharSelect(null); });
+  bind('btn-quick-chronicles', () => { if (menu()) menu().showChronicles('docs', { fromCampaignHub: false }); });
+  bind('btn-dossier', () => { if (menu()) menu().showDossier(); });
+  bind('btn-collection', () => { if (menu()) menu().showCollection(); });
+  bind('btn-achievements', () => { if (menu()) menu().showAchievements(); });
+  bind('btn-settings', () => { if (menu()) menu().showSettings(); });
   bind('btn-training', () => {
-    if (window.trainingManager) {
-      window.trainingManager.showModeSelectModal();
+    if (menu()) {
+      menu().openCharSelect('training');
+    } else if (window.trainingManager) {
+      window.trainingManager.startTraining('free', 0, 'nghi');
     }
   });
-  bind('btn-boss-rush', () => {
-    if (window.bossRushManager) window.bossRushManager.showMenu();
-  });
-  bind('btn-deduction', () => {
-    if (window.deductionManager) window.deductionManager.showBoard();
-  });
 
-  // Thẻ tính năng & sự kiện trên màn hình chính mới
-  bind('card-feature-story', () => menu().showChronicles());
+  // Thẻ tính năng & sự kiện trên màn hình chính
+  bind('card-feature-story', () => { if (menu()) menu().showChronicles('docs', { fromCampaignHub: false }); });
   bind('card-feature-event', () => {
-    if (window.bossRushManager) window.bossRushManager.showMenu();
+    if (window.bossRushManager) window.bossRushManager.showMenu({ fromCampaignHub: false });
   });
-  bind('card-feature-map', () => menu().showChapterMap());
+  bind('card-feature-map', () => { if (menu()) menu().showChapterMap({ fromCampaignHub: false }); });
   bind('card-feature-battlegrounds', () => {
-    if (window.trainingManager) {
-      window.trainingManager.showModeSelectModal();
+    if (menu()) {
+      menu().openCharSelect('training');
+    } else if (window.trainingManager) {
+      window.trainingManager.startTraining('free', 0, 'nghi');
     }
   });
 
-  // Modal Trang Bị & Kỹ Năng
+  // Modal Trang Bị & Kỹ Năng (Kho Đồ Studio)
   const skillsModal = document.getElementById('skills-equip-modal');
   bind('btn-skills-equip', () => {
-    if (skillsModal) skillsModal.classList.remove('hidden');
+    if (menu() && typeof menu().showSkillsEquip === 'function') {
+      menu().showSkillsEquip();
+    } else if (window.uiCore && skillsModal) {
+      window.uiCore.showModal(skillsModal);
+    } else if (skillsModal) {
+      skillsModal.classList.remove('hidden');
+    }
   });
   bind('btn-close-skills-equip', () => {
-    if (skillsModal) skillsModal.classList.add('hidden');
+    if (window.uiCore && skillsModal) window.uiCore.hideModal(skillsModal);
+    else if (skillsModal) skillsModal.classList.add('hidden');
   });
   bind('btn-skills-equip-close-x', () => {
-    if (skillsModal) skillsModal.classList.add('hidden');
+    if (window.uiCore && skillsModal) window.uiCore.hideModal(skillsModal);
+    else if (skillsModal) skillsModal.classList.add('hidden');
   });
   if (skillsModal) {
     skillsModal.addEventListener('click', (e) => {
@@ -126,6 +90,98 @@ window.addEventListener('DOMContentLoaded', () => {
       window.location.reload();
     }, 600);
   });
+
+  // Nút Thoát trên Top Bar
+  bind('btn-top-exit', () => {
+    if (exitModal) exitModal.classList.remove('hidden');
+  });
+
+  // Các nút điều hướng mới trên Main Menu AAA
+  bind('btn-nav-solo', () => { if (menu()) menu().showChapterMap({ fromCampaignHub: false }); });
+  bind('btn-nav-arena', () => {
+    if (window.trainingManager) {
+      window.trainingManager.showModeSelectModal();
+    } else if (window.bossRushManager) {
+      window.bossRushManager.showMenu({ fromCampaignHub: false });
+    }
+  });
+  bind('card-mini-event', () => {
+    if (window.bossRushManager) window.bossRushManager.showMenu({ fromCampaignHub: false });
+  });
+
+  // Modal Thông Báo & Cập Nhật v5.22
+  const notifModal = document.getElementById('notif-modal');
+  bind('btn-top-notif', () => { if (notifModal) notifModal.classList.remove('hidden'); });
+  bind('btn-notif-close-x', () => { if (notifModal) notifModal.classList.add('hidden'); });
+  bind('btn-notif-confirm', () => { if (notifModal) notifModal.classList.add('hidden'); });
+  if (notifModal) {
+    notifModal.addEventListener('click', (e) => {
+      if (e.target === notifModal) notifModal.classList.add('hidden');
+    });
+  }
+
+  // Hồ Sơ Người Chơi & Gia Tộc (Tách riêng với Hồ Sơ Nhân Vật)
+  bind('btn-top-profile', () => { if (menu()) menu().showPlayerProfile(); });
+  bind('menu-player-bar', () => { if (menu()) menu().showPlayerProfile(); });
+  bind('btn-top-dossier', () => { if (menu()) menu().showDossier(); });
+  bind('btn-top-settings', () => { if (menu()) menu().showSettings(); });
+
+  // Modal Hộp Thư Gia Tộc
+  const mailModal = document.getElementById('mail-modal');
+  bind('btn-quick-mail', () => { if (mailModal) mailModal.classList.remove('hidden'); });
+  bind('btn-mail-close-x', () => { if (mailModal) mailModal.classList.add('hidden'); });
+  bind('btn-mail-close', () => { if (mailModal) mailModal.classList.add('hidden'); });
+  if (mailModal) {
+    mailModal.addEventListener('click', (e) => {
+      if (e.target === mailModal) mailModal.classList.add('hidden');
+    });
+  }
+  document.querySelectorAll('.btn-claim-mail').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.textContent = 'ĐÃ NHẬN ✓';
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      if (window.uiManager) window.uiManager.showToast('ĐÃ NHẬN THƯỞNG: +500 NỘ KHÍ GIA TỘC!');
+    });
+  });
+
+  // Modal Nhiệm Vụ & Thành Tích
+  const questsModal = document.getElementById('quests-modal');
+  bind('btn-quick-quests', () => { if (questsModal) questsModal.classList.remove('hidden'); });
+  bind('btn-quests-close-x', () => { if (questsModal) questsModal.classList.add('hidden'); });
+  bind('btn-quests-close', () => { if (questsModal) questsModal.classList.add('hidden'); });
+  if (questsModal) {
+    questsModal.addEventListener('click', (e) => {
+      if (e.target === questsModal) questsModal.classList.add('hidden');
+    });
+  }
+  document.querySelectorAll('.btn-claim-quest').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.textContent = 'ĐÃ NHẬN ⭐';
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      if (window.uiManager) window.uiManager.showToast('HOÀN THÀNH NHIỆM VỤ GIA TỘC!');
+    });
+  });
+
+  // Modal Bạn Bè / Đồng Môn Vovinam
+  const friendsModal = document.getElementById('friends-modal');
+  bind('btn-quick-friends', () => { if (friendsModal) friendsModal.classList.remove('hidden'); });
+  bind('btn-friends-close-x', () => { if (friendsModal) friendsModal.classList.add('hidden'); });
+  bind('btn-friends-close', () => { if (friendsModal) friendsModal.classList.add('hidden'); });
+  if (friendsModal) {
+    friendsModal.addEventListener('click', (e) => {
+      if (e.target === friendsModal) friendsModal.classList.add('hidden');
+    });
+  }
+
+  // Bảng Xếp Hạng
+  bind('btn-quick-ranking', () => { if (menu()) menu().showAchievements(); });
+
+  // News items tương tác
+  bind('news-row-1', () => { if (menu()) menu().showChapterMap(); });
+  bind('news-row-2', () => { if (menu()) menu().openCharSelect(); });
+  bind('news-row-3', () => { if (mailModal) mailModal.classList.remove('hidden'); });
 
   // Nút âm thanh thanh điều hướng trên cùng
   const btnTopAudio = document.getElementById('btn-top-audio');
@@ -162,7 +218,20 @@ window.addEventListener('DOMContentLoaded', () => {
     btnEndingReplay.addEventListener('click', () => {
       unlockAudio();
       window.uiManager.hideEnding();
-      window.game.startStage(1);
+      if (window.menuManager && typeof window.menuManager.openCharSelect === 'function') {
+        window.menuManager.openCharSelect(1);
+      } else if (window.game) {
+        window.game.startStage(1);
+      }
+    });
+  }
+  const btnEndingCloseX = document.getElementById('btn-ending-close-x');
+  if (btnEndingCloseX) {
+    btnEndingCloseX.addEventListener('click', () => {
+      unlockAudio();
+      window.uiManager.hideEnding();
+      if (window.game) window.game.state = 'MENU';
+      if (window.uiManager) window.uiManager.showTitleScreen();
     });
   }
   const btnEndingChapters = document.getElementById('btn-ending-chapters');
@@ -198,25 +267,6 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
-  const btnCloseStages = document.getElementById('btn-close-stages');
-  if (btnCloseStages) {
-    btnCloseStages.addEventListener('click', () => {
-      unlockAudio();
-      window.uiManager.hideStageSelect();
-    });
-  }
-
-  // Chọn màn chơi trực tiếp
-  const stageCards = document.querySelectorAll('.stage-card');
-  stageCards.forEach(card => {
-    card.addEventListener('click', () => {
-      unlockAudio();
-      const stageNum = parseInt(card.getAttribute('data-stage'), 10) || 1;
-      window.uiManager.hideStageSelect();
-      window.game.startStage(stageNum);
-    });
-  });
 
   const btnHowToPlay = document.getElementById('btn-how-to-play');
   if (btnHowToPlay) {
@@ -276,6 +326,11 @@ window.addEventListener('DOMContentLoaded', () => {
   if (btnRestartStage) {
     btnRestartStage.addEventListener('click', () => {
       unlockAudio();
+      if (window.onlineManager && window.onlineManager.isActive) {
+        if (window.uiManager) window.uiManager.hidePause();
+        window.onlineManager.requestRematch();
+        return;
+      }
       if (window.game && window.game.previousState === 'TRAINING' && window.trainingManager) {
         if (window.uiManager) window.uiManager.hidePause();
         const mode = window.trainingManager.mode || 'free';
@@ -314,6 +369,10 @@ window.addEventListener('DOMContentLoaded', () => {
   if (btnQuitMenu) {
     btnQuitMenu.addEventListener('click', () => {
       unlockAudio();
+      if (window.onlineManager && window.onlineManager.isActive) {
+        window.onlineManager.leaveMatch(false);
+        return;
+      }
       if (window.game && typeof window.game.returnToMenu === 'function') {
         window.game.returnToMenu();
       } else {
@@ -330,6 +389,11 @@ window.addEventListener('DOMContentLoaded', () => {
   if (btnNextStage) {
     btnNextStage.addEventListener('click', () => {
       unlockAudio();
+      if (window.onlineManager && window.onlineManager.isActive) {
+        window.uiManager.hideStageClear();
+        window.onlineManager.leaveMatch(true);
+        return;
+      }
       const cur = window.stageManager.currentStageIndex;
       const meta = window.STORY_META && window.STORY_META.stages ? window.STORY_META.stages[cur] : null;
       let next = meta ? meta.next : cur + 1;
@@ -359,10 +423,35 @@ window.addEventListener('DOMContentLoaded', () => {
     btnVictoryReplay.addEventListener('click', () => {
       unlockAudio();
       window.uiManager.hideStageClear();
+      if (window.onlineManager && window.onlineManager.isActive) {
+        window.onlineManager.requestRematch();
+        return;
+      }
       if (window.menuManager) {
         window.menuManager.openCharSelect(window.stageManager.currentStageIndex);
       } else {
         window.game.startStage(window.stageManager.currentStageIndex);
+      }
+    });
+  }
+
+  const btnVictoryMenu = document.getElementById('btn-victory-menu');
+  if (btnVictoryMenu) {
+    btnVictoryMenu.addEventListener('click', () => {
+      unlockAudio();
+      if (window.uiManager) window.uiManager.hideStageClear();
+      if (window.onlineManager && window.onlineManager.isActive) {
+        window.onlineManager.leaveMatch(false);
+        return;
+      }
+      if (window.game && typeof window.game.returnToMenu === 'function') {
+        window.game.returnToMenu();
+      } else {
+        if (window.game) window.game.state = 'MENU';
+        if (window.uiManager) window.uiManager.showTitleScreen();
+      }
+      if (window.menuManager && typeof window.menuManager.updateMenuPlayerBar === 'function') {
+        window.menuManager.updateMenuPlayerBar();
       }
     });
   }
@@ -372,7 +461,16 @@ window.addEventListener('DOMContentLoaded', () => {
   if (btnRetry) {
     btnRetry.addEventListener('click', () => {
       unlockAudio();
-      window.game.startStage(window.stageManager.currentStageIndex);
+      if (window.onlineManager && window.onlineManager.isActive) {
+        window.onlineManager.requestRematch();
+        return;
+      }
+      if (window.game && window.game.isBossRush && window.bossRushManager && window.bossRushManager.activeChallenge) {
+        const chal = window.bossRushManager.activeChallenge;
+        window.bossRushManager.launchBossDuel(chal.bossDef, chal.modifierId);
+      } else {
+        window.game.startStage(window.stageManager.currentStageIndex);
+      }
     });
   }
 
@@ -380,9 +478,19 @@ window.addEventListener('DOMContentLoaded', () => {
   if (btnGameOverMenu) {
     btnGameOverMenu.addEventListener('click', () => {
       unlockAudio();
+      if (window.onlineManager && window.onlineManager.isActive) {
+        window.onlineManager.leaveMatch(false);
+        return;
+      }
+      if (window.game) {
+        if (window.game.isBossRush) {
+          window.game.isBossRush = false;
+          if (window.bossRushManager) window.bossRushManager.activeChallenge = null;
+        }
+        window.game.state = 'MENU';
+      }
       window.uiManager.hideGameOver();
       window.uiManager.showTitleScreen();
-      window.game.state = 'MENU';
     });
   }
 
@@ -438,10 +546,10 @@ window.addEventListener('DOMContentLoaded', () => {
   if (btnQuickPause) {
     btnQuickPause.addEventListener('click', () => {
       unlockAudio();
-      if (window.game.state === 'PLAYING' || window.game.state === 'TRAINING' || window.game.state === 'TUTORIAL') {
-        window.game.pauseGame();
-      } else if (window.game.state === 'PAUSED') {
+      if (window.game.state === 'PAUSED' || window.game._onlinePauseOpen) {
         window.game.resumeGame();
+      } else if (window.game.state === 'PLAYING' || window.game.state === 'TRAINING' || window.game.state === 'TUTORIAL') {
+        window.game.pauseGame();
       }
     });
   }
@@ -471,6 +579,22 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // 8. Phím Tắt Toàn Cục (ESC = Pause / Close Modal, M = Mute, F = Fullscreen, TAB = Skip Dialogue)
   window.addEventListener('keydown', (e) => {
+    const activeEl = e.target || document.activeElement;
+    if (activeEl) {
+      const tag = String(activeEl.tagName || '').toUpperCase();
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || activeEl.isContentEditable) {
+        if (e.code === 'Escape' && typeof activeEl.blur === 'function') {
+          activeEl.blur();
+        }
+        return;
+      }
+    }
+
+    const loginGate = document.getElementById('login-gate-overlay');
+    if (loginGate && loginGate.classList && !loginGate.classList.contains('hidden')) {
+      return;
+    }
+
     if (e.code === 'Escape') {
       // Ưu tiên 1: Nếu hộp thoại Quyết định Quyền nắm giữ đang mở -> Đóng an toàn & khôi phục game
       const custodyModal = document.getElementById('custody-modal');
@@ -503,10 +627,76 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Ưu tiên 4: Nếu bất kỳ modal menu nào khác đang mở -> Đóng tất cả
+      // Ưu tiên 4: Màn chọn nhân vật cần trả về đúng ngữ cảnh (kết quả màn / chương hồi / chiến dịch / menu)
+      const charSelectModal = document.getElementById('char-select-modal');
+      if (charSelectModal && !charSelectModal.classList.contains('hidden')) {
+        if (window.menuManager) window.menuManager.closeCharSelect();
+        return;
+      }
+
+      // Ưu tiên 4.1: Hộp thoại xác nhận Hành Trình Mới -> Chỉ đóng hộp thoại, giữ nguyên menu Chiến Dịch
+      const newgameModal = document.getElementById('newgame-confirm-modal');
+      if (newgameModal && !newgameModal.classList.contains('hidden')) {
+        newgameModal.classList.add('hidden');
+        return;
+      }
+
+      // Ưu tiên 4.2: Bản đồ Chương Hồi -> Trả về menu Chiến Dịch (nếu mở từ đó) hoặc màn hình chính
+      const chapterMapModal = document.getElementById('chapter-map-modal');
+      if (chapterMapModal && !chapterMapModal.classList.contains('hidden')) {
+        if (window.menuManager && typeof window.menuManager.closeChapterMap === 'function') {
+          window.menuManager.closeChapterMap();
+        } else if (window.menuManager) {
+          window.menuManager.hideAll();
+        }
+        return;
+      }
+
+      // Ưu tiên 4.3: Liên Đấu Trùm (Boss Rush) -> Trả về menu Chiến Dịch (nếu mở từ đó) hoặc màn hình chính
+      const bossRushModal = document.getElementById('boss-rush-modal');
+      if (bossRushModal && !bossRushModal.classList.contains('hidden')) {
+        if (window.bossRushManager && typeof window.bossRushManager.closeMenu === 'function') {
+          window.bossRushManager.closeMenu();
+        } else if (window.bossRushManager) {
+          window.bossRushManager.hideMenu();
+        }
+        return;
+      }
+
+      // Ưu tiên 4.4: Menu Chiến Dịch -> Đóng về màn hình chính
+      const campaignModal = document.getElementById('campaign-modal');
+      if (campaignModal && !campaignModal.classList.contains('hidden')) {
+        if (window.menuManager && typeof window.menuManager.hideCampaignHub === 'function') {
+          window.menuManager.hideCampaignHub();
+        }
+        return;
+      }
+
+      // Ưu tiên 5: Nếu modal Tài khoản hoặc Đấu Online hoặc modal menu nào khác đang mở -> Đóng an toàn
+      const accountModal = document.getElementById('account-modal');
+      if (accountModal && !accountModal.classList.contains('hidden')) {
+        if (window.accountManager && typeof window.accountManager.closeModal === 'function') {
+          window.accountManager.closeModal();
+        } else {
+          accountModal.classList.add('hidden');
+        }
+        return;
+      }
+
+      const onlineModal = document.getElementById('online-modal');
+      if (onlineModal && !onlineModal.classList.contains('hidden')) {
+        if (window.onlineManager && typeof window.onlineManager.closeModal === 'function') {
+          window.onlineManager.closeModal();
+        } else {
+          onlineModal.classList.add('hidden');
+        }
+        return;
+      }
+
       const otherModalIds = [
-        'char-select-modal', 'chapter-map-modal', 'dossier-modal',
-        'collection-modal', 'achievements-modal', 'settings-modal', 'credits-modal'
+        'player-profile-modal', 'dossier-modal',
+        'collection-modal', 'achievements-modal', 'settings-modal', 'credits-modal',
+        'account-modal', 'online-modal'
       ];
       const anyOtherOpen = otherModalIds.some(id => {
         const el = document.getElementById(id);
@@ -517,12 +707,14 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Ưu tiên 5: Bật / Tắt Tạm Dừng trận đánh / đấu luyện / hướng dẫn
+      // Ưu tiên 6: Bật / Tắt Tạm Dừng trận đánh / đấu luyện / hướng dẫn
       if (window.game) {
-        if (window.game.state === 'PLAYING' || window.game.state === 'TRAINING' || window.game.state === 'TUTORIAL') {
-          window.game.pauseGame();
-        } else if (window.game.state === 'PAUSED') {
+        const pauseModalEl = document.getElementById('pause-modal');
+        const pauseModalShown = !!(pauseModalEl && !pauseModalEl.classList.contains('hidden'));
+        if (window.game.state === 'PAUSED' || window.game._onlinePauseOpen || pauseModalShown) {
           window.game.resumeGame();
+        } else if (window.game.state === 'PLAYING' || window.game.state === 'TRAINING' || window.game.state === 'TUTORIAL') {
+          window.game.pauseGame();
         }
       }
     } else if (e.code === 'KeyM') {
@@ -633,23 +825,27 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    let lastTime = performance.now();
-    function render(time) {
-      lastTime = time;
+    let rafActive = false;
+    let petalTimer = 0;
 
+    function canAnimatePetals() {
+      if (typeof document !== 'undefined' && document.hidden) return false;
       const titleScreen = document.getElementById('title-screen');
-      if (!titleScreen || titleScreen.classList.contains('hidden')) {
-        requestAnimationFrame(render);
-        return;
+      if (!titleScreen || titleScreen.classList.contains('hidden')) return false;
+      if (window.uiCore && typeof window.uiCore.isMainMenuActive === 'function') {
+        return window.uiCore.isMainMenuActive();
       }
+      return true;
+    }
 
+    function drawPetals(stepDt, elapsedSec) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       for (let i = 0; i < petals.length; i++) {
         const p = petals[i];
-        p.angle += p.angularSpeed;
-        p.x += (p.vx + Math.sin(time * 0.001 * p.oscillationSpeed * 60 + p.seed) * 0.7);
-        p.y += p.vy;
+        p.angle += p.angularSpeed * stepDt;
+        p.x += (p.vx + Math.sin(elapsedSec * p.oscillationSpeed * 60 + p.seed) * 0.7) * stepDt;
+        p.y += p.vy * stepDt;
 
         if (p.x > canvas.width + 30) p.x = -30;
         if (p.y > canvas.height + 30) {
@@ -661,10 +857,8 @@ window.addEventListener('DOMContentLoaded', () => {
         ctx.translate(p.x, p.y);
         ctx.rotate(p.angle);
         ctx.fillStyle = p.color;
-        ctx.shadowColor = 'rgba(220, 38, 38, 0.45)';
-        ctx.shadowBlur = 4;
 
-        // Vẽ cánh hoa mềm mại
+        // Vẽ cánh hoa mềm mại (bỏ shadowBlur thời gian thực để tối ưu GPU/CPU menu)
         ctx.beginPath();
         ctx.moveTo(0, -p.size);
         ctx.bezierCurveTo(p.size * 0.75, -p.size * 0.5, p.size * 0.75, p.size * 0.5, 0, p.size);
@@ -673,11 +867,54 @@ window.addEventListener('DOMContentLoaded', () => {
 
         ctx.restore();
       }
+    }
+
+    let lastTime = performance.now();
+    function render(time) {
+      if (!canAnimatePetals()) {
+        rafActive = false;
+        return;
+      }
+
+      const elapsedMs = time - lastTime;
+      lastTime = time;
+      petalTimer += Math.min(0.05, Math.max(0.004, elapsedMs / 1000));
+      const stepDt = Math.min(2.5, Math.max(0.4, elapsedMs / 16.67));
+
+      drawPetals(stepDt, petalTimer);
+
+      if (window.uiCore && window.uiCore.prefersReducedMotion()) {
+        rafActive = false;
+        return;
+      }
 
       requestAnimationFrame(render);
     }
 
-    requestAnimationFrame(render);
+    function startPetals() {
+      if (!canAnimatePetals()) {
+        rafActive = false;
+        return;
+      }
+      if (window.uiCore && window.uiCore.prefersReducedMotion()) {
+        drawPetals(0, petalTimer);
+        rafActive = false;
+        return;
+      }
+      if (rafActive) return;
+      rafActive = true;
+      lastTime = performance.now();
+      requestAnimationFrame(render);
+    }
+
+    if (window.uiCore && typeof window.uiCore.onOverlayChange === 'function') {
+      window.uiCore.onOverlayChange(startPetals);
+    }
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      document.addEventListener('visibilitychange', startPetals);
+    }
+
+    startPetals();
   }
 
   initMenuPetals();
@@ -692,6 +929,9 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   window.addEventListener('blur', autoPauseOnLeave);
 
-  // Khởi động Canvas Renderer
+  // Khởi động Canvas Renderer & Nạp trước tài nguyên nhân vật ở nền rảnh
   window.game.startLoop();
+  if (window.uiCore && typeof window.uiCore.warmCharacterAssets === 'function') {
+    window.uiCore.warmCharacterAssets();
+  }
 });

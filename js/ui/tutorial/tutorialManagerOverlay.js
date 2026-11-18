@@ -78,11 +78,13 @@ class TutorialManagerOverlay extends window.TutorialManagerBase {
 
   showInviteModal(onAccept, onSkip) {
     let modal = document.getElementById('tutorial-invite-modal');
+    const uiLayer = document.getElementById('ui-layer') || document.body;
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'tutorial-invite-modal';
       modal.className = 'tut-invite-modal';
-      const uiLayer = document.getElementById('ui-layer') || document.body;
+      uiLayer.appendChild(modal);
+    } else if (modal.parentElement !== uiLayer) {
       uiLayer.appendChild(modal);
     }
 
@@ -92,29 +94,81 @@ class TutorialManagerOverlay extends window.TutorialManagerBase {
         <h2>CHÀO MỪNG ĐẾN VỚI VIỆT VÕ ĐẠO</h2>
         <p>Bạn có muốn bước vào Võ Đường Huấn Luyện để làm quen bộ pháp di chuyển, đòn quyền cước, thân pháp né đòn và tuyệt kỹ phản đòn cùng Sư Huynh không?</p>
         <div class="tut-grad-actions">
-          <button id="btn-invite-accept" class="btn-grad-primary">🥋 VÀO HƯỚNG DẪN TÂN THỦ (KHUYÊN DÙNG)</button>
-          <button id="btn-invite-skip" class="btn-grad-secondary">⏩ BỎ QUA, VÀO CHIẾN DỊCH</button>
+          <button id="btn-invite-accept" class="btn-grad-primary">🥋 VÀO HƯỚNG DẪN TÂN THỦ (KHUYÊN DÙNG) [ENTER]</button>
+          <button id="btn-invite-skip" class="btn-grad-secondary">⏩ BỎ QUA, VÀO CHIẾN DỊCH [ESC]</button>
         </div>
       </div>
     `;
 
+    // Thiết lập phong cách inline chắc chắn luôn nổi lên trên cùng (Topmost AAA)
+    modal.style.position = 'absolute';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.background = 'rgba(4, 7, 14, 0.9)';
+    modal.style.backdropFilter = 'blur(16px)';
+    modal.style.webkitBackdropFilter = 'blur(16px)';
+    modal.style.zIndex = '99999';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.pointerEvents = 'auto';
+
     modal.classList.remove('hidden');
     this.inviteModalEl = modal;
 
+    const cleanup = () => {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+      if (typeof window !== 'undefined' && this._inviteKeyHandler) {
+        window.removeEventListener('keydown', this._inviteKeyHandler);
+        this._inviteKeyHandler = null;
+      }
+    };
+
+    const doAccept = () => {
+      cleanup();
+      if (typeof onAccept === 'function') onAccept();
+    };
+
+    const doSkip = () => {
+      cleanup();
+      if (typeof onSkip === 'function') onSkip();
+    };
+
     const btnAccept = modal.querySelector('#btn-invite-accept');
     if (btnAccept) {
-      btnAccept.addEventListener('click', () => {
-        modal.classList.add('hidden');
-        if (onAccept) onAccept();
-      });
+      btnAccept.onclick = (e) => {
+        if (e && e.stopPropagation) e.stopPropagation();
+        doAccept();
+      };
     }
 
     const btnSkip = modal.querySelector('#btn-invite-skip');
     if (btnSkip) {
-      btnSkip.addEventListener('click', () => {
-        modal.classList.add('hidden');
-        if (onSkip) onSkip();
-      });
+      btnSkip.onclick = (e) => {
+        if (e && e.stopPropagation) e.stopPropagation();
+        doSkip();
+      };
+    }
+
+    // Hỗ trợ phím Enter / Space để vào hướng dẫn, Escape để bỏ qua
+    if (typeof window !== 'undefined') {
+      if (this._inviteKeyHandler) {
+        window.removeEventListener('keydown', this._inviteKeyHandler);
+      }
+      this._inviteKeyHandler = (e) => {
+        if (modal.classList.contains('hidden') || modal.style.display === 'none') return;
+        if (e.code === 'Enter' || e.code === 'Space') {
+          e.preventDefault();
+          doAccept();
+        } else if (e.code === 'Escape') {
+          e.preventDefault();
+          doSkip();
+        }
+      };
+      window.addEventListener('keydown', this._inviteKeyHandler);
     }
   }
 

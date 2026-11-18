@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-20261107-MENU-CLEANUP",
+  "title": "Tối Ưu & Tinh Gọn Giao Diện Main Menu Điện Ảnh Võ Thuật",
+  "author": "Antigravity Senior Architect",
+  "date": "2026-11-07",
+  "objective": "Loại bỏ tình trạng quá tải thông tin dạng webgame/gacha rác (cột tin tức bên phải, banner sự kiện trùng lặp, thanh quick-bar giả lập), giải phóng không gian màn hình để làm nổi bật tác phẩm nghệ thuật điện ảnh cổng phủ dưới trăng, và tái cấu trúc menu chính thành phong cách Beat'em Up / Fighting Game sang trọng.",
+  "requestedBehavior": "Main menu hiển thị thoáng đãng với tỷ lệ vàng: Cột menu bên trái tinh gọn 5 mục cốt lõi; Toàn bộ phần giữa và bên phải dành trọn cho nhân vật võ sinh, cổng phủ trăng rằm và hiệu ứng cánh hoa bay; Ẩn các khối thông tin giả lập (tin tức cũ, banner duplicate); Đảm bảo 100% logic khởi động màn chơi, chọn nhân vật, vào võ đường, cài đặt và phím tắt hoạt động hoàn hảo.",
+  "allowedFiles": [
+    "css/menu.css",
+    "index.html",
+    "tasks/TASK-MENU-REFRESH.json"
+  ],
+  "relatedFeatures": [
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "MenuBase",
+    "UIManager",
+    "GameFlow"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 70,
+    "authorizedRemovals": [
+      "Redundant duplicate nav buttons (BẮT ĐẦU vs CHƠI ĐƠN) in index.html to streamline into CHIẾN DỊCH, VÕ ĐƯỜNG, VÕ SĨ, KHO ĐỒ, CÀI ĐẶT"
+    ]
+  },
+  "requiredTests": [
+    "tests/test_combat.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "Giao diện menu thoáng đãng, nhân vật trung tâm không còn bị kẹp hẹp giữa 2 cột đen",
+    "Bỏ cột tin tức rác bên phải và banner sự kiện trùng lặp",
+    "Các nút cốt lõi (Chiến dịch, Võ đường, Võ sĩ, Thành tựu, Cài đặt) hoạt động chính xác",
+    "19 bộ regression test suite pass 100%",
+    "Browser smoke pass với 0 console error"
+  ]
+}

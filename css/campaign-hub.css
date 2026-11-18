@@ -1,0 +1,708 @@
+/* ==========================================================================
+   VOVINAM: HUYẾT CHIẾN GIA TỘC — CSS MODULE: CAMPAIGN HUB (5 POSTER PILLARS)
+   (Tách từ css/menu.css để dễ bảo trì & fix bug)
+   ========================================================================== */
+
+/* ==========================================================================
+   CAMPAIGN HUB — 5 VERTICAL ILLUSTRATED POSTER PILLARS
+   (Vovinam Royal Blue & Imperial Gold Edition — Inspired by Classic 5-Pillar Mode Showcase)
+   ========================================================================== */
+#campaign-modal.vov-campaign-screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 18px 28px 22px;
+  box-sizing: border-box;
+  overflow: hidden;
+  z-index: 500;
+  background: #040814;
+  user-select: none;
+}
+
+#campaign-modal.vov-campaign-screen.hidden {
+  display: none !important;
+}
+
+#newgame-confirm-modal {
+  z-index: 650 !important;
+}
+
+#campaign-modal.vov-campaign-screen .vov-campaign-stage {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1380px;
+  height: 100%;
+  max-height: 820px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.vov-campaign-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 25%, rgba(29, 78, 216, 0.32) 0%, transparent 65%),
+    linear-gradient(180deg, rgba(4, 10, 26, 0.45) 0%, rgba(4, 8, 20, 0.82) 60%, rgba(2, 5, 14, 0.95) 100%),
+    url('../assets/images/backgrounds/vovinam_epic_menu_bg.jpg') center center / cover no-repeat;
+  filter: saturate(1.12) contrast(1.06);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.vov-campaign-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 45%, rgba(2, 4, 12, 0.88) 100%),
+    repeating-linear-gradient(90deg, rgba(255, 215, 0, 0.015) 0px, rgba(255, 215, 0, 0.015) 1px, transparent 1px, transparent 80px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Top Bar: Wooden/Gold Hanging Plaque Back Button + Crest Title */
+.vov-campaign-topbar {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-shrink: 0;
+  padding: 4px 6px 0;
+}
+
+.vov-back-plaque {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px 9px 14px;
+  background: linear-gradient(180deg, #5c3a18 0%, #3b230d 52%, #241406 100%);
+  border: 2px solid #eab308;
+  border-radius: 8px;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(254, 240, 138, 0.55),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.65);
+  color: #fef08a;
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+/* Dây treo kim loại phía trên bảng gỗ (Hanging chains like classic mode select) */
+.vov-plaque-chain {
+  position: absolute;
+  top: -22px;
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(90deg, #9ca3af, #f3f4f6, #4b5563);
+  border-left: 1px solid #1f2937;
+  border-right: 1px solid #1f2937;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+.vov-plaque-chain.left { left: 14px; }
+.vov-plaque-chain.right { right: 14px; }
+
+.vov-back-plaque:hover {
+  transform: translateY(-2px) scale(1.03);
+  filter: brightness(1.14);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.9),
+    0 0 16px rgba(250, 204, 21, 0.45),
+    inset 0 1px 0 rgba(254, 240, 138, 0.75);
+}
+
+.vov-back-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 24px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border: 1.5px solid #94a3b8;
+  border-radius: 5px;
+  color: #f8fafc;
+  font-size: 12px;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.25), 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.vov-back-label {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
+}
+
+#campaign-modal.vov-campaign-screen .vov-campaign-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#campaign-modal.vov-campaign-screen .campaign-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  color: #fde047;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  margin-bottom: 2px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  padding: 3px 14px;
+  border-radius: 20px;
+}
+
+#campaign-modal.vov-campaign-screen .campaign-title {
+  margin: 2px 0 0;
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  background: linear-gradient(180deg, #ffffff 0%, #fef08a 45%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.95));
+}
+
+#campaign-modal.vov-campaign-screen .campaign-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #cbd5e1;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+#campaign-modal.vov-campaign-screen .vov-close-x {
+  position: static !important;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  color: #e2e8f0;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#campaign-modal.vov-campaign-screen .vov-close-x:hover {
+  background: rgba(220, 38, 38, 0.85);
+  border-color: #fca5a5;
+  color: #fff;
+  transform: scale(1.06);
+}
+
+/* 4 Vertical Poster Pillars Row (Merged Cốt Truyện & Chương Hồi) */
+#campaign-modal.vov-campaign-screen .vov-posters-row {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 22px !important;
+  align-items: center;
+  padding: 8px 4px;
+  box-sizing: border-box;
+}
+
+#campaign-modal.vov-campaign-screen .vov-poster-card {
+  position: relative;
+  height: min(68vh, 490px);
+  min-height: 365px;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+  border-radius: 10px;
+  background: #060d20;
+  border: 2.5px solid #26354d;
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(250, 204, 21, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s ease,
+    border-color 0.25s ease;
+  overflow: visible;
+}
+
+#campaign-modal.vov-campaign-screen .vov-poster-card:hover {
+  transform: translateY(-10px) scale(1.028);
+  border-color: #facc15;
+  box-shadow:
+    0 26px 52px rgba(0, 0, 0, 0.95),
+    0 0 30px rgba(250, 204, 21, 0.5),
+    0 0 0 1.5px #fef08a;
+  z-index: 15;
+}
+
+/* Specific Accent Borders on Pillars */
+#campaign-modal.vov-campaign-screen .poster-story {
+  border-color: rgba(250, 204, 21, 0.72);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.9),
+    0 0 24px rgba(37, 99, 235, 0.4);
+}
+#campaign-modal.vov-campaign-screen .poster-bossrush {
+  border-color: rgba(249, 115, 22, 0.75);
+}
+#campaign-modal.vov-campaign-screen .poster-bossrush:hover {
+  border-color: #fb923c;
+  box-shadow:
+    0 26px 52px rgba(0, 0, 0, 0.95),
+    0 0 34px rgba(249, 115, 22, 0.6),
+    0 0 0 1.5px #fed7aa;
+}
+
+/* Upper 73%: Illustrated Scenic + Character Portrait Frame */
+.vov-poster-frame {
+  position: relative;
+  flex: 1 1 73%;
+  min-height: 0;
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  background: #091326;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* Inner comic/ink border inside the artwork frame */
+.vov-poster-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(0, 0, 0, 0.65);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.vov-poster-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.68;
+  filter: contrast(1.12) saturate(1.18);
+  transition: transform 0.5s ease, opacity 0.35s ease;
+  z-index: 1;
+}
+
+.vov-poster-card:hover .vov-poster-bg {
+  transform: scale(1.09);
+  opacity: 0.85;
+}
+
+/* Thematic Radial Aura Backdrops behind each character */
+.vov-poster-aura {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.vov-poster-aura.aura-cyan {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(56, 189, 248, 0.48) 0%, rgba(29, 78, 216, 0.38) 45%, rgba(6, 15, 36, 0.82) 100%);
+}
+.vov-poster-aura.aura-emerald {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(52, 211, 153, 0.45) 0%, rgba(16, 185, 129, 0.32) 48%, rgba(6, 20, 28, 0.82) 100%);
+}
+.vov-poster-aura.aura-crimson {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(251, 146, 60, 0.55) 0%, rgba(185, 28, 28, 0.45) 50%, rgba(20, 6, 6, 0.84) 100%);
+}
+.vov-poster-aura.aura-purple {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(192, 132, 252, 0.45) 0%, rgba(109, 40, 217, 0.38) 50%, rgba(12, 10, 28, 0.84) 100%);
+}
+.vov-poster-aura.aura-amber {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(251, 191, 36, 0.48) 0%, rgba(217, 119, 6, 0.38) 50%, rgba(22, 12, 8, 0.84) 100%);
+}
+
+/* Sunburst rays on Pillar 3 (Boss Rush / Tournament) */
+.vov-poster-sunburst {
+  position: absolute;
+  inset: -20%;
+  z-index: 2;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 45%,
+    rgba(251, 191, 36, 0.22) 0deg 10deg,
+    rgba(220, 38, 38, 0.08) 10deg 20deg
+  );
+  pointer-events: none;
+}
+
+.vov-poster-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: linear-gradient(180deg, rgba(4, 8, 18, 0.15) 0%, transparent 45%, rgba(4, 9, 22, 0.88) 100%);
+  pointer-events: none;
+}
+
+/* Character Cutout Artwork inside Poster */
+.vov-poster-hero {
+  position: relative;
+  z-index: 3;
+  width: 96%;
+  height: 92%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.92));
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), filter 0.28s ease;
+  pointer-events: none;
+}
+
+.vov-poster-card:hover .vov-poster-hero {
+  transform: scale(1.07) translateY(-4px);
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.96)) drop-shadow(0 0 16px rgba(250, 204, 21, 0.45));
+}
+
+/* 1. Pennant Flag Badge (Góc trên trái Pillar 1 — Gộp Cốt Truyện & Chương Hồi) */
+.vov-pennant-banner {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: auto;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px 10px;
+  background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+  border: 1.5px solid #fde047;
+  border-radius: 4px 4px 2px 2px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.85);
+}
+
+.vov-pennant-icon {
+  font-size: 13px;
+  line-height: 1;
+  margin-bottom: 2px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+.vov-pennant-text {
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 8px;
+  font-weight: 900;
+  color: #fef08a;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+
+/* 2. Red Notification Badge (Góc trên phải Pillar 2 — CHƯƠNG HỒI) */
+.vov-notif-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 20;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f87171 0%, #dc2626 55%, #991b1b 100%);
+  border: 2px solid #fef08a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.85), 0 0 12px rgba(239, 68, 68, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 13px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+
+/* 3. Fiery Headline Banner (Đỉnh Pillar 3 — LIÊN ĐẤU TRÙM) */
+.vov-fire-headline {
+  position: absolute;
+  top: 8px;
+  inset-inline: 8px;
+  z-index: 7;
+  text-align: center;
+  padding: 3px 6px;
+  background: linear-gradient(90deg, transparent 0%, rgba(185, 28, 28, 0.92) 20%, rgba(234, 88, 12, 0.95) 50%, rgba(185, 28, 28, 0.92) 80%, transparent 100%);
+  border-top: 1px solid rgba(254, 215, 170, 0.7);
+  border-bottom: 1px solid rgba(254, 215, 170, 0.7);
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 11px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 1px;
+  color: #fef08a;
+  text-shadow: 0 0 8px #ef4444, 0 2px 4px #000;
+  transform: rotate(-2deg);
+}
+
+/* Stage Progress Pill at bottom of artwork frame */
+#campaign-modal.vov-campaign-screen .vov-poster-stage-pill {
+  position: absolute;
+  bottom: 8px;
+  inset-inline: 8px;
+  z-index: 6;
+  background: linear-gradient(180deg, rgba(6, 12, 26, 0.88) 0%, rgba(3, 7, 18, 0.96) 100%);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  border-radius: 6px;
+  padding: 4px 7px;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.85);
+}
+
+#campaign-modal.vov-campaign-screen .stage-tag-badge {
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(56, 189, 248, 0.2);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #7dd3fc;
+  text-transform: uppercase;
+}
+#campaign-modal.vov-campaign-screen .stage-tag-badge.map {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #6ee7b7;
+}
+#campaign-modal.vov-campaign-screen .stage-tag-badge.boss {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(249, 115, 22, 0.6);
+  color: #fdba74;
+}
+#campaign-modal.vov-campaign-screen .stage-tag-badge.lore {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: rgba(192, 132, 252, 0.5);
+  color: #d8b4fe;
+}
+#campaign-modal.vov-campaign-screen .stage-tag-badge.new {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: rgba(251, 191, 36, 0.55);
+  color: #fde047;
+}
+
+#campaign-modal.vov-campaign-screen .stage-name-highlight {
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 9px;
+  font-weight: 900;
+  color: #fef08a;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+
+.vov-poster-hidden-desc {
+  display: none !important;
+}
+
+/* Middle Gold Divider Bar between Artwork and Royal Blue Title Plate */
+.vov-poster-divider {
+  position: relative;
+  z-index: 8;
+  height: 5px;
+  width: 100%;
+  background: linear-gradient(90deg, #78350f 0%, #eab308 25%, #fef08a 50%, #eab308 75%, #78350f 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vov-divider-gem {
+  font-size: 9px;
+  color: #fef08a;
+  text-shadow: 0 0 6px #eab308, 0 1px 2px #000;
+  line-height: 1;
+}
+
+/* Lower 27%: Royal Vovinam Blue & Metallic Gold Title Plate */
+.vov-poster-plate {
+  position: relative;
+  flex: 0 0 27%;
+  min-height: 108px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0 0 8px 8px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.38) 0%, transparent 70%),
+    linear-gradient(180deg, #153586 0%, #0d235c 52%, #071438 100%);
+  border-top: 1px solid rgba(147, 197, 253, 0.32);
+  padding: 10px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.45), inset 0 -3px 8px rgba(0, 0, 0, 0.7);
+}
+
+.vov-poster-card:hover .vov-poster-plate {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(96, 165, 250, 0.5) 0%, transparent 72%),
+    linear-gradient(180deg, #1d44a8 0%, #112d73 52%, #091945 100%);
+}
+
+#campaign-modal.vov-campaign-screen .vov-plate-title {
+  margin: 0 !important;
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: clamp(14px, 1.35vw, 18.5px);
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fffbeb 0%, #fde047 45%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 0 #050b1c) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.95));
+  line-height: 1.15;
+}
+
+.vov-plate-sub {
+  margin: 2px 0 4px;
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  color: #fde68a;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+
+#campaign-modal.vov-campaign-screen .vov-plate-btn {
+  width: 92%;
+  padding: 6px 10px !important;
+  min-height: 0 !important;
+  border-radius: 5px;
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 10px !important;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #e2e8f0;
+  background: rgba(6, 14, 34, 0.75);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+}
+
+#campaign-modal.vov-campaign-screen .poster-story .vov-plate-btn:not(.vov-plate-btn-alt) {
+  background: linear-gradient(180deg, #facc15 0%, #d97706 100%);
+  color: #090d16;
+  border-color: #fef08a;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.45);
+}
+
+#campaign-modal.vov-campaign-screen .vov-plate-btn-dual {
+  width: 94%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+#campaign-modal.vov-campaign-screen .vov-plate-btn-dual .vov-plate-btn {
+  width: 100%;
+  padding: 6px 4px !important;
+  font-size: 9.5px !important;
+  letter-spacing: 0.4px;
+}
+
+#campaign-modal.vov-campaign-screen .poster-story .vov-plate-btn.vov-plate-btn-alt {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.3) 0%, rgba(6, 78, 59, 0.72) 100%);
+  color: #a7f3d0;
+  border-color: rgba(52, 211, 153, 0.7);
+}
+
+#campaign-modal.vov-campaign-screen .poster-story .vov-plate-btn.vov-plate-btn-alt:hover {
+  background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+  color: #04120c;
+  border-color: #ffffff;
+}
+
+#campaign-modal.vov-campaign-screen .poster-bossrush .vov-plate-btn {
+  background: linear-gradient(180deg, #ea580c 0%, #991b1b 100%);
+  color: #fef08a;
+  border-color: #fdba74;
+}
+
+#campaign-modal.vov-campaign-screen .vov-poster-card:hover .vov-plate-btn {
+  background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
+  color: #090d16;
+  border-color: #ffffff;
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.65);
+}
+
+@media (max-width: 1150px) {
+  #campaign-modal.vov-campaign-screen .vov-posters-row {
+    gap: 12px !important;
+  }
+  #campaign-modal.vov-campaign-screen .vov-poster-card {
+    height: min(65vh, 430px);
+  }
+  #campaign-modal.vov-campaign-screen .vov-plate-title {
+    font-size: 13.5px;
+  }
+}
+
+@media (max-height: 700px) {
+  #campaign-modal.vov-campaign-screen {
+    padding: 12px 20px 14px;
+  }
+  #campaign-modal.vov-campaign-screen .vov-poster-card {
+    height: min(66vh, 390px);
+    min-height: 310px;
+  }
+  .vov-poster-plate {
+    min-height: 88px;
+    padding: 6px 8px;
+  }
+}
+
+

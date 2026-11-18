@@ -20,6 +20,7 @@ class BossHacLang extends BaseEnemy {
   }
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
     super.takeDamage(amount, knockbackX * 0.35, isKnockdown);
     if (window.uiManager) window.uiManager.updateBossHp(this.hp, this.maxHp);
     if (this.isDead) return;
@@ -116,6 +117,10 @@ class BossHacLang extends BaseEnemy {
       if (player.z === 0 && Math.abs(player.x - this.x) < 140 && Math.abs(player.y - this.y) < 55) {
         player.takeDamage(56, this.facing * 10, true);
       }
+      const ally1 = (window.allyManager && window.allyManager.activeAlly) || (window.allySystem && window.allySystem.activeAlly);
+      if (ally1 && !ally1.isDead && Math.abs(ally1.x - this.x) < 140 && Math.abs(ally1.y - this.y) < 55) {
+        ally1.takeDamage(56, this.facing * 10, true);
+      }
       // CỬA SỔ PHẢN CÔNG: Đao bị găm xuống sàn 0.95s -> người chơi trừng phạt!
       this.weakWindow = 0.95;
       if (window.effectManager) {
@@ -133,12 +138,12 @@ class BossHacLang extends BaseEnemy {
       offsetX: 70, offsetY: -85,
       width: (this.phase === 3) ? 98 : 85, height: 60,
       knockback: (this.phase === 3) ? 11 : 7,
-      knockdown: this.phase >= 2,
+      knockdown: isKick && this.phase >= 2,
       isKick,
       counterType: isKick ? 'leg' : 'hand',
       weight: (this.phase === 3) ? 'ultimate' : (this.phase === 2 ? 'heavy' : 'light')
     };
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
@@ -162,6 +167,7 @@ class BossThietQuyen extends BaseEnemy {
   }
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
     // Phase 3: Giáp bọc thép giảm thêm 25% sát thương nhận vào
     if (this.phase === 3 && !window.combatSystem.isCounterWindow && !this.weakWindow) {
       amount = Math.round(amount * 0.75);
@@ -229,6 +235,10 @@ class BossThietQuyen extends BaseEnemy {
         if (player.z === 0 && Math.abs(player.x - this.x) < 195 && Math.abs(player.y - this.y) < 60) {
           player.takeDamage(55, Math.sign(player.x - this.x) * 9, true);
         }
+        const ally2 = (window.allyManager && window.allyManager.activeAlly) || (window.allySystem && window.allySystem.activeAlly);
+        if (ally2 && !ally2.isDead && Math.abs(ally2.x - this.x) < 195 && Math.abs(ally2.y - this.y) < 60) {
+          ally2.takeDamage(55, Math.sign(ally2.x - this.x) * 9, true);
+        }
         // Sau cú đập sàn, mở cửa sổ sơ hở 0.85s để người chơi phản công
         this.weakWindow = 0.85;
         if (window.effectManager) {
@@ -275,12 +285,12 @@ class BossThietQuyen extends BaseEnemy {
       offsetX: 72, offsetY: -85,
       width: 96, height: 65,
       knockback: (this.phase === 3) ? 12 : 8,
-      knockdown: this.phase >= 2,
+      knockdown: isKick && this.phase >= 2,
       isKick,
       counterType: isKick ? 'leg' : 'hand',
       weight: (this.phase === 3) ? 'ultimate' : 'heavy'
     };
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
@@ -290,13 +300,13 @@ class BossThietQuyen extends BaseEnemy {
 class BossHuyetAnh extends BaseEnemy {
   constructor(x, y) {
     super(x, y, 'boss_huyetanh', 'Đội Trưởng Huyết Ảnh');
-    this.maxHp = 2600;
-    this.hp = 2600;
+    this.maxHp = 2150;
+    this.hp = 2150;
     this.speed = 210;
     this.phase = 1;
     this.isBoss = true;
     this.armorAll = true;
-    this.followupChance = 0.35;
+    this.followupChance = 0.28;
     this.counterStanceTimer = 0;
     this.preferredDist = 95;
     this.maxPoise = 120;
@@ -304,7 +314,8 @@ class BossHuyetAnh extends BaseEnemy {
   }
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
-    // Nếu người chơi bất cẩn đánh vào lúc Huyết Ảnh đang trong tư thế Phản Trảm (Phase 3)
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
+    // Nếu đối phương bất cẩn đánh vào lúc Huyết Ảnh đang trong tư thế Phản Trảm (Phase 3)
     if (this.phase === 3 && this.counterStanceTimer > 0) {
       this.counterStanceTimer = 0;
       if (window.audioManager) window.audioManager.playPerfectDodge();
@@ -313,20 +324,22 @@ class BossHuyetAnh extends BaseEnemy {
         window.effectManager.triggerSlowMo(0.25, 0.3);
         window.effectManager.addFloatingText('PHẢN TRẢM — DỊCH CHUYỂN!', this.x, this.y - 150, 'counter');
       }
-      // Dịch chuyển ra sau lưng người chơi và chém chí mạng!
-      const p = window.game && window.game.player;
-      if (p) {
-        this.x = p.x - p.facing * 55;
-        this.facing = p.facing;
+      // Dịch chuyển ra sau lưng mục tiêu ưu tiên và chém chí mạng!
+      const rawP = window.game && window.game.player;
+      const p = this.selectCombatTarget(rawP) || rawP;
+      if (p && !p.isDead) {
+        const pf = p.facing || 1;
+        this.x = p.x - pf * 55;
+        this.facing = pf;
         this.setState('punch_hook', 0.25);
-        p.takeDamage(65, p.facing * 8, true);
+        p.takeDamage(38, pf * 6, true);
       }
       return;
     }
 
-    // Giai đoạn 3 phòng thủ chặt: chỉ nhận 60% sát thương trừ khi phản đòn
+    // Giai đoạn 3 phòng thủ vừa phải: nhận 80% sát thương trừ khi phản đòn
     let actual = amount;
-    if (this.phase === 3 && !window.combatSystem.isCounterWindow) actual = Math.round(amount * 0.6);
+    if (this.phase === 3 && !window.combatSystem.isCounterWindow) actual = Math.round(amount * 0.8);
 
     super.takeDamage(actual, knockbackX * 0.3, isKnockdown);
     if (window.uiManager) window.uiManager.updateBossHp(this.hp, this.maxHp);
@@ -370,8 +383,8 @@ class BossHuyetAnh extends BaseEnemy {
       this.counterStanceTimer -= dt;
       if (this.counterStanceTimer <= 0 && this.state === 'guard') {
         this.setState('idle');
-        // Sau khi hạ thế thủ -> lộ sơ hở 0.8s!
-        this.weakWindow = 0.8;
+        // Sau khi hạ thế thủ -> lộ sơ hở 1.25s để trừng phạt
+        this.weakWindow = 1.25;
         if (window.effectManager) {
           window.effectManager.addFloatingText('SƠ HỞ — TẤN CÔNG!', this.x, this.y - 145, 'counter');
         }
@@ -384,10 +397,10 @@ class BossHuyetAnh extends BaseEnemy {
     if (window.audioManager) window.audioManager.playWarning();
 
     if (this.phase === 3) {
-      // 35% cơ hội vào thế thủ Phản Trảm (dụ người chơi đánh trúng)
-      if (Math.random() < 0.35 && this.counterStanceTimer <= 0) {
-        this.counterStanceTimer = 1.1;
-        this.setState('guard', 1.1);
+      // 22% cơ hội vào thế thủ Phản Trảm ngắn (0.65s)
+      if (Math.random() < 0.22 && this.counterStanceTimer <= 0) {
+        this.counterStanceTimer = 0.65;
+        this.setState('guard', 0.65);
         if (window.effectManager) {
           window.effectManager.addFloatingText('THỦ THẾ PHẢN TRẢM!', this.x, this.y - 150, 'warn');
         }
@@ -408,18 +421,18 @@ class BossHuyetAnh extends BaseEnemy {
 
   checkAttackPlayer(player) {
     const isKick = this.state === 'kick_roundhouse';
-    const damage = (this.phase === 3) ? 75 : ((this.phase === 2) ? 58 : 44);
+    const damage = (this.phase === 3) ? 54 : ((this.phase === 2) ? 45 : 34);
     const attackData = {
       damage,
       offsetX: 72, offsetY: -85,
       width: 92, height: 60,
       knockback: (this.phase === 3) ? 10 : 7,
-      knockdown: this.phase >= 2,
+      knockdown: isKick && this.phase >= 2,
       isKick,
       counterType: isKick ? 'leg' : 'hand',
       weight: (this.phase === 3) ? 'ultimate' : 'heavy'
     };
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 
@@ -442,6 +455,7 @@ class BossLongVuong extends BaseEnemy {
   }
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+    knockbackX = BaseEnemy.resolveKnockback(knockbackX);
     super.takeDamage(amount, knockbackX * 0.18, isKnockdown);
     if (window.uiManager) window.uiManager.updateBossHp(this.hp, this.maxHp);
     if (this.isDead) return;
@@ -529,14 +543,14 @@ class BossLongVuong extends BaseEnemy {
       width: (this.phase === 3) ? 110 : 96,
       height: 65,
       knockback: (this.phase === 3) ? 14 : 9,
-      knockdown: this.phase >= 2,
+      knockdown: isKick && this.phase >= 2,
       unblockable: isCuongLong,
       uncounterable: isCuongLong,
       isKick,
       counterType: isCuongLong ? 'none' : (isKick ? 'leg' : 'hand'),
       weight: (this.phase === 3) ? 'ultimate' : 'heavy'
     };
-    window.combatSystem.checkAttackHit(this, player, attackData);
+    this.deliverAttackHit(player, attackData);
   }
 }
 

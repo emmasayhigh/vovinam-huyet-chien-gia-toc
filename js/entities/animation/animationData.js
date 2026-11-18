@@ -7,6 +7,9 @@
  */
 
 (function () {
+if (!window.CharacterRegistry && typeof require === 'function') {
+  try { require('../characters/bootstrap.js'); } catch (_) {}
+}
 const AnimUtil = {
   clamp(v, a = 0, b = 1) { return Math.max(a, Math.min(b, v)); },
   lerp(a, b, t) { return a + (b - a) * t; },
@@ -28,6 +31,92 @@ const AnimUtil = {
     if (p < 0.55) return 1;
     if (p < 0.7) return 1 - this.easeInOut((p - 0.55) / 0.15);
     return 0;
+  },
+  // Đường cong non-linear có lực bật, đàn hồi và thu hồi tự nhiên cho 5 giai đoạn kỹ năng
+  easeInQuad(t) { t = this.clamp(t, 0, 1); return t * t; },
+  easeInCubic(t) { t = this.clamp(t, 0, 1); return t * t * t; },
+  easeOutCubic(t) { t = this.clamp(t, 0, 1); return 1 - Math.pow(1 - t, 3); },
+  easeInOutQuart(t) {
+    t = this.clamp(t, 0, 1);
+    return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+  },
+  easeOutBack(t, s = 1.70158) {
+    t = this.clamp(t, 0, 1) - 1;
+    return 1 + t * t * ((s + 1) * t + s);
+  },
+  easeOutElasticSoft(t) {
+    t = this.clamp(t, 0, 1);
+    if (t === 0 || t === 1) return t;
+    return Math.pow(2, -9 * t) * Math.sin((t * 10 - 0.75) * ((2 * Math.PI) / 3)) * 0.45 + 1;
+  },
+  // Bộ đánh giá 5 giai đoạn chuẩn mực:
+  // 0: anticipation (lấy đà) -> 1: cast (tung chiêu) -> 2: impact (va chạm) -> 3: follow_through (quán tính) -> 4: recovery (hồi thế)
+  stage5(p, bp) {
+    p = this.clamp(p, 0, 1);
+    const b = bp || {};
+    const a = b.a !== undefined ? b.a : 0.22;
+    const c = b.c !== undefined ? b.c : 0.42;
+    const i = b.i !== undefined ? b.i : 0.58;
+    const f = b.f !== undefined ? b.f : 0.80;
+
+    if (p < a) {
+      const t = a > 0 ? p / a : 1;
+      const w = this.easeInOut(t);
+      return {
+        stage: 'anticipation', stageIndex: 0, localT: t,
+        windup: w, strike: 0, hold: 0, follow: 0, recover: 0,
+        arc: -0.35 * w, overshoot: 0
+      };
+    }
+    if (p < c) {
+      const t = (p - a) / Math.max(0.001, c - a);
+      const s = this.easeInCubic(t);
+      return {
+        stage: 'cast', stageIndex: 1, localT: t,
+        windup: 1 - s, strike: s, hold: 0, follow: 0, recover: 0,
+        arc: s, overshoot: 0
+      };
+    }
+    if (p < i) {
+      const t = (p - c) / Math.max(0.001, i - c);
+      const peak = this.easeOutBack(t, 1.45);
+      return {
+        stage: 'impact', stageIndex: 2, localT: t,
+        windup: 0, strike: 1, hold: 1, follow: 0, recover: 0,
+        arc: 1, overshoot: (peak - 1) * 0.4 + Math.sin(t * Math.PI) * 0.18
+      };
+    }
+    if (p < f) {
+      const t = (p - i) / Math.max(0.001, f - i);
+      const fl = this.easeOutCubic(t);
+      return {
+        stage: 'follow_through', stageIndex: 3, localT: t,
+        windup: 0, strike: 1 - fl * 0.25, hold: 1 - fl * 0.3, follow: fl, recover: 0,
+        arc: 1 - fl * 0.22, overshoot: -0.08 * fl
+      };
+    }
+    const t = (p - f) / Math.max(0.001, 1 - f);
+    const rec = this.easeInOutQuart(t);
+    return {
+      stage: 'recovery', stageIndex: 4, localT: t,
+      windup: 0, strike: Math.max(0, 0.75 * (1 - rec)), hold: Math.max(0, 0.7 * (1 - rec)),
+      follow: 1 - rec, recover: rec,
+      arc: 0.78 * (1 - rec), overshoot: 0
+    };
+  },
+  // Nhịp con có đỉnh trong khoảng [t0, t1] dùng cho chuỗi chiêu nhiều đòn / tuyệt kỹ
+  beat(p, t0, t1, peakHold = 0.35) {
+    if (p <= t0 || p >= t1) return 0;
+    const u = (p - t0) / Math.max(0.001, t1 - t0);
+    const up = Math.max(0.15, (1 - peakHold) * 0.45);
+    const downStart = up + peakHold;
+    if (u < up) return this.easeOutCubic(u / up);
+    if (u < downStart) return 1;
+    return 1 - this.easeInOut((u - downStart) / Math.max(0.001, 1 - downStart));
+  },
+  extSmooth(p) {
+    const s = this.stage5(p, { a: 0.22, c: 0.38, i: 0.56, f: 0.76 });
+    return this.clamp(s.strike + s.overshoot * 0.5, 0, 1.15);
   },
   // Đòn bắt đầu gây sát thương ngay khi duỗi đòn, loại bỏ cảm giác trễ (delay)
   isActive(e) {
@@ -57,24 +146,11 @@ function shadeColor(hex, amt) {
   return `rgb(${f(r)},${f(g)},${f(b)})`;
 }
 
-// Bảng nhân vật. Võ phục Ngô Nhất Nghị: xanh dương Vovinam, Bạch đai (đai trắng).
-const STYLE_DEFS = {
-  player:          { scale: 1.3,  skin: '#f0c29a', hair: '#15171d', hairStyle: 'short', gi: '#1f4fd6', pants: '#2352d8', belt: '#f8fafc', patch: true, aura: '#38bdf8', shoes: 'kungfu', eyeColor: '#0ea5e9' },
-  boss_haclang:    { scale: 1.4,  skin: '#dcae82', hair: '#2a1a1a', hairStyle: 'bandana', gi: '#2a1217', pants: '#1c0d10', belt: '#9b111e', weapon: 'machete', aura: '#ff2244', under: '#4a2128', bandana: '#c1121f', shoes: 'combat', eyeColor: '#ef4444' },
-  boss_thietquyen: { scale: 1.5,  skin: '#c99a70', hair: '#1a1a1a', hairStyle: 'buzz', gi: '#2f3640', pants: '#20252c', belt: '#d4a017', gauntlet: true, armor: true, scar: true, aura: '#ffd700', under: '#4b5563', shoes: 'wraps', eyeColor: '#eab308' },
-  boss_huyetanh:   { scale: 1.4,  skin: '#efc9ae', hair: '#1a0000', hairStyle: 'spiky', gi: '#5a0f1c', pants: '#2b0610', belt: '#e11d48', weapon: 'twin_daggers', mask: '#c9184a', aura: '#ff0055', under: '#2b0610', shoes: 'kungfu', glowingEyes: '#ff0055' },
-  boss_longvuong:  { scale: 1.45, skin: '#f1cfa6', hair: '#e5e7eb', hairStyle: 'white', gi: '#15120f', pants: '#0d0b09', belt: '#eab308', dragon: true, beard: true, aura: '#facc15', under: '#7c5a10', shoes: 'dress', eyeColor: '#ca8a04' },
+// Bảng ngoại hình chung cho lính thường / mộc nhân; ngoại hình của 13 nhân vật được nạp tự động từ js/entities/characters/*.js
+const STYLE_DEFS = Object.assign({
   enemy_dodger:    { scale: 1.3,  skin: '#e4b68f', hair: '#222831', hairStyle: 'spiky', gi: '#0e7490', pants: '#0b5566', belt: '#67e8f9', aura: '#22d3ee', shoes: 'sneakers', eyeColor: '#06b6d4' },
   enemy_guard:     { scale: 1.36, skin: '#c99468', hair: '#1c1c1c', hairStyle: 'buzz', gi: '#6b2d2d', pants: '#3f1d1d', belt: '#f59e0b', armor: true, aura: '#f59e0b', shoes: 'combat', sunglasses: true },
   thug:            { scale: 1.3,  skin: '#e1b189', hair: '#1f2937', hairStyle: 'buzz', gi: '#3d4656', pants: '#2a303c', belt: '#9ca3af', aura: '#94a3b8', shoes: 'sneakers' },
-  npc_huavudai:    { scale: 1.32, skin: '#e8bf98', hair: '#374151', hairStyle: 'short', gi: '#1c1c24', pants: '#15151c', belt: '#3a3a46', aura: '#ef4444', under: '#f8fafc', suit: true, shoes: 'dress', eyeColor: '#ef4444' },
-  boss_hoanganh:   { scale: 1.46, skin: '#c99468', hair: '#241a12', hairStyle: 'buzz', gi: '#4d462d', pants: '#2e2a1b', belt: '#b91c1c', weapon: 'hoe', scar: true, aura: '#f59e0b', under: '#292518', shoes: 'wraps', eyeColor: '#f59e0b' },
-  boss_vinhtam:    { scale: 1.44, skin: '#e8be96', hair: '#e2e8f0', hairStyle: 'white', gi: '#4a121a', pants: '#2a0a0f', belt: '#ffd700', dragon: true, beard: true, robe: true, aura: '#ffd700', under: '#6b1d28', shoes: 'dress', eyeColor: '#ffd700' },
-  boss_giangmanh:  { scale: 1.38, skin: '#deb28b', hair: '#cbd5e1', hairStyle: 'ponytail', gi: '#1e293b', pants: '#0f172a', belt: '#94a3b8', beard: true, robe: true, aura: '#38bdf8', under: '#334155', shoes: 'kungfu', eyeColor: '#38bdf8' },
-  boss_dunghai:    { scale: 1.35, skin: '#e0b28a', hair: '#18181b', hairStyle: 'spiky', gi: '#1f242d', pants: '#13161c', belt: '#991b1b', scarf: true, scarfColor: '#dc2626', weapon: 'twin_daggers', aura: '#ef4444', under: '#27272a', shoes: 'combat', eyeColor: '#ef4444' },
-  npc_mocdang:     { scale: 1.3,  skin: '#edd0b7', hair: '#1e293b', hairStyle: 'short', gi: '#0f293a', pants: '#0a1d24', belt: '#00d2ff', glasses: true, aura: '#00d2ff', under: '#e0f2fe', suit: true, shoes: 'dress' },
-  boss_bichlam:    { scale: 1.34, skin: '#f5c6a5', hair: '#18181b', hairStyle: 'spiky', gi: '#166534', pants: '#0f3d24', belt: '#22c55e', aura: '#4ade80', under: '#14532d', shoes: 'combat', eyeColor: '#22c55e' },
-  boss_dinhan:     { scale: 1.45, skin: '#d4a179', hair: '#1c1917', hairStyle: 'ponytail', gi: '#7a1a1f', pants: '#401013', belt: '#d4a017', shield: true, weapon: 'mace', weaponLen: 46, armor: true, beard: true, aura: '#d4a017', under: '#991b1b', shoes: 'combat', eyeColor: '#d4a017' },
   dummy_wood:      { scale: 1.32, skin: '#a37147', hair: '#5c3a21', hairStyle: 'buzz', gi: '#8b5a2b', pants: '#5c3a21', belt: '#f59e0b', aura: '#d97706', under: '#78350f', shoes: 'combat', eyeColor: '#f59e0b' },
   // Địch có vũ khí thật (weapons.js)
   enemy_baton:     { scale: 1.34, skin: '#d9a77c', hair: '#1f2937', hairStyle: 'buzz', gi: '#3f3f46', pants: '#27272a', belt: '#f97316', helmet: '#facc15', weapon: 'baton', weaponLen: 54, aura: '#fb923c', under: '#52525b', shoes: 'combat', eyeColor: '#f97316' },
@@ -86,7 +162,7 @@ const STYLE_DEFS = {
   enemy_brawler:   { scale: 1.34, skin: '#deb28b', hair: '#1c1917', hairStyle: 'short', gi: '#1e293b', pants: '#0f172a', belt: '#38bdf8', gauntlet: true, aura: '#0284c7', under: '#334155', shoes: 'wraps', eyeColor: '#38bdf8' },
   enemy_grabber:   { scale: 1.35, skin: '#d6a378', hair: '#172554', hairStyle: 'bandana', bandana: '#1e3a8a', gi: '#312e81', pants: '#1e1b4b', belt: '#a5b4fc', chainWeapon: true, aura: '#6366f1', under: '#3730a3', shoes: 'combat', eyeColor: '#818cf8' },
   enemy_medic:     { scale: 1.28, skin: '#f3c5a6', hair: '#1c1917', hairStyle: 'short', gi: '#065f46', pants: '#064e3b', belt: '#6ee7b7', medicCross: true, aura: '#10b981', under: '#047857', shoes: 'sneakers', eyeColor: '#34d399' }
-};
+}, window.CharacterRegistry ? window.CharacterRegistry.buildStyleDefsMap() : {});
 
 // Biến thể ngoại hình cho lính thường: mỗi tên lính một màu áo / kiểu tóc / phụ kiện khác nhau
 const VARIANTS = {
@@ -160,13 +236,13 @@ function hashStr(s) {
 
 // Đòn của Player & Boss (dùng chung cho vệt chuyển động, telegraph và va chạm)
 const ATTACK_STATES = new Set([
-  'punch', 'kick', 'punch_straight', 'punch_hook', 'kick_push', 'kick_roundhouse', 'flying_kick', 'scissor_kick', 'ultimate_flurry',
+  'punch', 'kick', 'punch_straight', 'punch_hook', 'kick_push', 'wk', 'kick_roundhouse', 'flying_kick', 'scissor_kick', 'ultimate_flurry',
   // Đòn thế Vovinam mở rộng của nhân vật chơi được
   'elbow_strike', 'kick_sweep', 'air_punch', 'hook_run', 'uppercut',
   // Kỹ thuật Counter Vovinam và tiếp đất
   'counter_hand_prep', 'counter_hand_strike', 'counter_leg_prep', 'counter_leg_strike', 'counter_hand_recovery', 'counter_leg_recovery', 'landing',
   // Tuyệt kỹ của các nhân vật chơi được
-  'ultimate_slam', 'ultimate_command', 'ultimate_rush', 'ultimate_precision', 'ultimate_feint', 'ultimate_bash',
+  'ultimate_slam', 'ultimate_command', 'ultimate_rush', 'ultimate_precision', 'ultimate_feint', 'ultimate_bash', 'ultimate_barrage', 'ultimate_blink',
   // Đòn của boss mới
   'boss_swing', 'boss_thrust', 'boss_slam', 'boss_chain1', 'boss_chain2', 'boss_chain3',
   'boss_riposte', 'boss_dash', 'boss_throw', 'boss_stab', 'boss_heavy1', 'boss_heavy2', 'boss_heavy3',
@@ -186,11 +262,10 @@ const POSE_ALIAS = {
   boss_heavy1: 'punch_straight', boss_heavy2: 'punch_hook',
   boss_heavy3: 'kick_roundhouse', boss_dash: 'kick_push',
   boss_parry: 'guard', boss_feint: 'dodge',
+  wk: 'kick_push',
   guard_break: 'hurt',
   counter_hand_strike: 'elbow_strike', counter_leg_strike: 'kick_sweep',
   counter_hand_recovery: 'guard', counter_leg_recovery: 'guard',
-  ultimate_command: 'boss_taunt', ultimate_rush: 'flying_kick',
-  ultimate_precision: 'kick_roundhouse', ultimate_feint: 'punch_hook',
   windup_throw: 'punch_straight',
   chain_cast: 'punch_straight', channel_heal: 'guard'
 };

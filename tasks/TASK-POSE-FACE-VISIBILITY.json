@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-POSE-FACE-VISIBILITY",
+  "title": "Character Pose & Face Visibility Fix (All 9 Characters)",
+  "author": "Antigravity Senior Technical Artist",
+  "date": "2026-11-14",
+  "objective": "Eliminate all unintended face, eye, nose, mouth, and chin occlusions caused by arms, fists, forearms, raised shoulders/pauldrons, high collars/scarves, shields, and weapon shafts across all 9 characters and combat states while preserving authentic anatomical proportions, distinct martial stances, silhouette fidelity, and gameplay mechanics.",
+  "requestedBehavior": "1. Restore anatomical clavicle shoulder pivots (nShY/fShY negative offsets) and clear neck length across all 9 character rigs and SkeletalRendererBase defaults without enlarging heads or shrinking fists/limbs. 2. Refine high collars (patriarch_sword_robe, cyber_trench), crimson shinobi scarf, overcoat draped shoulder caps, sleeves, and lion pauldrons so neck and jaw silhouette remain crisp and unobstructed. 3. Route non-defensive shield rendering (Triệu Đình An) behind the head layer when !shieldInFront and calibrate hoe shaft/elbow angles (Phó Đặng Hoàng Anh) and bell sleeves (Ngô Giang Mạnh) to clear face bounds. 4. Overhaul shared fallback poses (walk, run, guard, dodge, landing, counter prep, kick push, ram charge) and character-specific stances/combos (idle, walk, run, J+J+K, W+K, S+K, hurt, skills) so all 9 characters display readable eyes, nose, jawline, and distinct martial silhouettes. 5. Update preview controls and add geometric face-visibility regression assertions.",
+  "allowedFiles": [
+    "js/entities/characters/nghi.js",
+    "js/entities/characters/vananh.js",
+    "js/entities/characters/tiendang.js",
+    "js/entities/characters/huavudai.js",
+    "js/entities/characters/bichlam.js",
+    "js/entities/characters/dinhan.js",
+    "js/entities/characters/hoanganh.js",
+    "js/entities/characters/dunghai.js",
+    "js/entities/characters/giangmanh.js",
+    "js/entities/animation/animationData.js",
+    "js/entities/animation/animationBase.js",
+    "js/entities/animation/animationPose.js",
+    "js/entities/animation/animationRenderBase.js",
+    "js/entities/animation/animationWeapon.js",
+    "js/entities/animation/animationArchetypes.js",
+    "js/entities/animation/animationBody.js",
+    "harness/preview_character_canvas.html",
+    "harness/preview_skill_showcase.html",
+    "tests/test_character_visual_fidelity.js",
+    "tasks/TASK-POSE-FACE-VISIBILITY.json"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-ANM-001",
+    "FEAT-VSN-001"
+  ],
+  "dependencies": [
+    "CharacterRegistry",
+    "SkeletalRendererData",
+    "SkeletalRendererBase",
+    "SkeletalRendererPose",
+    "SkeletalRendererRenderBase",
+    "SkeletalRendererWeapon",
+    "SkeletalRendererArchetypes",
+    "SkeletalRendererBody"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 900,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "tests/validate_index_scripts.js",
+    "tests/test_character_visual_fidelity.js",
+    "tests/test_skill_animation_overhaul.js",
+    "tests/test_vovinam_skin_skills.js",
+    "tests/test_ally_select_screen.js",
+    "tests/test_modular_characters_and_stage_flow.js",
+    "tests/test_combat.js"
+  ],
+  "acceptanceCriteria": [
+    "All 9 characters maintain clear eye, nose, mouth/mask, and jawline visibility in idle, walk, run, combat combos (J+J+K, W+K, S+K), skills, hurt, and recovery without shrinking fists or inflating head scale",
+    "Shoulders, pauldrons, collars, scarves, weapons, and shields respect clavicle anatomy and clear neck/chin bounds unless in brief intentional defensive windup/block",
+    "Each of the 9 characters preserves an iconic, distinct martial silhouette and 9/9 unique idle pose signatures",
+    "Pure black Silhouette (#000000) renders 100% solid with zero color leakage and zero ctx.setLineDash regressions",
+    "23/23 regression suites, 51/51 interface-guard checks, and headless browser smoke pass with 0 console errors"
+  ]
+}
+

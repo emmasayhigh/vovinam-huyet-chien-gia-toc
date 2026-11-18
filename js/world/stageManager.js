@@ -18,12 +18,32 @@ class StageManagerBase {
   }
 
   getCurrentStage() {
-    return this.stages[this.currentStageIndex];
+    const map = this.stages || window.STAGE_DEFINITIONS || {};
+    this.stages = map;
+    return map[this.currentStageIndex] || map[1] || null;
   }
 
   setStage(stageNum) {
-    if (this.stages[stageNum]) {
-      this.currentStageIndex = stageNum;
+    const map = this.stages || window.STAGE_DEFINITIONS || {};
+    this.stages = map;
+    const n = Number(stageNum);
+    if (isFinite(n) && map[n]) {
+      this.currentStageIndex = n;
+    } else if (map[1]) {
+      this.currentStageIndex = 1;
+    }
+    const cur = this.getCurrentStage();
+    if (cur && cur.width) {
+      this.stageWidth = cur.width;
+    }
+  }
+
+  cancelDialogue() {
+    this.dialogueQueue = [];
+    this.currentDialogue = null;
+    this.dialogueCallback = null;
+    if (window.uiManager && typeof window.uiManager.hideDialogue === 'function') {
+      window.uiManager.hideDialogue();
     }
   }
 

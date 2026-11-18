@@ -384,26 +384,35 @@ class ClanConfrontation {
     const inv = window.investigationManager;
 
     if (verdictId === 'public_expose') {
-      inv.adjustTrust('dunghai', +40, 'Được trả lại công bằng trước thiên hạ');
-      inv.adjustTrust('mocdang', -40, 'Mất quyền kiểm soát độc quyền');
-      inv.adjustTrust('giangmanh', +30, 'Sự thật Đoạn Nghĩa Đài được phơi bày');
+      if (inv) {
+        inv.adjustTrust('dunghai', +40, 'Được trả lại công bằng trước thiên hạ');
+        inv.adjustTrust('mocdang', -40, 'Mất quyền kiểm soát độc quyền');
+        inv.adjustTrust('giangmanh', +30, 'Sự thật Đoạn Nghĩa Đài được phơi bày');
+      }
       if (sm) sm.recordChoice('danghai', 'spare');
     } else if (verdictId === 'seal_mountain') {
-      inv.adjustTrust('hoanganh', +40, 'Bảo vệ được sự tĩnh lặng của sơn cước');
-      inv.adjustTrust('dunghai', -20, 'Sự thật tiếp tục bị chôn vùi');
+      if (inv) {
+        inv.adjustTrust('hoanganh', +40, 'Bảo vệ được sự tĩnh lặng của sơn cước');
+        inv.adjustTrust('dunghai', -20, 'Sự thật tiếp tục bị chôn vùi');
+      }
       if (sm) sm.recordChoice('danghai', 'handover');
     } else if (verdictId === 'reform_council') {
-      inv.adjustTrust('mocdang', +20, 'Có cơ hội chuộc lỗi cùng gia tộc');
-      inv.adjustTrust('dunghai', +35, 'Được đón trở lại vị thế xứng đáng');
-      inv.adjustTrust('hoanganh', +30, 'Gia tộc tìm lại được tiếng nói chung');
+      if (inv) {
+        inv.adjustTrust('mocdang', +20, 'Có cơ hội chuộc lỗi cùng gia tộc');
+        inv.adjustTrust('dunghai', +35, 'Được đón trở lại vị thế xứng đáng');
+        inv.adjustTrust('hoanganh', +30, 'Gia tộc tìm lại được tiếng nói chung');
+      }
       if (sm) sm.recordChoice('danghai', 'spare');
     } else if (verdictId === 'secret_true_bloodline') {
-      inv.adjustTrust('mocdang', +50, 'Được cứu rỗi khỏi gánh nặng tội lỗi');
-      inv.adjustTrust('dunghai', +50, 'Minh oan và đoàn tụ gia tộc');
-      inv.adjustTrust('hoanganh', +50, 'Di nguyện của người đã khuất trọn vẹn');
-      inv.adjustTrust('giangmanh', +40, 'Mối thù Đoạn Nghĩa Đài được hóa giải');
+      if (inv) {
+        inv.adjustTrust('mocdang', +50, 'Được cứu rỗi khỏi gánh nặng tội lỗi');
+        inv.adjustTrust('dunghai', +50, 'Minh oan và đoàn tụ gia tộc');
+        inv.adjustTrust('hoanganh', +50, 'Di nguyện của người đã khuất trọn vẹn');
+        inv.adjustTrust('giangmanh', +40, 'Mối thù Đoạn Nghĩa Đài được hóa giải');
+      }
       if (sm) {
         sm.data.storyFlags.secretTrueEnding = true;
+        sm.recordChoice('danghai', 'spare');
         sm.persist();
       }
     }
@@ -416,15 +425,29 @@ class ClanConfrontation {
     }
 
     // Đóng modal và chuyển tiếp luồng game
-    setTimeout(() => {
+    if (this._verdictTimer) clearTimeout(this._verdictTimer);
+    this._verdictTimer = setTimeout(() => {
+      this._verdictTimer = null;
+      const cb = this.onCompleteCallback;
+      this.onCompleteCallback = null;
       this.close();
-      if (this.onCompleteCallback) this.onCompleteCallback(verdictId);
+      if (cb) cb(verdictId);
     }, 1200);
+  }
+
+  cancel() {
+    if (this._verdictTimer) {
+      clearTimeout(this._verdictTimer);
+      this._verdictTimer = null;
+    }
+    this.onCompleteCallback = null;
+    this.close();
   }
 
   close() {
     this.isActive = false;
-    if (this.modal) this.modal.classList.add('hidden');
+    const m = this.modal || (typeof document !== 'undefined' && document.getElementById ? document.getElementById('confrontation-modal') : null);
+    if (m) m.classList.add('hidden');
   }
 
   drawPortraits() {

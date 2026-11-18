@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VOVINAM: HUYẾT CHIẾN GIA TỘC</title>
   <meta name="description" content="Game hành động võ thuật Vovinam đỉnh cao: Ngô Nhất Nghị đột nhập sào huyệt tội phạm giải cứu ông trùm Hứa Vũ Đại.">
@@ -10,11 +11,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <!-- CSS Modules (phân tách sạch sẽ theo từng tính năng) -->
-  <link rel="stylesheet" href="css/base.css?v=5.4">
-  <link rel="stylesheet" href="css/hud.css?v=5.4">
-  <link rel="stylesheet" href="css/menu.css?v=5.4">
-  <link rel="stylesheet" href="css/features.css?v=5.4">
-  <link rel="stylesheet" href="css/training.css?v=5.7">
+  <link rel="stylesheet" href="css/base.css?v=5.50">
+  <link rel="stylesheet" href="css/hud.css?v=5.50">
+  <link rel="stylesheet" href="css/menu.css?v=5.50">
+  <link rel="stylesheet" href="css/char-select.css?v=5.50">
+  <link rel="stylesheet" href="css/modals-chronicles.css?v=5.89">
+  <link rel="stylesheet" href="css/ally-select.css?v=5.50">
+  <link rel="stylesheet" href="css/campaign-hub.css?v=5.50">
+  <link rel="stylesheet" href="css/features.css?v=5.50">
+  <link rel="stylesheet" href="css/training.css?v=5.50">
+  <link rel="stylesheet" href="css/ui-overhaul.css?v=5.91">
 </head>
 <body>
   <!-- Container trò chơi -->
@@ -47,24 +53,72 @@
               <div id="player-energy-fill" class="bar-fill energy-current"></div>
               <span id="player-energy-text" class="bar-text">VOVINAM: 0%</span>
             </div>
+            <!-- Thanh Trạng Thái Hiệu Ứng Bất Lợi đang dính trên Player (ngay dưới thanh máu/năng lượng) -->
+            <div id="hud-debuffs-bar" class="hud-debuffs-bar hidden"></div>
+            <!-- Cục Nội Tại & Tích Tầng Trực Quan (Dưới Thanh Máu / Năng Lượng) -->
+            <div id="hud-passive-widget" class="hud-passive-widget" style="--passive-accent: #38bdf8;">
+              <div id="hud-passive-orb" class="hud-passive-orb" title="Nội Tại Đặc Trưng">☯️</div>
+              <div class="hud-passive-body">
+                <div class="hud-passive-top">
+                  <span id="hud-passive-name" class="hud-passive-name">CƯƠNG NHU PHỐI TRIỂN</span>
+                  <span id="hud-passive-state" class="hud-passive-state">COMBO 0/5</span>
+                </div>
+                <div id="hud-passive-pips" class="hud-passive-pips">
+                  <span class="passive-pip"></span>
+                  <span class="passive-pip"></span>
+                  <span class="passive-pip"></span>
+                  <span class="passive-pip"></span>
+                  <span class="passive-pip"></span>
+                </div>
+              </div>
+            </div>
             <div id="ultimate-ready-badge" class="ultimate-badge hidden">TUYỆT KỸ SẴN SÀNG! [PHÍM I]</div>
             <div id="ally-ready-badge" class="ally-badge hidden">ĐỒNG MINH SẴN SÀNG! [PHÍM H]</div>
-            <!-- Thanh Kỹ Năng & Hồi Chiêu Vovinam -->
+            <!-- Thanh Kỹ Năng & Hồi Chiêu -->
             <div id="skill-cooldowns-bar" class="skill-cooldowns-container">
               <div id="badge-dodge" class="skill-badge ready" title="Né Thân Pháp [L] (Hồi chiêu 8s)">
                 <span class="skill-key">L</span>
-                <span class="skill-name">NÉ</span>
+                <span id="label-dodge" class="skill-name">NÉ BỘ</span>
                 <span id="cd-dodge-text" class="skill-cd-val">SẴN SÀNG</span>
               </div>
-              <div id="badge-counter-hand" class="skill-badge ready" title="Phản Đòn Tay Vovinam [U+J] (Hồi chiêu 2.5s)">
+              <div id="badge-counter-hand" class="skill-badge ready" title="Phản Đòn Tay [U+J] (Hồi chiêu 2.5s)">
                 <span class="skill-key">U+J</span>
-                <span class="skill-name">ĐỠ TAY</span>
+                <span id="label-counter-hand" class="skill-name">GẠT QUYỀN</span>
                 <span id="cd-counter-hand-text" class="skill-cd-val">SẴN SÀNG</span>
               </div>
-              <div id="badge-counter-leg" class="skill-badge ready" title="Phản Đòn Chân Vovinam [U+K] (Hồi chiêu 3.5s)">
+              <div id="badge-counter-leg" class="skill-badge ready" title="Phản Đòn Chân [U+K] (Hồi chiêu 3.5s)">
                 <span class="skill-key">U+K</span>
-                <span class="skill-name">GẠT CHÂN</span>
+                <span id="label-counter-leg" class="skill-name">GẠT TRỤ</span>
                 <span id="cd-counter-leg-text" class="skill-cd-val">SẴN SÀNG</span>
+              </div>
+              <div id="badge-stance-wu" class="skill-badge ready" title="Thế Chiêu Đặc Trưng [W+U] (Hồi chiêu 6.0s)">
+                <span class="skill-key">W+U</span>
+                <span id="label-stance-wu" class="skill-name">TỤ KHÍ</span>
+                <span id="cd-stance-wu-text" class="skill-cd-val">SẴN SÀNG</span>
+              </div>
+            </div>
+            <!-- Card Trạng Thái Vũ Khí Cầm Tay (ẩn khi tay không) -->
+            <div id="hud-weapon-card" class="hud-weapon-card hidden">
+              <div class="hud-weapon-icon-box">
+                <div id="hud-weapon-icon" class="hud-weapon-icon"></div>
+              </div>
+              <div class="hud-weapon-content">
+                <div class="hud-weapon-top-line">
+                  <div class="hud-weapon-title-group">
+                    <span id="hud-weapon-name" class="hud-weapon-name">CÔN</span>
+                    <span id="hud-weapon-badge" class="hud-weapon-badge">GÂY CHOÁNG</span>
+                  </div>
+                  <span id="hud-weapon-dur-text" class="hud-weapon-dur-text">8 / 8</span>
+                </div>
+                <div class="hud-weapon-meter">
+                  <div id="hud-weapon-segments" class="hud-weapon-segments"></div>
+                </div>
+                <div class="hud-weapon-tips">
+                  <span class="hud-weapon-action-pill"><kbd>J</kbd> Nhẹ</span>
+                  <span class="hud-weapon-action-pill"><kbd>K</kbd> Nặng</span>
+                  <span id="hud-weapon-guard-pill" class="hud-weapon-action-pill guard-pill hidden"><kbd>U</kbd> Chắn Khiên</span>
+                  <span class="hud-weapon-action-pill throw-pill"><kbd>E</kbd> Phi</span>
+                </div>
               </div>
             </div>
           </div>
@@ -93,6 +147,8 @@
               <div id="boss-poise-fill" class="bar-fill boss-poise-current"></div>
               <span id="boss-poise-text" class="bar-text">ĐỊNH LỰC (POISE): 100%</span>
             </div>
+            <!-- Thanh Trạng Thái Bất Lợi đang dính trên Boss -->
+            <div id="boss-debuffs-bar" class="hud-debuffs-bar boss-debuffs-bar hidden"></div>
             <div id="boss-phase-markers" class="phase-markers">
               <div class="marker p1 active">P1</div>
               <div class="marker p2">P2</div>
@@ -128,6 +184,112 @@
           <button id="btn-quick-fullscreen" class="icon-btn" title="Toàn Màn Hình [F]">⛶</button>
           <button id="btn-quick-pause" class="icon-btn" title="Tạm Dừng [ESC]">⏸</button>
         </div>
+
+        <!-- Thanh Đấu Trường 1v1 Phong Cách One Piece Fighting Path (2 Bên Trái/Phải) -->
+        <div id="online-pvp-arena-hud" class="opfp-arena-hud hidden">
+          <div id="opfp-p1-side" class="opfp-hud-side opfp-hud-left">
+            <img id="opfp-p1-avatar" class="opfp-hud-avatar" src="assets/images/characters/char_hero_nghi.png" alt="P1">
+            <div class="opfp-hud-bars">
+              <div class="opfp-hud-meta">
+                <span id="opfp-p1-name" class="opfp-hud-name">P1</span>
+                <span id="opfp-p1-dots" class="opfp-win-dots"></span>
+              </div>
+              <div class="opfp-hp-track"><div id="opfp-p1-hp" class="opfp-hp-fill" style="width:100%"></div><span id="opfp-p1-hp-txt" class="opfp-hp-txt">1000/1000</span></div>
+              <div class="opfp-en-track"><div id="opfp-p1-en" class="opfp-en-fill" style="width:0%"></div></div>
+            </div>
+          </div>
+
+          <div class="opfp-hud-center">
+            <div id="opfp-hud-round" class="opfp-round-tag">HIỆP 1</div>
+            <div id="opfp-hud-timer" class="opfp-timer-num">99</div>
+            <div id="opfp-hud-score" class="opfp-score-pill">0 - 0</div>
+          </div>
+
+          <div id="opfp-p2-side" class="opfp-hud-side opfp-hud-right">
+            <div class="opfp-hud-bars">
+              <div class="opfp-hud-meta opfp-meta-right">
+                <span id="opfp-p2-dots" class="opfp-win-dots"></span>
+                <span id="opfp-p2-name" class="opfp-hud-name">P2</span>
+              </div>
+              <div class="opfp-hp-track opfp-hp-rtl"><div id="opfp-p2-hp" class="opfp-hp-fill opfp-hp-p2" style="width:100%"></div><span id="opfp-p2-hp-txt" class="opfp-hp-txt">1000/1000</span></div>
+              <div class="opfp-en-track opfp-hp-rtl"><div id="opfp-p2-en" class="opfp-en-fill" style="width:0%"></div></div>
+            </div>
+            <img id="opfp-p2-avatar" class="opfp-hud-avatar" src="assets/images/characters/char_bichlam.png" alt="P2">
+          </div>
+        </div>
+
+        <!-- Màn Hình VS Splash & Đếm Ngược 3-2-1 Phong Cách Fighting Path (Vertical Strips + Meteor Cosmos) -->
+        <div id="online-vs-splash" class="opfp-vs-splash hidden">
+          <div class="opfp-vs-bg-split">
+            <div class="opfp-vs-bg-blue">
+              <span class="opfp-meteor m1"></span>
+              <span class="opfp-meteor m2"></span>
+              <span class="opfp-meteor m3"></span>
+            </div>
+            <div class="opfp-vs-bg-red">
+              <span class="opfp-meteor m4"></span>
+              <span class="opfp-meteor m5"></span>
+              <div class="opfp-vs-trophy" aria-hidden="true">🏆</div>
+            </div>
+          </div>
+
+          <div class="opfp-vs-stage">
+            <div class="opfp-vs-strip opfp-vs-left">
+              <img id="opfp-vs-p1-img" src="assets/images/characters/char_hero_nghi.png" alt="P1">
+              <div class="opfp-vs-strip-shine"></div>
+              <div class="opfp-vs-info">
+                <div class="opfp-vs-strip-head">
+                  <span class="opfp-vs-slot">1P</span>
+                  <span id="opfp-vs-p1-title" class="opfp-vs-subrank">Sát Thần Việt Võ Đạo</span>
+                </div>
+                <h3 id="opfp-vs-p1-name">NGÔ NHẤT NGHỊ</h3>
+              </div>
+              <span class="opfp-vs-strip-gem">⚔️</span>
+            </div>
+
+            <div class="opfp-vs-center">
+              <div class="opfp-vs-badge"><span>VS</span></div>
+              <div id="opfp-vs-countdown" class="opfp-vs-countdown">3</div>
+            </div>
+
+            <div class="opfp-vs-strip opfp-vs-right">
+              <img id="opfp-vs-p2-img" src="assets/images/characters/char_bichlam.png" alt="P2">
+              <div class="opfp-vs-strip-shine"></div>
+              <div class="opfp-vs-info">
+                <div class="opfp-vs-strip-head">
+                  <span class="opfp-vs-slot">2P</span>
+                  <span id="opfp-vs-p2-title" class="opfp-vs-subrank">Quyền Cước Thủy Triều</span>
+                </div>
+                <h3 id="opfp-vs-p2-name">ĐÌNH BÍCH LÂM</h3>
+              </div>
+              <span class="opfp-vs-strip-gem p2">🔥</span>
+            </div>
+          </div>
+
+          <div class="opfp-vs-footer">
+            <div class="opfp-vs-foot-player left">
+              <img id="opfp-vs-foot-p1-img" src="assets/images/characters/char_hero_nghi.png" alt="P1">
+              <span id="opfp-vs-foot-p1-name" class="opfp-vs-foot-name">NGÔ NHẤT NGHỊ</span>
+              <span class="opfp-vs-foot-crest">🏅 ĐẤU SĨ</span>
+              <span class="opfp-vs-foot-pct">100%</span>
+            </div>
+            <div class="opfp-vs-foot-player right">
+              <span class="opfp-vs-foot-pct">100%</span>
+              <span id="opfp-vs-foot-p2-name" class="opfp-vs-foot-name">ĐÌNH BÍCH LÂM</span>
+              <img id="opfp-vs-foot-p2-img" src="assets/images/characters/char_bichlam.png" alt="P2">
+            </div>
+          </div>
+        </div>
+
+        <!-- Thanh Trạng Thái Đấu Online (1v1 PvP / 2P Co-op) -->
+        <div id="online-match-bar" class="online-match-bar hidden">
+          <span id="online-hud-mode" class="online-hud-pill">🌐 1v1 VÕ ĐÀI</span>
+          <span id="online-hud-room" class="online-hud-room">PHÒNG: ----</span>
+          <span id="online-hud-score" class="online-hud-score">0 - 0</span>
+          <span id="online-hud-ping" class="online-hud-ping">-- ms</span>
+          <button id="btn-online-rematch" class="btn btn-sm btn-primary hidden" type="button">🔄 ĐẤU LẠI</button>
+          <button id="btn-online-leave-match" class="btn btn-sm btn-secondary" type="button">RỜI TRẬN</button>
+        </div>
       </div>
 
       <!-- HỘI THOẠI ĐIỆN ẢNH (CINEMATIC DIALOGUE) -->
@@ -153,222 +315,774 @@
         <!-- Lớp phủ ánh sáng & gradient điện ảnh -->
         <div class="menu-cinematic-overlay"></div>
 
-        <!-- Thanh điều khiển góc phải trên (Top-Right Action Bar) -->
-        <div class="top-nav-bar">
-          <button id="btn-top-audio" class="top-nav-btn" title="Bật / Tắt âm thanh [M]" aria-label="Âm thanh">
-            <svg class="top-nav-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-          </button>
-          <button id="btn-touch-toggle" class="top-nav-btn" title="Bật / Tắt phím ảo Mobile" aria-label="Phím ảo">
-            <svg class="top-nav-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 12H3V4h18v10z"/></svg>
-          </button>
-          <button id="btn-fullscreen-toggle" class="top-nav-btn" title="Toàn màn hình [F]" aria-label="Toàn màn hình">
-            <svg class="top-nav-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-          </button>
-          <button id="btn-credits" class="top-nav-btn" title="Thông tin game & Xã đoàn Họ Phó" aria-label="Thông tin">
-            <svg class="top-nav-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-          </button>
+        <!-- MÀN HÌNH ĐĂNG NHẬP / CHỌN MÁY CHỦ KHỞI ĐẦU AAA -->
+        <div id="login-gate-overlay" class="vov-login-gate">
+          <div class="vov-gate-backdrop"></div>
+          <div class="vov-gate-content">
+            <div class="vov-gate-hero-side">
+              <div class="vov-gate-server-pill" id="gate-server-status">
+                <span class="vov-server-dot online"></span>
+                <span id="gate-server-label">MÁY CHỦ S1: ĐOẠN NGHĨA ĐÀI — ONLINE</span>
+              </div>
+              <div class="vov-gate-brand">
+                <span class="vov-gate-kicker">VIỆT VÕ ĐẠO • HUYẾT CHIẾN GIA TỘC • ONLINE EDITION</span>
+                <h2 class="vov-gate-logo">VOVINAM<br><span>HUYẾT CHIẾN GIA TỘC</span></h2>
+                <p class="vov-gate-tagline">Đăng nhập tài khoản để đồng bộ Cloud toàn bộ Võ Sĩ, Skin Chí Tôn &amp; Bảng Xếp Hạng Đấu Trường Online!</p>
+              </div>
+              <div class="vov-gate-server-select-row">
+                <label for="gate-server-select">Cụm Máy Chủ:</label>
+                <select id="gate-server-select" class="online-input">
+                  <option value="s1">S1: Đoạn Nghĩa Đài (Server Cloud Chính)</option>
+                  <option value="local">S2: Phòng Tập Offline / Lưu Trữ Nội Bộ</option>
+                </select>
+              </div>
+              <div class="vov-gate-hero-art">
+                <img src="assets/images/characters/char_hero_nghi.png" alt="Ngô Nhất Nghị" class="vov-gate-char-main">
+                <img src="assets/images/characters/char_thienkhanh_vovinam.png" alt="Thiên Khánh" class="vov-gate-char-sub">
+              </div>
+            </div>
+
+            <div class="vov-gate-card">
+              <div class="vov-gate-card-head">
+                <span class="shop-header-badge">🔐 CỔNG ĐĂNG NHẬP VÕ ĐÀI</span>
+                <h3>TRIỆU HỒI ĐẠI SẢNH</h3>
+              </div>
+
+              <div id="gate-auth-form" class="vov-gate-form">
+                <label class="online-field">
+                  <span>Tên Tài Khoản (Username)</span>
+                  <input id="gate-username" class="online-input vov-gate-input" type="text" maxlength="24" placeholder="VD: nguyenvana">
+                </label>
+                <label class="online-field">
+                  <span>Mật Khẩu</span>
+                  <input id="gate-password" class="online-input vov-gate-input" type="password" maxlength="64" placeholder="Nhập mật khẩu (tối thiểu 3 ký tự)">
+                </label>
+                <label class="online-field">
+                  <span>Tên Võ Sĩ Hiển Thị (khi tạo mới)</span>
+                  <input id="gate-displayname" class="online-input vov-gate-input" type="text" maxlength="24" placeholder="VD: Tiểu Long Họ Phó">
+                </label>
+
+                <div class="vov-gate-actions">
+                  <button id="btn-gate-login" class="btn btn-primary vov-gate-btn-main" type="button">⚔️ ĐĂNG NHẬP &amp; VÀO GAME</button>
+                  <div class="vov-gate-sub-btns">
+                    <button id="btn-gate-register" class="btn btn-secondary" type="button">✨ ĐĂNG KÝ MỚI</button>
+                    <button id="btn-gate-guest" class="btn btn-ghost vov-gate-guest-btn" type="button">🎮 CHƠI NGAY (KHÁCH)</button>
+                  </div>
+                </div>
+                <p id="gate-auth-feedback" class="vov-gate-feedback"></p>
+              </div>
+
+              <div id="gate-welcome-panel" class="vov-gate-welcome hidden">
+                <div class="vov-gate-user-card">
+                  <img src="assets/images/characters/char_hero_nghi.png" alt="Avatar" class="vov-gate-user-avatar">
+                  <div>
+                    <div class="vov-gate-user-label">ĐÃ XÁC THỰC CLOUD • SẴN SÀNG XUẤT TRẬN</div>
+                    <h4 id="gate-welcome-name">Võ Sĩ Gia Tộc</h4>
+                    <div id="gate-welcome-meta" class="vov-gate-user-meta">🏆 0 Thắng PvP • Chặng Màn 1</div>
+                  </div>
+                </div>
+                <button id="btn-gate-enter" class="btn btn-primary vov-gate-btn-main" type="button">🚀 VÀO ĐẠI SẢNH VÕ ĐẠO</button>
+                <button id="btn-gate-switch" class="btn btn-secondary" type="button">🔄 ĐỔI TÀI KHOẢN / ĐĂNG XUẤT</button>
+              </div>
+
+              <div class="vov-gate-footer-note">
+                <span>🌐 Đồng Bộ Cloud + PvP 1v1 + 2P Co-op Real-time</span>
+                <span>v5.89</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Khối bên trái: Logo & Menu Danh Mục (Left Column) -->
+<!-- THANH ĐIỀU HƯỚNG TRÊN CÙNG (TOP BAR) -->
+        <header class="menu-top-bar">
+          <!-- Góc Trái: Gia Huy Họ Phó & Châm Ngôn -->
+          <div class="top-clan-section">
+            <div class="top-clan-badge" title="Gia Huy Họ Phó">
+              <span class="clan-badge-emblem">⚔️</span>
+            </div>
+            <div class="top-clan-text">
+              <div class="top-clan-title">HỌ PHÓ</div>
+              <div class="top-clan-sub">BẤT DIỆT</div>
+            </div>
+            <div class="top-clan-quote">
+              “Vovinam - Việt Võ Đạo, Tinh hoa dân tộc, sức mạnh Việt Nam.”
+            </div>
+          </div>
+
+          <!-- Góc Phải: Tiền Tệ (Vàng & Kim Cương) + Các Nút Thao Tác Nhanh -->
+          <div class="top-actions-section">
+            <div class="top-currency-bar">
+              <button id="top-gold-pill" class="top-currency-pill gold-pill" title="Vàng Ngân Khố Gia Tộc — Nhấn để mở Cửa Hàng">
+                <span class="curr-icon">🪙</span>
+                <span id="top-gold-val" class="curr-val">600</span>
+              </button>
+              <button id="top-diamond-pill" class="top-currency-pill diamond-pill" title="Kim Cương Lượng Tử — Nhấn để mở Cửa Hàng">
+                <span class="curr-icon">💎</span>
+                <span id="top-diamond-val" class="curr-val">25</span>
+              </button>
+            </div>
+            <button id="btn-top-account" class="top-pill-btn" title="Đăng Nhập Tài Khoản, Lưu Cloud &amp; Bảng Xếp Hạng Server" aria-label="Tài Khoản Cloud">
+              <span class="top-pill-icon">☁️</span>
+              <span class="top-pill-label">Tài Khoản</span>
+            </button>
+            <button id="btn-top-online" class="top-pill-btn online-pill-highlight" title="Đấu Online 1v1 PvP &amp; 2P Co-op Đánh Boss" aria-label="Đấu Online">
+              <span class="top-pill-icon">🌐</span>
+              <span class="top-pill-label">Online</span>
+            </button>
+            <button id="btn-top-shop" class="top-pill-btn shop-pill-highlight" title="Cửa Hàng Gia Tộc — Chiêu Mộ Phó Văn Anh & Phó Tiến Đăng" aria-label="Cửa Hàng">
+              <span class="top-pill-icon">🛒</span>
+              <span class="top-pill-label">Cửa Hàng</span>
+            </button>
+            <button id="btn-top-notif" class="top-pill-btn" title="Thông Báo & Cập Nhật Mới" aria-label="Thông Báo">
+              <span class="top-pill-icon">🔔</span>
+              <span class="top-pill-label">Thông Báo</span>
+              <span class="notif-badge-dot"></span>
+            </button>
+            <button id="btn-top-profile" class="top-pill-btn" title="Hồ Sơ Người Chơi & Chiến Tích Gia Tộc" aria-label="Hồ Sơ Gia Tộc">
+              <span class="top-pill-icon">👤</span>
+              <span class="top-pill-label">Gia Tộc</span>
+            </button>
+            <button id="btn-top-dossier" class="top-pill-btn" title="Hồ Sơ Nhân Vật & Tiểu Sử 13 Cao Thủ" aria-label="Hồ Sơ Nhân Vật">
+              <span class="top-pill-icon">📖</span>
+              <span class="top-pill-label">Nhân Vật</span>
+            </button>
+            <button id="btn-top-settings" class="top-pill-btn" title="Cài Đặt Hệ Thống" aria-label="Cài Đặt">
+              <span class="top-pill-icon">⚙️</span>
+              <span class="top-pill-label">Cài Đặt</span>
+            </button>
+            <button id="btn-top-exit" class="top-pill-btn btn-danger-pill" title="Thoát Game" aria-label="Thoát">
+              <span class="top-pill-icon">🚪</span>
+              <span class="top-pill-label">Thoát</span>
+            </button>
+
+            <!-- Tiện ích Phụ (Âm thanh, Toàn màn hình, Phím ảo) -->
+            <div class="top-utility-icons">
+              <button id="btn-top-audio" class="top-icon-mini" title="Bật / Tắt âm thanh [M]" aria-label="Âm thanh">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+              </button>
+              <button id="btn-fullscreen-toggle" class="top-icon-mini" title="Toàn màn hình [F]" aria-label="Toàn màn hình">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+              </button>
+              <button id="btn-touch-toggle" class="top-icon-mini" title="Bật / Tắt phím ảo Mobile" aria-label="Phím ảo">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 12H3V4h18v10z"/></svg>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- KHỐI BÊN TRÁI: LOGO & MENU DANH MỤC (LEFT COLUMN) -->
         <div class="menu-left-column">
-          <!-- Logo & Tiêu Đề Điện Ảnh -->
+          <!-- Logo & Tiêu Đề Điện Ảnh (Huy Hiệu 3D Song Long Vovinam) -->
           <div class="menu-branding">
-            <div class="game-badge-cinematic">VIỆT VÕ ĐẠO — CINEMATIC BEAT 'EM UP</div>
             <h1 class="main-title-cinematic">
-              <span class="vovinam-brush-text">VOVINAM</span>
-              <span class="vovinam-sub-text">HUYẾT CHIẾN GIA TỘC</span>
+              <img class="vovinam-emblem-logo-img" src="assets/images/ui/logo_vovinam_title.png" alt="VOVINAM: HUYẾT CHIẾN GIA TỘC" draggable="false">
+              <span class="vovinam-brush-text vovinam-sr-only">VOVINAM</span>
+              <span class="vovinam-sub-text vovinam-sr-only">HUYẾT CHIẾN GIA TỘC</span>
             </h1>
             <div class="title-filigree-divider">
               <span class="filigree-line left"></span>
-              <span class="filigree-text">❖ NĂM HỒI — BẢY MÀN — BỐN KẾT THÚC ❖</span>
+              <span class="filigree-text">❖ NĂM HỒI • BẢY MÀN • BỐN KẾT THÚC ❖</span>
               <span class="filigree-line right"></span>
             </div>
           </div>
 
-          <!-- Danh Sách Các Mục Menu Chính (Đã Gộp Theo Nhóm Chức Năng) -->
+          <!-- Danh Sách Nút Bấm Menu Chính (Thiết Kế Điện Ảnh Tinh Gọn) -->
           <nav class="cinematic-nav-list">
-            <!-- 1. Gộp Story Mode: Chiến Dịch Cốt Truyện (Tiếp Tục / Game Mới / Bản Đồ) -->
-            <button id="btn-campaign-hub" class="nav-brush-btn active-campaign" title="Mở Chiến Dịch Cốt Truyện: Tiếp tục, tạo hành trình mới hoặc xem bản đồ chương">
-              <span class="btn-brush-marker"></span>
-              <span class="btn-brush-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 13.5L11 10 9.5 11.5l3.5 3.5zm-5-5L6 5 4.5 6.5l3.5 3.5zm8.5 8.5L21.5 13.5 19 11l-3.5 3.5 2.5 2.5zM2 20l4-4 2 2-4 4H2v-2zm18-2l2 2v2h-2l-4-4 2-2 2 2z"/></svg></span>
-              <span class="btn-brush-label">CHIẾN DỊCH CỐT TRUYỆN</span>
+            <!-- 1. CHIẾN DỊCH (Active Red Banner với Huy hiệu song kiếm & góc viền vàng) -->
+            <button id="btn-campaign-hub" class="nav-brush-btn active-campaign" title="Bước vào hành trình Vovinam">
+              <span class="btn-brush-icon emblem-crossed-swords">⚔️</span>
+              <div class="btn-brush-text-wrap">
+                <span class="btn-brush-main">CHIẾN DỊCH</span>
+                <span class="btn-brush-sub">Khám phá cốt truyện 7 Hồi</span>
+              </div>
+              <span class="btn-corner-bracket top-left"></span>
+              <span class="btn-corner-bracket bottom-right"></span>
             </button>
 
-            <!-- 2. Xem Nhân Vật & Thử Võ Phục Vovinam (Không tự động bắt đầu màn) -->
-            <button id="btn-char-select" class="nav-brush-btn" title="Xem thông tin nhân vật, chỉ số, bật tắt võ phục Vovinam và chọn viện trợ đồng minh">
-              <span class="btn-brush-marker"></span>
+            <!-- 2. VÕ ĐƯỜNG & TÁI ĐẤU -->
+            <button id="btn-nav-arena" class="nav-brush-btn" title="Vào Võ Đường Luyện Tập, Khảo Hạch & Tái Đấu Boss">
               <span class="btn-brush-icon">🥋</span>
-              <span class="btn-brush-label">XEM NHÂN VẬT &amp; VÕ PHỤC</span>
+              <div class="btn-brush-text-wrap">
+                <span class="btn-brush-main">VÕ ĐƯỜNG</span>
+                <span class="btn-brush-sub">Luyện võ • Tái đấu Boss</span>
+              </div>
             </button>
 
-            <!-- 3. Võ Đường Huấn Luyện (Training Mode) -->
-            <button id="btn-training" class="nav-brush-btn" title="Vào Võ Đường Vovinam luyện võ: tự do chỉnh hình nộm, không hồi chiêu, đổi nhân vật">
-              <span class="btn-brush-marker"></span>
-              <span class="btn-brush-icon">⚡</span>
-              <span class="btn-brush-label">VÕ ĐƯỜNG LUYỆN VÕ</span>
+            <!-- 2b. ĐẤU ONLINE (1v1 PvP VÕ ĐÀI & 2P CO-OP BOSS) -->
+            <button id="btn-online-mode" class="nav-brush-btn online-nav-btn" title="Kết nối Server đấu 1v1 PvP Võ Đài hoặc 2P Co-op Đánh Boss">
+              <span class="btn-brush-icon">🌐</span>
+              <div class="btn-brush-text-wrap">
+                <span class="btn-brush-main">ĐẤU ONLINE</span>
+                <span class="btn-brush-sub">1v1 Võ Đài • 2P Co-op Boss</span>
+              </div>
             </button>
 
-            <!-- 4. Trang Bị / Kỹ Năng / Bí Kíp -->
-            <button id="btn-skills-equip" class="nav-brush-btn" title="Xem bộ chiêu thức Vovinam, thành tích, bộ sưu tập vũ khí">
-              <span class="btn-brush-marker"></span>
-              <span class="btn-brush-icon">❖</span>
-              <span class="btn-brush-label">TRANG BỊ / KỸ NĂNG</span>
+            <!-- 3. VÕ SĨ -->
+            <button id="btn-char-select" class="nav-brush-btn" title="Xem chỉ số võ sĩ, thay võ phục Vovinam & chọn viện trợ">
+              <span class="btn-brush-icon">👥</span>
+              <div class="btn-brush-text-wrap">
+                <span class="btn-brush-main">VÕ SĨ</span>
+                <span class="btn-brush-sub">Hồ sơ 9 nhân vật &amp; Viện trợ</span>
+              </div>
             </button>
 
-            <!-- 5. Cài Đặt -->
+            <!-- 4. KHO ĐỒ & KỸ NĂNG -->
+            <button id="btn-skills-equip" class="nav-brush-btn" title="Trang bị, kho vũ khí & bí kíp võ thuật">
+              <span class="btn-brush-icon">💼</span>
+              <div class="btn-brush-text-wrap">
+                <span class="btn-brush-main">KHO ĐỒ</span>
+                <span class="btn-brush-sub">Trang bị • Bí kíp võ thuật</span>
+              </div>
+            </button>
+
+            <!-- 5. CÀI ĐẶT -->
             <button id="btn-settings" class="nav-brush-btn" title="Điều chỉnh âm lượng và hiệu ứng hình ảnh">
-              <span class="btn-brush-marker"></span>
               <span class="btn-brush-icon">⚙️</span>
-              <span class="btn-brush-label">CÀI ĐẶT</span>
+              <div class="btn-brush-text-wrap">
+                <span class="btn-brush-main">CÀI ĐẶT</span>
+                <span class="btn-brush-sub">Âm thanh • Hệ thống • Phím bấm</span>
+              </div>
             </button>
 
-            <!-- 6. Thoát Game -->
-            <button id="btn-exit-game" class="nav-brush-btn btn-exit" title="Tạm rời chiến trường">
-              <span class="btn-brush-marker"></span>
-              <span class="btn-brush-icon">🚪</span>
-              <span class="btn-brush-label">THOÁT GAME</span>
-            </button>
+            <!-- Nút ẩn để bảo toàn tương thích ngược cho các script cũ -->
+            <button id="btn-nav-solo" style="display:none;" aria-hidden="true"></button>
           </nav>
 
-          <!-- Câu Châm Ngôn & Con Dấu Gia Tộc Họ Phó -->
-          <div class="menu-clan-quote">
-            <div class="quote-text-wrap">
-              <p class="quote-text">“Võ không chỉ là sức mạnh, mà là trách nhiệm với gia tộc.”</p>
-              <span class="quote-author">— Họ Phó</span>
-            </div>
-            <div class="clan-red-seal" title="Gia Huy Họ Phó">
-              <span>Họ<br>Phó</span>
+          <!-- Banner Mini Sự Kiện Bên Dưới Menu -->
+          <div id="card-mini-event" class="mini-event-banner" tabindex="0" role="button" title="Mở Sự Kiện Huyết Chiến Gia Tộc">
+            <div class="mini-event-thumb" style="background-image: url('assets/images/cards/card_pvp_event.jpg');"></div>
+            <div class="mini-event-info">
+              <span class="mini-event-tag">SỰ KIỆN ĐẶC BIỆT</span>
+              <h4 class="mini-event-title">HUYẾT CHIẾN GIA TỘC <span class="arrow-sym">›</span></h4>
+              <span class="mini-event-date">12/10 - 26/10</span>
             </div>
           </div>
         </div>
 
-        <!-- Khối bên phải: Các Thẻ Tính Năng & Sự Kiện (Right Column Cards) -->
+        <!-- THANH HỒ SƠ NGƯỜI CHƠI GÓC DƯỚI TRÁI -->
+        <div class="menu-bottom-player-bar" id="menu-player-bar" tabindex="0" role="button" title="Xem Hồ Sơ Gia Tộc">
+          <div class="player-clan-avatar">
+            <img src="assets/images/characters/char_hero_nghi.png" alt="Avatar" class="player-avatar-img">
+          </div>
+          <div class="player-clan-meta">
+            <div class="player-clan-name-row">
+              <span class="player-clan-name">Họ Phó</span>
+              <span class="player-clan-level">Lv. 1</span>
+            </div>
+            <div class="player-exp-bar-wrap" title="Kinh nghiệm gia tộc">
+              <div class="player-exp-bar-fill" style="width: 45%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KHỐI BÊN PHẢI: CÁC THẺ TÍNH NĂNG & SỰ KIỆN (RIGHT COLUMN CARDS) -->
         <aside class="menu-right-column">
-          <!-- Thẻ 1: CÂU CHUYỆN HỌ PHÓ -->
-          <div id="card-feature-story" class="feature-card card-story" tabindex="0" role="button" title="Mở Biên Niên Sử & Bảng Suy Luận">
+          <!-- Thẻ 1: BẢN ĐỒ NỔI BẬT: PHÓ GIA -->
+          <div id="card-feature-map" class="feature-card card-spotlight-map" tabindex="0" role="button" title="Khám phá bản đồ Phó Gia">
             <div class="feature-card-content">
-              <span class="feature-card-tag">CÂU CHUYỆN</span>
-              <h3 class="feature-card-title">HỌ PHÓ</h3>
-              <p class="feature-card-desc">Danh dự - Truyền thống - Báo thù</p>
+              <span class="feature-card-tag">❖ BẢN ĐỒ NỔI BẬT</span>
+              <h3 class="feature-card-title">PHÓ GIA</h3>
+              <p class="feature-card-desc">Truyền thừa • Danh vọng • Quyền lực</p>
+              <button class="feature-card-action-btn" type="button">KHÁM PHÁ →</button>
             </div>
             <div class="feature-card-thumb" style="background-image: url('assets/images/cards/card_ho_pho.jpg');"></div>
-            <span class="feature-card-arrow">›</span>
           </div>
 
-          <!-- Thẻ 2: SỰ KIỆN ĐẶC BIỆT — HUYẾT CHIẾN GIA TỘC -->
-          <div id="card-feature-event" class="feature-card card-event" tabindex="0" role="button" title="Tham gia Tái Đấu Boss & Đấu Trường">
+          <!-- Thẻ 2: SỰ KIỆN GIỚI HẠN: HUYẾT CHIẾN GIA TỘC -->
+          <div id="card-feature-event" class="feature-card card-limited-event" tabindex="0" role="button" title="Tham gia Sự Kiện Giới Hạn">
             <div class="feature-card-content">
-              <span class="feature-card-tag"><span class="live-dot">●</span> SỰ KIỆN ĐẶC BIỆT —</span>
+              <span class="feature-card-tag red-glow"><span class="live-dot">●</span> SỰ KIỆN GIỚI HẠN</span>
               <h3 class="feature-card-title highlight-red">HUYẾT CHIẾN GIA TỘC</h3>
               <p class="feature-card-desc text-danger">Thời gian: 12/10 - 26/10</p>
             </div>
             <div class="feature-card-thumb" style="background-image: url('assets/images/cards/card_pvp_event.jpg');"></div>
-            <span class="feature-card-arrow">›</span>
           </div>
 
-          <!-- Thẻ 3: KHÁM PHÁ THẾ GIỚI — BẢN ĐỒ MỞ RỘNG -->
-          <div id="card-feature-map" class="feature-card card-map" tabindex="0" role="button" title="Xem Bản Đồ Mở Rộng & Khu Vực">
-            <div class="feature-card-content">
-              <span class="feature-card-tag">KHÁM PHÁ THẾ GIỚI</span>
-              <h3 class="feature-card-title">BẢN ĐỒ MỞ RỘNG</h3>
-              <p class="feature-card-desc">Nhiều khu vực mới đang chờ...</p>
+          <!-- Thẻ 3: TIN TỨC & CẬP NHẬT -->
+          <div id="card-feature-news" class="feature-card-news-panel">
+            <div class="news-panel-header">
+              <span class="news-header-tag">❖ TIN TỨC &amp; CẬP NHẬT</span>
             </div>
-            <div class="feature-card-thumb" style="background-image: url('assets/images/cards/card_map_expand.jpg');"></div>
-            <span class="feature-card-arrow">›</span>
+            <div class="news-items-list">
+              <!-- Tin 1 -->
+              <div class="news-item-row" id="news-row-1" tabindex="0" role="button" title="Xem chi tiết bản đồ Phó Gia">
+                <div class="news-item-thumb" style="background-image: url('assets/images/cards/card_ho_pho.jpg');"></div>
+                <div class="news-item-text">
+                  <div class="news-item-title">Ra mắt bản đồ mới: Phó Gia</div>
+                  <div class="news-item-sub">Khám phá vùng đất tổ tiên của Họ Phó</div>
+                </div>
+                <span class="news-item-date">12/10</span>
+              </div>
+              <!-- Tin 2 -->
+              <div class="news-item-row" id="news-row-2" tabindex="0" role="button" title="Xem chi tiết cập nhật kỹ năng">
+                <div class="news-item-thumb" style="background-image: url('assets/images/cards/card_pvp_event.jpg');"></div>
+                <div class="news-item-text">
+                  <div class="news-item-title">Cập nhật kỹ năng nhân vật</div>
+                  <div class="news-item-sub">Thêm 3 kỹ năng mới cho các môn phái</div>
+                </div>
+                <span class="news-item-date">10/10</span>
+              </div>
+              <!-- Tin 3 -->
+              <div class="news-item-row" id="news-row-3" tabindex="0" role="button" title="Xem sự kiện đặc biệt tuần này">
+                <div class="news-item-thumb" style="background-image: url('assets/images/cards/card_map_expand.jpg');"></div>
+                <div class="news-item-text">
+                  <div class="news-item-title">Sự kiện đặc biệt tuần này</div>
+                  <div class="news-item-sub">Đăng nhập nhận quà hiếm</div>
+                </div>
+                <span class="news-item-date">08/10</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Thẻ Dưới Cùng: VÕ ĐƯỜNG HUẤN LUYỆN -->
-          <div id="card-feature-battlegrounds" class="feature-card-banner" tabindex="0" role="button" title="Vào Võ Đường Huấn Luyện & Đối Kháng">
-            <div class="banner-emblem">❖</div>
-            <div class="banner-text-wrap">
-              <span class="banner-title">VÕ ĐƯỜNG</span>
-              <span class="banner-sub">HUẤN LUYỆN & ĐỐI KHÁNG</span>
+          <!-- Thẻ 4: DANH NGÔN GIA TỘC -->
+          <div id="card-feature-quote" class="feature-card-quote-panel">
+            <div class="quote-panel-text-wrap">
+              <p class="quote-panel-content">“Không phải kẻ mạnh nhất mới là người chiến thắng, mà là kẻ không bao giờ bỏ cuộc.”</p>
+              <span class="quote-panel-author">— Họ Phó</span>
             </div>
+            <div class="quote-panel-avatar" style="background-image: url('assets/images/characters/char_hero_nghi.png');"></div>
           </div>
         </aside>
 
-        <!-- Submenu / Modal: TRANG BỊ & KỸ NĂNG -->
-        <div id="skills-equip-modal" class="modal-overlay hidden">
-          <div class="modal-card skills-equip-card">
-            <button class="modal-close-icon" id="btn-skills-equip-close-x" aria-label="Đóng">&times;</button>
-            <h2 class="modal-title">TRANG BỊ & KỸ NĂNG VÕ THUẬT</h2>
-            <div class="skills-equip-grid">
-              <button id="btn-how-to-play" class="btn btn-secondary">
-                <span class="btn-text">🥋 BỘ CHIÊU THỨC VOVINAM</span>
-              </button>
-              <button id="btn-dossier" class="btn btn-secondary">
-                <span class="btn-text">👤 HỒ SƠ NHÂN VẬT</span>
-              </button>
-              <button id="btn-collection" class="btn btn-secondary">
-                <span class="btn-text">🏆 BỘ SƯU TẬP VŨ KHÍ</span>
-              </button>
-              <button id="btn-achievements" class="btn btn-secondary">
-                <span class="btn-text">🎖️ THÀNH TÍCH GIA TỘC</span>
-              </button>
+        <!-- THANH THAO TÁC NHANH DƯỚI CÙNG BÊN PHẢI (BOTTOM QUICK BAR) -->
+        <nav class="menu-bottom-quick-bar">
+          <button id="btn-quick-shop" class="quick-bar-btn" title="Cửa Hàng Gia Tộc — Chiêu Mộ Tứ Trụ Hoàng Kim">
+            <span class="quick-bar-icon">🛒</span>
+            <span class="quick-bar-label">CỬA HÀNG</span>
+            <span class="quick-badge-dot"></span>
+          </button>
+          <button id="btn-quick-mail" class="quick-bar-btn" title="Hộp Thư Gia Tộc">
+            <span class="quick-bar-icon">✉️</span>
+            <span class="quick-bar-label">THƯ</span>
+            <span class="quick-badge-dot"></span>
+          </button>
+          <button id="btn-quick-quests" class="quick-bar-btn" title="Nhiệm Vụ & Thành Tích">
+            <span class="quick-bar-icon">📜</span>
+            <span class="quick-bar-label">NHIỆM VỤ</span>
+          </button>
+          <button id="btn-quick-ranking" class="quick-bar-btn" title="Bảng Xếp Hạng Võ Đạo">
+            <span class="quick-bar-icon">🏆</span>
+            <span class="quick-bar-label">BẢNG XẾP HẠNG</span>
+          </button>
+          <button id="btn-quick-friends" class="quick-bar-btn" title="Đồng Môn Vovinam">
+            <span class="quick-bar-icon">👥</span>
+            <span class="quick-bar-label">BẠN BÈ</span>
+          </button>
+        </nav>
+        <!-- Dấu Ấn Võ Đạo Góc Dưới Phải (Cinematic Martial Watermark) -->
+        <div class="menu-cinematic-watermark">
+          <div class="watermark-quote">“Bàn tay thép đặt lên trái tim từ ái • Việt Võ Đạo Bất Khuất”</div>
+          <div class="watermark-sub">VOVINAM: HUYẾT CHIẾN GIA TỘC • v5.8.0</div>
+        </div>
+      </div>
+
+        <!-- MODAL: THÔNG BÁO & BẢN CẬP NHẬT MỚI -->
+        <div id="notif-modal" class="modal-overlay hidden">
+          <div class="modal-card wide-card notif-modal-card">
+            <button class="modal-close-icon" id="btn-notif-close-x" aria-label="Đóng">&times;</button>
+            <h2 class="modal-title">🔔 THÔNG BÁO & BẢN CẬP NHẬT MỚI</h2>
+            <div class="notif-content-scroll">
+              <div class="notif-banner-item">
+                <span class="notif-tag-badge">BẢN CẬP NHẬT v5.22</span>
+                <h3>ĐẠI TU GIAO DIỆN ĐIỆN ẢNH & ĐỒNG MINH CHI VIỆN</h3>
+                <p>• Ra mắt giao diện Main Menu AAA đỉnh cao phong cách Võ Đường Vovinam dưới trăng rằm.</p>
+                <p>• Nâng cấp toàn diện 6 Đồng Minh Viện Trợ: Triệu Đình An (Lá Chắn 250 HP), Đình Bích Lâm (Hồi máu +50 HP & xóa choáng), Hứa Vũ Đại (Bom khói mù 3s & +35% sát thương), Hoàng Anh (Siêu giáp vô địch), Dung Hải (Phá giáp & Xuất huyết), Mộc Đăng (Drone EMP).</p>
+                <p>• Cân bằng cơ chế Boss &amp; Nhân vật: Tối ưu nhịp độ đứng dậy tự nhiên, tinh chỉnh bộ đệm chống chuỗi ngã liên hoàn (1.0s) tạo cảm giác chân thực!</p>
+              </div>
             </div>
-            <button id="btn-close-skills-equip" class="btn btn-primary modal-close-btn">ĐÓNG</button>
+            <div class="modal-actions">
+              <button id="btn-notif-confirm" class="btn btn-primary">ĐÃ HIỂU</button>
+            </div>
           </div>
         </div>
 
-        <!-- MODAL CHIẾN DỊCH CỐT TRUYỆN (CAMPAIGN HUB — GỘP TIẾP TỤC / MỚI / BẢN ĐỒ) -->
-        <div id="campaign-modal" class="modal-overlay hidden">
-          <div class="modal-card campaign-modal-card">
-            <button class="modal-close-icon" id="btn-campaign-close-x" aria-label="Đóng">&times;</button>
-            <div class="campaign-header">
-              <span class="campaign-badge">⚔️ HÀNH TRÌNH HỌ PHÓ</span>
-              <h2 class="modal-title campaign-title">CHIẾN DỊCH CỐT TRUYỆN</h2>
-              <p class="campaign-subtitle">Khám phá đại án bắt cóc Hứa Vũ Đại và giương cao ngọn cờ Việt Võ Đạo</p>
-            </div>
-
-            <div class="campaign-options-grid">
-              <!-- Lựa Chọn 1: TIẾP TỤC HÀNH TRÌNH -->
-              <div class="campaign-opt-card card-continue" id="card-campaign-continue">
-                <div class="campaign-opt-badge primary">BẢN LƯU GẦN NHẤT</div>
-                <div class="campaign-opt-icon">📖</div>
-                <h3 class="campaign-opt-title">TIẾP TỤC HÀNH TRÌNH</h3>
-                <div class="campaign-opt-stage">
-                  <span class="stage-tag-badge">HIỆN TẠI</span>
-                  <span id="campaign-cur-stage-name" class="stage-name-highlight">MÀN 1: CON HẺM MƯA ĐỎ</span>
+        <!-- MODAL: HỘP THƯ GIA TỘC -->
+        <div id="mail-modal" class="modal-overlay hidden">
+          <div class="modal-card wide-card mail-modal-card">
+            <button class="modal-close-icon" id="btn-mail-close-x" aria-label="Đóng">&times;</button>
+            <h2 class="modal-title">✉️ HỘP THƯ GIA TỘC</h2>
+            <div class="mail-list-scroll">
+              <div class="mail-item-card unread">
+                <div class="mail-item-header">
+                  <span class="mail-sender">Họ Phó Tông Đường</span>
+                  <span class="mail-time">Hôm nay</span>
                 </div>
-                <p id="campaign-cur-stage-desc" class="campaign-opt-desc">Tiếp tục cuộc đột nhập căn cứ ngầm đô thị lúc nửa đêm để truy tìm dấu vết Hứa Vũ Đại.</p>
-                <button id="btn-campaign-continue" class="btn btn-primary campaign-action-btn">
-                  VÀO TRẬN NGAY ⚔️
-                </button>
+                <div class="mail-item-title">Quà Ra Mắt Bản Cập Nhật Võ Đạo</div>
+                <div class="mail-item-body">Chào đệ tử! Chưởng môn gửi tặng 500 Nộ Khí và Bí Kíp Cương Nhu Phối Triển để gia tăng uy lực trên chiến trường.</div>
+                <button class="btn btn-primary btn-sm btn-claim-mail">NHẬN QUÀ 🎁</button>
               </div>
-
-              <!-- Lựa Chọn 2: HÀNH TRÌNH MỚI (TẠO BẢN SAO LƯU) -->
-              <div class="campaign-opt-card card-newgame" id="card-campaign-newgame">
-                <div class="campaign-opt-badge amber">KHỞI ĐẦU MỚI</div>
-                <div class="campaign-opt-icon">🌟</div>
-                <h3 class="campaign-opt-title">HÀNH TRÌNH MỚI</h3>
-                <div class="campaign-opt-stage">
-                  <span class="stage-tag-badge new">BẢN SAO LƯU MỚI</span>
-                  <span class="stage-name-highlight">BẮT ĐẦU TỪ MÀN 1</span>
+              <div class="mail-item-card">
+                <div class="mail-item-header">
+                  <span class="mail-sender">Sư Huynh Đình Bích Lâm</span>
+                  <span class="mail-time">Hôm qua</span>
                 </div>
-                <p class="campaign-opt-desc">Bắt đầu lại chiến dịch từ Màn 1. <strong>Bảo lưu 100%</strong> tất cả nhân vật và võ phục Vovinam đã mở khóa!</p>
-                <button id="btn-campaign-newgame" class="btn btn-secondary campaign-action-btn">
-                  HÀNH TRÌNH MỚI 🌟
-                </button>
-              </div>
-
-              <!-- Lựa Chọn 3: BẢN ĐỒ CÁC CHƯƠNG -->
-              <div class="campaign-opt-card card-chapters" id="card-campaign-chapters">
-                <div class="campaign-opt-badge blue">5 HỒI — 7 MÀN</div>
-                <div class="campaign-opt-icon">🗺️</div>
-                <h3 class="campaign-opt-title">BẢN ĐỒ CHƯƠNG</h3>
-                <div class="campaign-opt-stage">
-                  <span class="stage-tag-badge map">TÁI ĐẤU &amp; PHÂN NHÁNH</span>
-                  <span class="stage-name-highlight">TOÀN CẢNH ĐẠI ÁN</span>
-                </div>
-                <p class="campaign-opt-desc">Xem toàn cảnh các hồi, các nhánh cốt truyện và lựa chọn tái đấu lại bất kỳ màn chơi nào đã mở khóa.</p>
-                <button id="btn-campaign-chapters" class="btn btn-secondary campaign-action-btn">
-                  MỞ BẢN ĐỒ 🗺️
-                </button>
+                <div class="mail-item-title">Lời Mời Luyện Võ Tại Bến Cảng</div>
+                <div class="mail-item-body">“Thế quyền của đệ đã tiến bộ vượt bậc. Hãy chuẩn bị tinh thần cho trận huyết chiến bảo vệ danh dự Họ Phó!”</div>
               </div>
             </div>
+            <div class="modal-actions">
+              <button id="btn-mail-close" class="btn btn-secondary">ĐÓNG</button>
+            </div>
+          </div>
+        </div>
 
-            <div class="campaign-footer-actions">
-              <button id="btn-campaign-close" class="btn btn-ghost">QUAY LẠI MENU CHÍNH</button>
+        <!-- MODAL: NHIỆM VỤ & THÀNH TÍCH GIA TỘC -->
+        <div id="quests-modal" class="modal-overlay hidden">
+          <div class="modal-card wide-card quests-modal-card">
+            <button class="modal-close-icon" id="btn-quests-close-x" aria-label="Đóng">&times;</button>
+            <h2 class="modal-title">📜 NHIỆM VỤ GIA TỘC & KHẢO HẠCH</h2>
+            <div class="quests-list-scroll">
+              <div class="quest-item-card">
+                <div class="quest-info">
+                  <div class="quest-title">Khảo Hạch Vovinam Cơ Bản</div>
+                  <div class="quest-desc">Thực hiện thành công 5 lần Counter U+J hoặc U+K</div>
+                </div>
+                <div class="quest-progress-wrap">
+                  <span class="quest-progress-text">5 / 5</span>
+                  <button class="btn btn-primary btn-sm btn-claim-quest">HOÀN THÀNH ⭐</button>
+                </div>
+              </div>
+              <div class="quest-item-card">
+                <div class="quest-info">
+                  <div class="quest-title">Đại Phá Sào Huyệt Bến Cảng</div>
+                  <div class="quest-desc">Hạ gục Đao Thủ Hắc Lang trong Hồi 1</div>
+                </div>
+                <div class="quest-progress-wrap">
+                  <span class="quest-progress-text">1 / 1</span>
+                  <button class="btn btn-primary btn-sm btn-claim-quest">HOÀN THÀNH ⭐</button>
+                </div>
+              </div>
+              <div class="quest-item-card">
+                <div class="quest-info">
+                  <div class="quest-title">Bậc Thầy Ném Vũ Khí [Phím E]</div>
+                  <div class="quest-desc">Ném vũ khí trúng 3 kẻ địch từ cự ly xa</div>
+                </div>
+                <div class="quest-progress-wrap">
+                  <span class="quest-progress-text">2 / 3</span>
+                  <span class="quest-status-ongoing">ĐANG TIẾN HÀNH</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button id="btn-quests-close" class="btn btn-secondary">ĐÓNG</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL: ĐỒNG MÔN VOVINAM (BẠN BÈ) -->
+        <div id="friends-modal" class="modal-overlay hidden">
+          <div class="modal-card wide-card friends-modal-card">
+            <button class="modal-close-icon" id="btn-friends-close-x" aria-label="Đóng">&times;</button>
+            <h2 class="modal-title">👥 ĐỒNG MÔN VOVINAM & DANH SÁCH VIỆN TRỢ</h2>
+            <div class="friends-grid-layout">
+              <div class="friend-card online">
+                <span class="friend-avatar">🦅</span>
+                <div class="friend-details">
+                  <div class="friend-name">Đình Bích Lâm</div>
+                  <div class="friend-role">Mãnh Tướng Bến Cảng</div>
+                  <div class="friend-status">● Đang trực chiến • Sẵn sàng hỗ trợ (Hồi +50 HP)</div>
+                </div>
+              </div>
+              <div class="friend-card online">
+                <span class="friend-avatar">🛡️</span>
+                <div class="friend-details">
+                  <div class="friend-name">Triệu Đình An</div>
+                  <div class="friend-role">Cận Vệ Thiết Bích</div>
+                  <div class="friend-status">● Đang trực chiến • Khiên Kim Cương 250 HP</div>
+                </div>
+              </div>
+              <div class="friend-card online">
+                <span class="friend-avatar">💼</span>
+                <div class="friend-details">
+                  <div class="friend-name">Hứa Vũ Đại</div>
+                  <div class="friend-role">Ông Trùm Mạng Lưới</div>
+                  <div class="friend-status">● Đang trực chiến • Buff +35% Sát Thương</div>
+                </div>
+              </div>
+              <div class="friend-card online">
+                <span class="friend-avatar">⛰️</span>
+                <div class="friend-details">
+                  <div class="friend-name">Phó Đặng Hoàng Anh</div>
+                  <div class="friend-role">Thần Cước Trấn Sơn</div>
+                  <div class="friend-status">● Đang trực chiến • Siêu Giáp Vô Địch</div>
+                </div>
+              </div>
+              <div class="friend-card online">
+                <span class="friend-avatar">⚔️</span>
+                <div class="friend-details">
+                  <div class="friend-name">Phó Dung Hải</div>
+                  <div class="friend-role">Song Đao Sát Thủ</div>
+                  <div class="friend-status">● Đang trực chiến • Phá Phòng Thủ & Xuất Huyết</div>
+                </div>
+              </div>
+              <div class="friend-card online">
+                <span class="friend-avatar">💻</span>
+                <div class="friend-details">
+                  <div class="friend-name">Phó Mộc Đăng</div>
+                  <div class="friend-role">Kiến Trúc Sư Hack EMP</div>
+                  <div class="friend-status">● Đang trực chiến • EMP Stun & Làm Chậm 35%</div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button id="btn-friends-close" class="btn btn-secondary">ĐÓNG</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submenu / Modal: KHO ĐỒ, VÕ PHỤC & KỸ NĂNG (STUDIO ARCHITECTURE) -->
+        <div id="skills-equip-modal" class="modal-overlay hidden">
+          <div class="modal-card skills-equip-card ui-studio-khodo">
+            <div class="studio-modal-header">
+              <div class="studio-title-block">
+                <span class="studio-kicker">KHO VÕ ĐẠO GIA TỘC</span>
+                <h2 class="modal-title">KHO ĐỒ, VÕ PHỤC &amp; KỸ NĂNG</h2>
+              </div>
+              <div class="kho-header-right">
+                <span id="kho-active-hero-pill" class="kho-active-hero-pill">🥋 NGÔ NHẤT NGHỊ</span>
+                <button class="modal-close-icon" id="btn-skills-equip-close-x" aria-label="Đóng">&times;</button>
+              </div>
+            </div>
+
+            <div id="kho-tabs-bar" class="kho-tabs-bar" role="tablist">
+              <button type="button" class="kho-tab-btn active" data-kho-tab="outfits">
+                <span class="kho-tab-ico">👘</span>
+                <span>VÕ PHỤC</span>
+              </button>
+              <button type="button" class="kho-tab-btn" data-kho-tab="weapons">
+                <span class="kho-tab-ico">⚔️</span>
+                <span>VŨ KHÍ</span>
+              </button>
+              <button type="button" class="kho-tab-btn" data-kho-tab="techniques">
+                <span class="kho-tab-ico">⚡</span>
+                <span>CHIÊU THỨC</span>
+              </button>
+              <button type="button" class="kho-tab-btn" data-kho-tab="archives">
+                <span class="kho-tab-ico">🏆</span>
+                <span>BỘ SƯU TẬP &amp; HỒ SƠ</span>
+              </button>
+            </div>
+
+            <div class="kho-panels-wrap">
+              <!-- TAB 1: VÕ PHỤC & DIỆN MẠO -->
+              <div id="kho-panel-outfits" class="kho-tab-panel">
+                <div class="kho-outfits-layout">
+                  <aside class="kho-hero-rail-wrap">
+                    <div class="kho-sub-heading">CHỌN VÕ SĨ</div>
+                    <div id="kho-hero-rail" class="kho-hero-rail"></div>
+                  </aside>
+                  <div class="kho-outfit-stage">
+                    <div class="kho-outfit-spotlight">
+                      <img id="kho-outfit-preview-img" class="kho-outfit-preview-img" src="" alt="Võ phục">
+                    </div>
+                    <div class="kho-outfit-info-col">
+                      <div class="kho-outfit-hero-head">
+                        <h3 id="kho-outfit-hero-name" class="kho-hero-title"></h3>
+                        <span id="kho-outfit-hero-role" class="kho-hero-sub"></span>
+                      </div>
+                      <div id="kho-outfit-cards" class="kho-outfit-cards"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 2: VŨ KHÍ CHIẾN TRƯỜNG (Dữ liệu thực từ WEAPON_DEFS & PLAYER_ATTACKS) -->
+              <div id="kho-panel-weapons" class="kho-tab-panel hidden">
+                <div class="kho-weapons-note">Vũ khí rơi trực tiếp trong trận đấu khi hạ binh lính mang vũ khí (nhặt bằng phím Tương Tác). Dưới đây là thông số thực chiến:</div>
+                <div id="kho-weapons-grid" class="kho-weapons-grid"></div>
+              </div>
+
+              <!-- TAB 3: CHIÊU THỨC & NỘI TẠI -->
+              <div id="kho-panel-techniques" class="kho-tab-panel hidden">
+                <div class="kho-tech-header-bar">
+                  <div>
+                    <h3 id="kho-tech-hero-title" class="kho-tech-hero-title">TUYỆT KỸ VÕ ĐẠO</h3>
+                    <p id="kho-tech-mechanic" class="kho-tech-mechanic"></p>
+                  </div>
+                  <button id="btn-how-to-play" class="btn btn-secondary kho-controls-cta">
+                    <span class="btn-text">🥋 BỘ CHIÊU THỨC VOVINAM</span>
+                  </button>
+                </div>
+                <div class="kho-tech-split">
+                  <div class="kho-tech-col">
+                    <div class="kho-sub-heading">⚡ ĐÒN THẾ &amp; TỔ HỢP</div>
+                    <div id="kho-tech-skills-list" class="kho-tech-list"></div>
+                  </div>
+                  <div class="kho-tech-col">
+                    <div class="kho-sub-heading">🛡️ NỘI TẠI VÕ ĐẠO</div>
+                    <div id="kho-tech-passives-list" class="kho-tech-list"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 4: HỒ SƠ, BỘ SƯU TẬP & THÀNH TÍCH -->
+              <div id="kho-panel-archives" class="kho-tab-panel hidden">
+                <div id="kho-archives-summary" class="kho-archives-summary"></div>
+                <div class="skills-equip-grid kho-archives-grid">
+                  <button id="btn-dossier" class="btn btn-secondary kho-archive-tile">
+                    <span class="kho-tile-ico">👤</span>
+                    <span class="btn-text">HỒ SƠ NHÂN VẬT</span>
+                    <small class="kho-tile-desc">Tiểu sử, phe phái &amp; mối quan hệ giữa 10+ cao thủ</small>
+                  </button>
+                  <button id="btn-collection" class="btn btn-secondary kho-archive-tile">
+                    <span class="kho-tile-ico">🏆</span>
+                    <span class="btn-text">BỘ SƯU TẬP VŨ KHÍ &amp; CHIẾN TÍCH</span>
+                    <small class="kho-tile-desc">Boss đã hạ, Kết thúc &amp; Nhiệm vụ phụ đã mở khóa</small>
+                  </button>
+                  <button id="btn-achievements" class="btn btn-secondary kho-archive-tile">
+                    <span class="kho-tile-ico">🎖️</span>
+                    <span class="btn-text">THÀNH TÍCH GIA TỘC</span>
+                    <small class="kho-tile-desc">Toàn bộ danh hiệu &amp; tiến độ cúp vinh quang</small>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="studio-modal-footer">
+              <span class="studio-footer-hint">Trang bị Lam Võ Phục sẽ áp dụng ngay khi xuất trận &amp; trong Võ Đường.</span>
+              <button id="btn-close-skills-equip" class="btn btn-primary modal-close-btn">ĐÓNG</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL CHIẾN DỊCH CỐT TRUYỆN (5 POSTER DỌC ĐẲNG CẤP VOVINAM) -->
+        <div id="campaign-modal" class="modal-overlay vov-campaign-screen hidden">
+          <div class="vov-campaign-backdrop"></div>
+          <div class="vov-campaign-vignette"></div>
+
+          <div class="modal-card campaign-modal-card vov-campaign-stage">
+            <!-- Thanh điều hướng phía trên (Nút Quay Lại góc trái kiểu lệnh bài + Tiêu đề Hoàng Kim) -->
+            <header class="vov-campaign-topbar">
+              <button id="btn-campaign-close" class="vov-back-plaque" aria-label="Quay lại menu chính">
+                <span class="vov-plaque-chain left"></span>
+                <span class="vov-plaque-chain right"></span>
+                <span class="vov-back-arrow">◄</span>
+                <span class="vov-back-label">QUAY LẠI</span>
+              </button>
+
+              <div class="campaign-header vov-campaign-header">
+                <span class="campaign-badge">✦ VIỆT VÕ ĐẠO • HUYẾT CHIẾN GIA TỘC ✦</span>
+                <h2 class="modal-title campaign-title">CHIẾN DỊCH XUẤT TRẬN</h2>
+                <p class="campaign-subtitle">Chọn chế độ chinh phạt để bước vào đại án gia tộc họ Phó</p>
+              </div>
+
+              <button class="modal-close-icon vov-close-x" id="btn-campaign-close-x" aria-label="Đóng">&times;</button>
+            </header>
+
+            <!-- 4 CỘT POSTER DỌC DÀN HÀNG NGANG (ĐÃ GỘP CỐT TRUYỆN & CHƯƠNG HỒI) -->
+            <div class="campaign-options-grid vov-posters-row">
+
+              <!-- CỘT 1 (GỘP): CỐT TRUYỆN & CHƯƠNG HỒI (CHƠI TIẾP + BẢN ĐỒ 5 HỒI) -->
+              <div class="campaign-opt-card card-continue vov-poster-card poster-story" id="card-campaign-continue">
+                <div class="vov-poster-frame">
+                  <div class="vov-poster-bg" style="background-image: url('assets/images/cards/card_ho_pho.jpg');"></div>
+                  <div class="vov-poster-aura aura-cyan"></div>
+                  <img class="vov-poster-hero" src="assets/images/characters/char_hero_nghi.png" alt="Ngô Nhất Nghị">
+                  <div class="vov-poster-shade"></div>
+
+                  <!-- Cờ đuôi nheo Hoàng Kim góc trên trái -->
+                  <div class="vov-pennant-banner">
+                    <span class="vov-pennant-icon">🥋</span>
+                    <span class="vov-pennant-text">Chính Tuyến</span>
+                  </div>
+
+                  <!-- Huy chương số màn góc trên phải -->
+                  <div class="vov-notif-badge" title="5 Hồi — 20 Màn Chơi">20</div>
+
+                  <!-- Dải thông tin màn hiện tại nằm gọn trên chân poster -->
+                  <div class="campaign-opt-stage vov-poster-stage-pill">
+                    <span class="stage-tag-badge">ĐANG CHƠI • 5 HỒI 20 MÀN</span>
+                    <span id="campaign-cur-stage-name" class="stage-name-highlight">MÀN 1: CON HẺM MƯA ĐỎ</span>
+                  </div>
+                  <p id="campaign-cur-stage-desc" class="campaign-opt-desc vov-poster-hidden-desc">Tiếp tục cuộc đột nhập căn cứ ngầm đô thị lúc nửa đêm để truy tìm dấu vết Hứa Vũ Đại.</p>
+                </div>
+
+                <div class="vov-poster-divider"><span class="vov-divider-gem">❖</span></div>
+
+                <div class="vov-poster-plate">
+                  <h3 class="campaign-opt-title vov-plate-title">CỐT TRUYỆN &amp; CHƯƠNG HỒI</h3>
+                  <div class="vov-plate-sub">TIẾP TỤC &amp; CHỌN MÀN ĐẤU</div>
+                  <div class="vov-plate-btn-dual">
+                    <button id="btn-campaign-continue" class="btn btn-primary campaign-action-btn vov-plate-btn">VÀO TRẬN</button>
+                    <button id="btn-campaign-chapters" class="btn btn-secondary campaign-action-btn vov-plate-btn vov-plate-btn-alt">BẢN ĐỒ</button>
+                  </div>
+                </div>
+              </div>
+              <div id="card-campaign-chapters" class="hidden" style="display:none;" aria-hidden="true"></div>
+
+              <!-- CỘT 3: LIÊN ĐẤU TRÙM (TOURNAMENT / BOSS RUSH — TÂM ĐIỂM RỰC LỬA) -->
+              <div class="campaign-opt-card card-bossrush vov-poster-card poster-bossrush" id="card-campaign-bossrush">
+                <div class="vov-poster-frame">
+                  <div class="vov-poster-bg" style="background-image: url('assets/images/cards/card_bossrush_arena.jpg');"></div>
+                  <div class="vov-poster-aura aura-crimson"></div>
+                  <div class="vov-poster-sunburst"></div>
+                  <img class="vov-poster-hero" src="assets/images/characters/char_giangmanh.png" alt="Ngô Giang Mạnh">
+                  <div class="vov-poster-shade"></div>
+
+                  <!-- Nhãn Rực Lửa nổi bật giữa đỉnh thẻ (Giống ALL NEW! mẫu) -->
+                  <div class="vov-fire-headline">🔥 ĐỈNH CAO!</div>
+
+                  <div class="campaign-opt-stage vov-poster-stage-pill">
+                    <span class="stage-tag-badge boss">THẤT ĐẠI TRÙM</span>
+                    <span class="stage-name-highlight">SINH TỬ LÔI ĐÀI</span>
+                  </div>
+                </div>
+
+                <div class="vov-poster-divider"><span class="vov-divider-gem">❖</span></div>
+
+                <div class="vov-poster-plate">
+                  <h3 class="campaign-opt-title vov-plate-title">LIÊN ĐẤU TRÙM</h3>
+                  <div class="vov-plate-sub">KHIÊU CHIẾN BOSS RUSH</div>
+                  <button id="btn-campaign-bossrush" class="btn btn-secondary campaign-action-btn vov-plate-btn">KHIÊU CHIẾN</button>
+                </div>
+              </div>
+
+              <!-- CỘT 4: BIÊN NIÊN SỬ & ĐIỀU TRA (ARCHIVES & LORE) -->
+              <div class="campaign-opt-card card-chronicles vov-poster-card poster-chronicles" id="card-campaign-chronicles">
+                <div class="vov-poster-frame">
+                  <div class="vov-poster-bg" style="background-image: url('assets/images/cards/card_chronicles_archive.jpg');"></div>
+                  <div class="vov-poster-aura aura-purple"></div>
+                  <img class="vov-poster-hero" src="assets/images/characters/char_huavudai.png" alt="Hứa Vũ Đại">
+                  <div class="vov-poster-shade"></div>
+
+                  <div class="campaign-opt-stage vov-poster-stage-pill">
+                    <span class="stage-tag-badge lore">MẬT TỊCH</span>
+                    <span class="stage-name-highlight">HỒ SƠ GIA TỘC</span>
+                  </div>
+                </div>
+
+                <div class="vov-poster-divider"><span class="vov-divider-gem">❖</span></div>
+
+                <div class="vov-poster-plate">
+                  <h3 class="campaign-opt-title vov-plate-title">BIÊN NIÊN SỬ</h3>
+                  <div class="vov-plate-sub">ĐIỀU TRA ĐẠI ÁN</div>
+                  <button id="btn-campaign-chronicles" class="btn btn-secondary campaign-action-btn vov-plate-btn">XEM HỒ SƠ</button>
+                </div>
+              </div>
+
+              <!-- CỘT 5: HÀNH TRÌNH MỚI (NEW CAMPAIGN — BẢO LƯU VÕ SĨ) -->
+              <div class="campaign-opt-card card-newgame vov-poster-card poster-newgame" id="card-campaign-newgame">
+                <div class="vov-poster-frame">
+                  <div class="vov-poster-bg" style="background-image: url('assets/images/cards/card_newgame_dawn.jpg');"></div>
+                  <div class="vov-poster-aura aura-amber"></div>
+                  <img class="vov-poster-hero" src="assets/images/characters/char_dinhan_vovinam.png" alt="Triệu Đình An">
+                  <div class="vov-poster-shade"></div>
+
+                  <div class="campaign-opt-stage vov-poster-stage-pill">
+                    <span class="stage-tag-badge new">BẢO LƯU 100%</span>
+                    <span class="stage-name-highlight">KHỞI ĐẦU TỪ MÀN 1</span>
+                  </div>
+                </div>
+
+                <div class="vov-poster-divider"><span class="vov-divider-gem">❖</span></div>
+
+                <div class="vov-poster-plate">
+                  <h3 class="campaign-opt-title vov-plate-title">HÀNH TRÌNH MỚI</h3>
+                  <div class="vov-plate-sub">TÁI KHỞI ĐẦU ĐẠI ÁN</div>
+                  <button id="btn-campaign-newgame" class="btn btn-secondary campaign-action-btn vov-plate-btn">BẮT ĐẦU LẠI</button>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -558,6 +1272,7 @@
           <div class="modal-actions">
             <button id="btn-next-stage" class="btn btn-primary">TIẾN VÀO KHU VỰC TIẾP THEO</button>
             <button id="btn-victory-replay" class="btn btn-secondary">CHƠI LẠI</button>
+            <button id="btn-victory-menu" class="btn btn-ghost">VỀ MENU</button>
           </div>
         </div>
       </div>
@@ -690,6 +1405,14 @@
                 </div>
                 <span class="cs-col-line"></span>
               </div>
+              <!-- Bộ lọc & đếm số võ sĩ (mở rộng được 20-30+ nhân vật) -->
+              <div id="cs-roster-filters" class="cs-roster-filters">
+                <button type="button" class="cs-filter-pill active" data-filter="all">Tất Cả</button>
+                <button type="button" class="cs-filter-pill" data-filter="owned">Đã Mở</button>
+                <button type="button" class="cs-filter-pill" data-filter="phogia">Họ Phó</button>
+                <button type="button" class="cs-filter-pill" data-filter="shop">🛒 Cửa Hàng</button>
+                <span id="cs-roster-count" class="cs-roster-count">0 / 0</span>
+              </div>
               <!-- Tab 1: Danh sách Tướng -->
               <div id="char-grid" class="cs-grid">
                 <!-- Dynamically populated 8 character cards -->
@@ -719,27 +1442,18 @@
                 <button id="btn-cs-demo-move" class="cs-demo-move-btn" title="Xem nhân vật biểu diễn đòn tấn công">⚡ BIỂU DIỄN ĐÒN THẾ</button>
               </div>
               <!-- Wardrobe Skin Toggle -->
-              <div class="cs-wardrobe-bar">
+              <div class="cs-wardrobe-bar" id="cs-wardrobe-bar">
                 <span class="cs-wardrobe-title">👘 TRANG PHỤC:</span>
                 <button id="btn-cs-skin-default" class="cs-skin-toggle-btn active">Mặc Định</button>
                 <button id="btn-cs-skin-vovinam" class="cs-skin-toggle-btn">Võ Phục Vovinam 🥋</button>
-              </div>
-              <!-- Support Ally Selection Bar -->
-              <div class="cs-ally-bar" id="cs-ally-bar">
-                <div class="cs-ally-bar-header">
-                  <span class="cs-ally-bar-title">🤝 VIỆN TRỢ ĐỒNG MINH:</span>
-                  <span id="cs-ally-selected-name" class="cs-ally-selected-name">Tự Động Theo Truyện</span>
-                </div>
-                <div class="cs-ally-pills" id="cs-ally-pills">
-                  <!-- Dynamically rendered ally buttons -->
-                </div>
+                <div id="cs-wardrobe-extra-skins" class="cs-wardrobe-extra-skins"></div>
               </div>
               <!-- Bottom Carousel & Select Button -->
               <div class="cs-bottom-actions">
                 <button id="btn-char-prev" class="cs-arrow-btn" aria-label="Nhân vật trước">‹</button>
                 <button id="btn-char-start" class="cs-confirm-brush-btn">
                   <span class="cs-brush-wing left"></span>
-                  <span class="cs-confirm-text">CHỌN</span>
+                  <span class="cs-confirm-text">CHỌN &amp; TIẾP TỤC ➔</span>
                   <span class="cs-brush-wing right"></span>
                 </button>
                 <button id="btn-char-next" class="cs-arrow-btn" aria-label="Nhân vật kế tiếp">›</button>
@@ -750,7 +1464,10 @@
             <aside class="cs-right-col">
               <div class="cs-dossier-card">
                 <div class="cs-name-wrap">
-                  <h2 id="char-detail-name" class="cs-hero-name">NGÔ NHẤT NGHỊ</h2>
+                  <div class="cs-name-header-row">
+                    <h2 id="char-detail-name" class="cs-hero-name">NGÔ NHẤT NGHỊ</h2>
+                    <button id="btn-cs-open-dossier" class="cs-open-dossier-btn" type="button" title="Xem tiểu sử, động cơ, quan hệ & sự kiện cốt truyện chi tiết">📖 HỒ SƠ CHI TIẾT</button>
+                  </div>
                   <div id="char-detail-title" class="cs-hero-subname">SÁT THẦN VIỆT VÕ ĐẠO</div>
                   <div id="char-detail-tagline" class="cs-hero-tagline">Khí phách — Chính nghĩa — Bất khuất</div>
                 </div>
@@ -764,17 +1481,28 @@
                   <!-- Rendered dynamically -->
                 </div>
 
-                <!-- Special Skills Block -->
-                <div class="cs-skills-block">
-                  <div class="cs-skills-label">Kỹ năng đặc biệt</div>
-                  <div id="cs-skills-badges" class="cs-skills-badges">
-                    <div class="cs-skill-badge" title="Liên Hoàn Quyền Cước"><span class="cs-skill-ico">👊</span></div>
-                    <div class="cs-skill-badge" title="Đòn Chân Kẹp Vovinam"><span class="cs-skill-ico">🥋</span></div>
-                    <div class="cs-skill-badge" title="Phản Đòn Hoàn Hảo"><span class="cs-skill-ico">⚡</span></div>
-                    <div class="cs-skill-badge" title="Long Hổ Xuất Sơn"><span class="cs-skill-ico">🐉</span></div>
+                <!-- Special Skills & Passives Block with Subtabs -->
+                <div id="cs-skills-block" class="cs-skills-block">
+                  <div class="cs-skills-header-bar">
+                    <div class="cs-skills-subtabs" role="tablist" aria-label="Chiêu thức hoặc Nội tại">
+                      <button id="btn-cs-subtab-skills" class="cs-subtab-btn active" role="tab" type="button" aria-selected="true">
+                        <span>⚡</span> CHIÊU THỨC (4)
+                      </button>
+                      <button id="btn-cs-subtab-passives" class="cs-subtab-btn" role="tab" type="button" aria-selected="false">
+                        <span>🛡️</span> NỘI TẠI (4)
+                      </button>
+                    </div>
+                    <button id="btn-cs-skills-toggle" class="cs-skills-toggle-btn" type="button" aria-label="Thu gọn hoặc mở rộng">
+                      <span class="cs-toggle-label">THU GỌN</span>
+                      <span class="cs-toggle-arrow">▲</span>
+                    </button>
                   </div>
-                  <div id="char-detail-mechanic" class="cs-mechanic-text">
-                    Võ thuật Vovinam - Linh hoạt, mạnh mẽ, đa dạng thế tấn.
+                  <div class="cs-skills-body">
+                    <div id="cs-skills-badges" class="cs-skills-badges"></div>
+                    <div id="cs-passives-list" class="cs-passives-list" style="display: none;"></div>
+                    <div id="char-detail-mechanic" class="cs-mechanic-text">
+                      Võ thuật Vovinam - Linh hoạt, mạnh mẽ, đa dạng thế tấn.
+                    </div>
                   </div>
                 </div>
 
@@ -794,15 +1522,203 @@
         </div>
       </div>
 
-      <!-- BẢN ĐỒ CHƯƠNG -->
+
+      <!-- ================================================================= -->
+      <!-- MODAL CHỌN ĐỒNG MINH CHI VIỆN (DEDICATED ALLY SELECT SCREEN)    -->
+      <!-- ================================================================= -->
+      <div id="ally-select-modal" class="modal-overlay cs-modal-screen hidden">
+        <div class="cs-cinematic-stage ally-cinematic-stage">
+          <!-- Background layers -->
+          <div class="cs-bg-image"></div>
+          <div class="cs-bg-overlay"></div>
+
+          <!-- Top Navigation Bar (Matching #char-select-modal) -->
+          <header class="cs-top-bar">
+            <button id="btn-ally-back" class="cs-back-btn" aria-label="Chọn lại tướng">
+              <span class="cs-back-arrow">‹</span>
+              <span class="cs-back-text">CHỌN LẠI TƯỚNG</span>
+            </button>
+            <div class="cs-brand-center">
+              <div class="cs-brand-logo">VOVINAM</div>
+              <div class="cs-brand-subtitle">BƯỚC 2 • GIA TỘC CHI VIỆN</div>
+            </div>
+            <div class="cs-top-motto" id="ally-top-motto">
+              <span>Đồng tâm hiệp lực — Huynh đệ tương trợ</span>
+            </div>
+            <!-- Fighter badge showing selected character -->
+            <div class="ally-hero-fighter-badge">
+              <span class="fighter-badge-label">VÕ SĨ XUẤT TRẬN:</span>
+              <div class="fighter-badge-avatar-wrap">
+                <img id="ally-selected-hero-avatar" class="fighter-badge-avatar" src="assets/images/characters/char_hero_nghi.png" alt="Hero">
+              </div>
+              <div class="fighter-badge-info">
+                <span id="ally-selected-hero-name" class="fighter-badge-name">NGÔ NHẤT NGHỊ</span>
+                <span id="ally-selected-hero-stage" class="fighter-badge-stage">MÀN 1</span>
+              </div>
+            </div>
+            <button class="modal-close-icon cs-close-x" id="btn-ally-close-x" aria-label="Đóng">&times;</button>
+          </header>
+
+          <!-- Main 3-Column Body (Identical architecture to #char-select-modal .cs-main-body) -->
+          <div class="cs-main-body ally-cs-main-body">
+            <!-- Left Column: Danh sách Thẻ Đồng Minh Chi Viện (2 cột dạng cs-card) -->
+            <aside class="cs-left-col ally-left-col">
+              <div class="cs-col-header">
+                <div class="cs-lq-tabs" role="tablist">
+                  <div class="cs-lq-tab active" style="cursor: default;">
+                    <span class="cs-lq-tab-ico">🤝</span>
+                    <span class="cs-lq-tab-label">ĐỒNG MINH CHI VIỆN</span>
+                    <span id="ally-roster-count" class="cs-lq-tab-badge">9</span>
+                  </div>
+                </div>
+                <span class="cs-col-line"></span>
+              </div>
+
+              <!-- Danh sách thẻ Đồng Minh (2 cột portrait cards dạng cs-card) -->
+              <div id="ally-dock-pills" class="cs-grid ally-cs-grid">
+                <!-- Dynamically populated 9 ally cards by charSelectDeployment.js -->
+              </div>
+
+              <div class="cs-left-footer">
+                <div class="cs-footer-brush">Vovinam</div>
+                <div class="cs-footer-sub">Đồng tâm hiệp lực — Gia tộc bất diệt</div>
+              </div>
+            </aside>
+
+            <!-- Center Column: Ally Character Illustration Showcase & Action Buttons -->
+            <main class="cs-center-col ally-center-col">
+              <div class="cs-hero-stage ally-hero-stage">
+                <div class="cs-hero-ambient" id="ally-ambient-glow"></div>
+                <div class="cs-hero-shadow"></div>
+
+                <!-- Stage Tag & Name -->
+                <div id="ally-skin-stage-banner" class="cs-skin-stage-banner ally-stage-banner">
+                  <span id="ally-stage-role-tag" class="cs-skin-tier-tag" style="background:#10b981; border-color:#10b981;">HỒI MÁU &amp; CÀN QUÉT</span>
+                  <span id="ally-stage-name-tag" class="cs-skin-stage-name">ĐÌNH BÍCH LÂM</span>
+                </div>
+
+                <!-- Large Full-Body Character Artwork -->
+                <img id="ally-showcase-img" class="cs-hero-img ally-showcase-img" src="assets/images/characters/char_bichlam.png" alt="Đồng minh viện trợ">
+                
+                <!-- Đội hình kết hợp: Võ Sĩ Chính + Trợ Chiến -->
+                <div id="ally-combo-preview-badge" class="ally-combo-preview-badge">
+                  <span class="combo-tag">⚡ ĐỘI HÌNH KẾT HỢP</span>
+                  <div class="combo-pair-row">
+                    <span id="ally-combo-hero-label">Ngô Nhất Nghị</span>
+                    <span class="combo-plus">🤝</span>
+                    <span id="ally-combo-support-label">Tự Động</span>
+                  </div>
+                </div>
+
+                <!-- Special Card for Auto / None -->
+                <div id="ally-special-card" class="ally-special-card hidden">
+                  <div id="ally-special-icon" class="ally-special-icon">⭐</div>
+                  <h3 id="ally-special-title" class="ally-special-title">TỰ ĐỘNG THEO CỐT TRUYỆN</h3>
+                  <p id="ally-special-desc" class="ally-special-desc">Hệ thống tự động kích hoạt đồng minh gắn liền với từng hồi cốt truyện.</p>
+                </div>
+              </div>
+
+              <!-- Bottom Actions Bar (Prev / Confirm / Next) -->
+              <div class="cs-bottom-actions ally-bottom-actions">
+                <button id="btn-ally-prev" class="cs-arrow-btn" aria-label="Đồng minh trước">‹</button>
+                <button id="btn-ally-confirm" class="cs-confirm-brush-btn ally-confirm-brush-btn">
+                  <span class="cs-brush-wing left"></span>
+                  <span id="ally-confirm-text" class="cs-confirm-text">XUẤT TRẬN CHIẾN ĐẤU ⚔️</span>
+                  <span class="cs-brush-wing right"></span>
+                </button>
+                <button id="btn-ally-next" class="cs-arrow-btn" aria-label="Đồng minh kế tiếp">›</button>
+              </div>
+            </main>
+
+            <!-- Right Column: Ally Dossier & Skills Breakdown -->
+            <aside class="cs-right-col ally-right-col">
+              <div class="cs-dossier-card ally-dossier-card">
+                <div class="cs-name-wrap">
+                  <div class="ally-dossier-tags">
+                    <span id="ally-dossier-role-badge" class="cs-ally-role-badge">HỒI MÁU &amp; CÀN QUÉT</span>
+                    <span id="ally-dossier-status-badge" class="ally-status-badge unlocked">ĐÃ KẾT GIAO</span>
+                  </div>
+                  <h2 id="ally-dossier-name" class="cs-hero-name">ĐÌNH BÍCH LÂM</h2>
+                  <div id="ally-dossier-title" class="cs-hero-subname">MÃNH TƯỚNG BẾN CẢNG</div>
+                </div>
+
+                <!-- Stats summary -->
+                <div class="ally-stats-bars">
+                  <div class="ally-stat-pill">
+                    <span class="lbl">SINH LỰC</span>
+                    <span id="ally-stat-hp" class="val hp">❤️ 1250 HP</span>
+                  </div>
+                  <div class="ally-stat-pill">
+                    <span class="lbl">SÁT THƯƠNG</span>
+                    <span id="ally-stat-dmg" class="val dmg">⚡ 85 DMG</span>
+                  </div>
+                  <div class="ally-stat-pill">
+                    <span class="lbl">TỐC ĐỘ</span>
+                    <span id="ally-stat-spd" class="val spd">🏃 215 SPD</span>
+                  </div>
+                </div>
+
+                <!-- 3 Assist Skills Grid -->
+                <div class="ally-skills-section">
+                  <div class="cs-skills-label">KỸ NĂNG VIỆN TRỢ THỰC CHIẾN</div>
+                  
+                  <div class="ally-skill-item active">
+                    <div class="ally-skill-header">
+                      <span class="type-tag active">⚔️ CHIÊU CHỦ ĐỘNG [PHÍM H]</span>
+                      <span id="ally-skill-cd" class="cd-tag">⏱️ 2.0s</span>
+                    </div>
+                    <div id="ally-skill-name" class="skill-name">Hồi Sinh Khí Lực</div>
+                    <div id="ally-skill-desc" class="skill-desc">Hồi ngay +50 HP cho người chơi, hóa giải Chảy Máu / Choáng và hồi đầy Thể Lực (Stamina).</div>
+                  </div>
+
+                  <div class="ally-skill-item passive">
+                    <div class="ally-skill-header">
+                      <span class="type-tag passive">🛡️ HÀO QUANG NỘI TẠI</span>
+                      <span class="cd-tag">VĨNH VIỄN</span>
+                    </div>
+                    <div id="ally-aura-name" class="skill-name">Hào Quang Bến Cảng</div>
+                    <div id="ally-aura-desc" class="skill-desc">Tăng 25% tốc độ di chuyển và giảm vĩnh viễn 20% sát thương nhận vào khi có mặt.</div>
+                  </div>
+
+                  <div class="ally-skill-item coop">
+                    <div class="ally-skill-header">
+                      <span class="type-tag coop">💥 SONG SÁT CO-OP</span>
+                      <span class="cd-tag">PHÍM [H] GẦN ĐỒNG MINH</span>
+                    </div>
+                    <div id="ally-coop-name" class="skill-name">Cuồng Phong Bạt Hải</div>
+                    <div id="ally-coop-desc" class="skill-desc">Song sát liên hoàn cước gây 260 sát thương bão tố và hất văng mọi kẻ địch sang hai bên.</div>
+                  </div>
+                </div>
+
+                <!-- Bottom Quote -->
+                <div class="ally-quote-block">
+                  <span class="ally-quote-mark">“</span>
+                  <p id="ally-quote-text" class="ally-quote-text">Huynh đệ kề vai, dù là biển lửa bến cảng ta cũng cùng ngươi xông pha!</p>
+                  <div id="ally-quote-attr" class="ally-quote-attr">— ĐÌNH BÍCH LÂM</div>
+                </div>
+
+                <!-- Tactical gameplay tip -->
+                <div class="ally-tip-banner">
+                  💡 <strong>HƯỚNG DẪN VIỆN TRỢ:</strong> Trong chiến đấu, khi thanh Viện Trợ đầy, bấm phím <strong>[H]</strong> để triệu hồi đồng minh tung chiêu. Khi đứng gần nhau, bấm <strong>[H]</strong> để thi triển <strong>Song Sát Co-op</strong> hủy diệt!
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <!-- BẢN ĐỒ CHƯƠNG (PVZ2 WORLD TRAIL STYLE) -->
       <div id="chapter-map-modal" class="modal-overlay hidden">
-        <div class="modal-card wide-card">
+        <div class="modal-card wide-card pvz-map-card">
           <button class="modal-close-icon" id="btn-map-close-x" aria-label="Đóng">&times;</button>
-          <h2 class="modal-title">BẢN ĐỒ CHƯƠNG — HỒI I–V</h2>
-          <div id="chapter-list" class="chapter-list"></div>
-          <div class="modal-actions">
+          <div class="pvz-map-topbar">
+            <div>
+              <span class="shop-header-badge">❖ BẢN ĐỒ CHIẾN DỊCH ĐẠI LỤC • 5 HỒI — 20 MÀN ❖</span>
+              <h2 class="modal-title pvz-map-main-title">HÀNH TRÌNH HUYẾT CHIẾN GIA TỘC</h2>
+            </div>
             <button id="btn-map-close" class="btn btn-secondary">QUAY LẠI</button>
           </div>
+          <div id="chapter-list" class="pvz-chapter-map"></div>
         </div>
       </div>
 
@@ -861,6 +1777,77 @@
         </div>
       </div>
 
+      <!-- HỒ SƠ NGƯỜI CHƠI & CHIẾN TÍCH GIA TỘC (TÁCH RIÊNG VỚI HỒ SƠ NHÂN VẬT) -->
+      <div id="player-profile-modal" class="modal-overlay hidden">
+        <div class="modal-card wide-card player-profile-card">
+          <button class="modal-close-icon" id="btn-profile-close-x" aria-label="Đóng">&times;</button>
+          <div class="pp-modal-header">
+            <span class="pp-header-badge">❖ VIỆT VÕ ĐẠO • DANH VỌNG GIA TỘC ❖</span>
+            <h2 class="modal-title pp-modal-title">HỒ SƠ NGƯỜI CHƠI &amp; CHIẾN TÍCH GIA TỘC</h2>
+          </div>
+          <div id="player-profile-body" class="player-profile-body">
+            <!-- Rendered dynamically by MenuManagerCollections.showPlayerProfile() -->
+          </div>
+          <div class="modal-actions pp-modal-actions">
+            <button id="btn-profile-open-achievements" class="btn btn-secondary">🏆 CÚP &amp; THÀNH TỰU</button>
+            <button id="btn-profile-open-collection" class="btn btn-secondary">🎖️ BỘ SƯU TẬP</button>
+            <button id="btn-profile-open-dossier" class="btn btn-secondary">📖 HỒ SƠ 13 NHÂN VẬT</button>
+            <button id="btn-profile-close" class="btn btn-primary" style="margin-left: auto;">ĐÓNG HỒ SƠ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CỬA HÀNG GIA TỘC (SHOP CHIÊU MỘ TỨ TRỤ HOÀNG KIM HỌ PHÓ BẰNG VÀNG & KIM CƯƠNG) -->
+      <div id="shop-modal" class="modal-overlay hidden">
+        <div class="modal-card wide-card shop-modal-card">
+          <button class="modal-close-icon" id="btn-shop-close-x" aria-label="Đóng">&times;</button>
+          <div class="shop-modal-header">
+            <div class="shop-title-wrap">
+              <span class="shop-header-badge">❖ NGÂN KHỐ LỤC GIA CHỦY • TỨ TRỤ HOÀNG KIM ❖</span>
+              <h2 class="modal-title shop-modal-title">CỬA HÀNG GIA TỘC HỌ PHÓ</h2>
+              <p class="shop-modal-subtitle">Phân khu rõ ràng: <strong>Chiêu Mộ Võ Sĩ</strong> bằng <strong>Vàng 🪙</strong> &amp; <strong>Mua Trang Phục</strong> bằng <strong>Kim Cương 💎</strong></p>
+            </div>
+            <div class="shop-wallet-box">
+              <div class="shop-wallet-pill gold">
+                <span class="sw-icon">🪙</span>
+                <div class="sw-meta">
+                  <span class="sw-label">KHO VÀNG DỰ TRỮ</span>
+                  <strong id="shop-gold-balance" class="sw-val">600</strong>
+                </div>
+              </div>
+              <div class="shop-wallet-pill diamond">
+                <span class="sw-icon">💎</span>
+                <div class="sw-meta">
+                  <span class="sw-label">KIM CƯƠNG LƯỢNG TỬ</span>
+                  <strong id="shop-diamond-balance" class="sw-val">25</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="shop-tabs-bar" id="shop-tabs-bar" role="tablist">
+            <button type="button" id="btn-shop-tab-heroes" class="shop-tab-btn active" data-shop-tab="heroes">
+              🥋 CHIÊU MỘ VÕ SĨ (VÀNG 🪙)
+            </button>
+            <button type="button" id="btn-shop-tab-skins" class="shop-tab-btn" data-shop-tab="skins">
+              👘 CỬA HÀNG TRANG PHỤC (KIM CƯƠNG 💎)
+            </button>
+          </div>
+
+          <div id="shop-items-grid" class="shop-items-grid">
+            <!-- Rendered dynamically by MenuManagerCollections.renderShopItems() -->
+          </div>
+
+          <div class="modal-actions shop-modal-footer">
+            <div class="shop-earn-hint">
+              💡 <strong>Cách nhận Vàng 🪙 &amp; Kim Cương 💎:</strong> Hoàn thành các màn chơi Chiến Dịch, đạt hạng S/A hoặc chiến thắng Liên Đấu Trùm (Boss Rush).
+            </div>
+            <button id="btn-shop-open-charselect" class="btn btn-secondary">🥋 ĐẾN PHÒNG VÕ SĨ</button>
+            <button id="btn-shop-close" class="btn btn-primary">ĐÓNG CỬA HÀNG</button>
+          </div>
+        </div>
+      </div>
+
       <!-- HỒ SƠ NHÂN VẬT -->
       <div id="dossier-modal" class="modal-overlay hidden">
         <div class="modal-card wide-card">
@@ -900,42 +1887,130 @@
         </div>
       </div>
 
-      <!-- CÀI ĐẶT -->
+      <!-- CÀI ĐẶT (STUDIO ARCHITECTURE) -->
       <div id="settings-modal" class="modal-overlay hidden">
-        <div class="modal-card settings-card">
-          <button class="modal-close-icon" id="btn-settings-close-x" aria-label="Đóng">&times;</button>
-          <h2 class="modal-title">CÀI ĐẶT</h2>
-          <div class="setting-row">
-            <label for="setting-music">ÂM NHẠC NỀN</label>
-            <input type="range" id="setting-music" min="0" max="100" value="45">
+        <div class="modal-card settings-card ui-studio-settings">
+          <div class="studio-modal-header">
+            <div class="studio-title-block">
+              <span class="studio-kicker">HỆ THỐNG &amp; TRẢI NGHIỆM</span>
+              <h2 class="modal-title">CÀI ĐẶT TRÒ CHƠI</h2>
+            </div>
+            <button class="modal-close-icon" id="btn-settings-close-x" aria-label="Đóng">&times;</button>
           </div>
-          <div class="setting-row">
-            <label for="setting-sfx">HIỆU ỨNG ÂM THANH</label>
-            <input type="range" id="setting-sfx" min="0" max="100" value="85">
+
+          <div class="settings-studio-grid">
+            <div class="settings-col">
+              <section class="settings-section-card">
+                <div class="settings-section-head">
+                  <span class="settings-sec-ico">🔊</span>
+                  <div>
+                    <h3 class="settings-sec-title">ÂM THANH &amp; NHẠC NỀN</h3>
+                    <p class="settings-sec-sub">Âm thanh Web Audio tổng hợp tức thì</p>
+                  </div>
+                </div>
+                <div class="setting-row setting-slider-row">
+                  <div class="setting-label-row">
+                    <label for="setting-music">Âm Nhạc Nền</label>
+                    <span id="setting-music-val" class="setting-val-pill">45%</span>
+                  </div>
+                  <input type="range" id="setting-music" class="ui-range" min="0" max="100" value="45">
+                </div>
+                <div class="setting-row setting-slider-row">
+                  <div class="setting-label-row">
+                    <label for="setting-sfx">Hiệu Ứng Võ Thuật (SFX)</label>
+                    <span id="setting-sfx-val" class="setting-val-pill">85%</span>
+                  </div>
+                  <input type="range" id="setting-sfx" class="ui-range" min="0" max="100" value="85">
+                </div>
+                <label class="setting-row check-row ui-toggle-row" for="setting-mute">
+                  <span class="setting-check-text">
+                    <strong>Tắt Toàn Bộ Âm Thanh</strong>
+                    <small>Ngắt nhạc nền &amp; hiệu ứng chiến đấu ngay lập tức</small>
+                  </span>
+                  <span class="ui-switch">
+                    <input type="checkbox" id="setting-mute" class="ui-switch-input">
+                    <span class="ui-switch-track"></span>
+                  </span>
+                </label>
+              </section>
+
+              <section class="settings-section-card">
+                <div class="settings-section-head">
+                  <span class="settings-sec-ico">👁️</span>
+                  <div>
+                    <h3 class="settings-sec-title">HIỂN THỊ &amp; TRỢ NĂNG</h3>
+                    <p class="settings-sec-sub">Giảm mỏi mắt &amp; tùy biến HUD trận đấu</p>
+                  </div>
+                </div>
+                <label class="setting-row check-row ui-toggle-row" for="setting-reduce-shake">
+                  <span class="setting-check-text">
+                    <strong>Giảm Rung Màn Hình (Accessibility)</strong>
+                    <small>Làm dịu rung chấn camera khi va chạm nặng</small>
+                  </span>
+                  <span class="ui-switch">
+                    <input type="checkbox" id="setting-reduce-shake" class="ui-switch-input">
+                    <span class="ui-switch-track"></span>
+                  </span>
+                </label>
+                <label class="setting-row check-row ui-toggle-row" for="setting-reduce-flash">
+                  <span class="setting-check-text">
+                    <strong>Giảm Chớp Sáng Màn Hình</strong>
+                    <small>Hạn chế lóe sáng khi xuất tuyệt kỹ / phản đòn</small>
+                  </span>
+                  <span class="ui-switch">
+                    <input type="checkbox" id="setting-reduce-flash" class="ui-switch-input">
+                    <span class="ui-switch-track"></span>
+                  </span>
+                </label>
+                <label class="setting-row check-row ui-toggle-row" for="setting-hide-dmg">
+                  <span class="setting-check-text">
+                    <strong>Ẩn Số Sát Thương Nổi Trong Trận</strong>
+                    <small>Giữ trường đấu sạch sẽ hơn khi giao tranh đông</small>
+                  </span>
+                  <span class="ui-switch">
+                    <input type="checkbox" id="setting-hide-dmg" class="ui-switch-input">
+                    <span class="ui-switch-track"></span>
+                  </span>
+                </label>
+              </section>
+            </div>
+
+            <div class="settings-col">
+              <section class="settings-section-card">
+                <div class="settings-section-head">
+                  <span class="settings-sec-ico">⌨️</span>
+                  <div>
+                    <h3 class="settings-sec-title">ĐIỀU KHIỂN &amp; PHÍM TẮT</h3>
+                    <p class="settings-sec-sub">Thiết lập phím bấm chuẩn bàn phím PC</p>
+                  </div>
+                </div>
+                <div id="settings-kb-preview" class="settings-kb-preview"></div>
+                <div class="settings-btn-stack">
+                  <button id="btn-open-keybindings" class="btn btn-secondary">⌨️ TÙY CHỈNH PHÍM BẤM</button>
+                  <button id="btn-replay-tutorial" class="btn btn-secondary">📖 CHƠI LẠI HƯỚNG DẪN TÂN THỦ</button>
+                </div>
+              </section>
+
+              <section class="settings-section-card">
+                <div class="settings-section-head">
+                  <span class="settings-sec-ico">📜</span>
+                  <div>
+                    <h3 class="settings-sec-title">HỒ SƠ &amp; DỮ LIỆU GIA TỘC</h3>
+                    <p class="settings-sec-sub">Tự động lưu trên trình duyệt của bạn</p>
+                  </div>
+                </div>
+                <div id="save-summary" class="save-summary save-summary-cards" data-mode="cards"></div>
+                <div class="settings-danger-box">
+                  <span class="setting-note">Nhạc nền Web Audio tự đổi chủ đề theo từng phe phái.</span>
+                  <button id="btn-reset-progress" class="btn btn-ghost btn-danger-outline">XÓA TOÀN BỘ TIẾN TRÌNH</button>
+                </div>
+              </section>
+            </div>
           </div>
-          <div class="setting-row check-row">
-            <label for="setting-mute">TẮT TOÀN BỘ ÂM THANH</label>
-            <input type="checkbox" id="setting-mute">
-          </div>
-          <div class="setting-row check-row">
-            <label for="setting-reduce-shake">GIẢM RUNG MÀN HÌNH (ACCESSIBILITY)</label>
-            <input type="checkbox" id="setting-reduce-shake">
-          </div>
-          <div class="setting-row check-row">
-            <label for="setting-reduce-flash">GIẢM CHỚP SÁNG MÀN HÌNH</label>
-            <input type="checkbox" id="setting-reduce-flash">
-          </div>
-          <div class="setting-row check-row">
-            <label for="setting-hide-dmg">ẨN SỐ SÁT THƯƠNG NỔI TRONG TRẬN</label>
-            <input type="checkbox" id="setting-hide-dmg">
-          </div>
-          <p class="setting-note">Nhạc nền sinh trực tiếp bằng Web Audio (không dùng file) — đổi phe phái là đổi nhạc.</p>
-          <div id="save-summary" class="save-summary"></div>
-          <div class="modal-actions" style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <button id="btn-open-keybindings" class="btn btn-secondary">⌨️ TÙY CHỈNH PHÍM BẤM</button>
-            <button id="btn-replay-tutorial" class="btn btn-secondary">📖 CHƠI LẠI HƯỚNG DẪN TÂN THỦ</button>
-            <button id="btn-reset-progress" class="btn btn-ghost">XÓA TOÀN BỘ TIẾN TRÌNH</button>
-            <button id="btn-settings-close" class="btn btn-primary" style="margin-left: auto;">XONG</button>
+
+          <div class="studio-modal-footer">
+            <span class="studio-footer-hint">Mọi thay đổi âm lượng, phím tắt &amp; trợ năng được áp dụng ngay lập tức.</span>
+            <button id="btn-settings-close" class="btn btn-primary">LƯU &amp; ĐÓNG</button>
           </div>
         </div>
       </div>
@@ -1073,6 +2148,411 @@
         </div>
       </div>
 
+      <!-- MODAL SẢNH ĐẤU ONLINE (ĐẤU THƯỜNG TỰ DO + MÀN HÌNH PHÒNG CHỜ RIÊNG + WEBSOCKET REALTIME) -->
+      <div id="online-modal" class="modal-overlay hidden">
+        <div id="online-lobby-card" class="modal-card wide-card online-modal-card aov-lobby-card">
+          <button class="modal-close-icon aov-back-btn" id="btn-online-close-x" aria-label="Đóng">&times;</button>
+
+          <!-- Nền Tướng Lớn Bên Trái -->
+          <div class="aov-hero-stage-backdrop" aria-hidden="true">
+            <img id="online-hero-backdrop-img" src="assets/images/characters/char_hero_nghi.png" alt="">
+            <div class="aov-hero-stage-vignette"></div>
+          </div>
+
+          <div class="online-modal-header aov-lobby-header">
+            <div class="aov-top-left-emblem">
+              <span class="shop-header-badge aov-live-badge">⚔️ VOVINAM ARENA • ĐẤU ĐÀI TRỰC TUYẾN</span>
+              <h2 class="modal-title aov-modal-title">LÔI ĐÀI ĐẤU ONLINE</h2>
+            </div>
+            <div class="online-conn-bar aov-conn-bar">
+              <span id="online-ping-badge" class="online-ping-badge">Ping: -- ms</span>
+              <span id="online-conn-status" class="online-conn-pill">⚪ Chưa kết nối</span>
+              <button id="btn-online-toggle-server" class="btn btn-sm btn-secondary" type="button" title="Cấu hình địa chỉ WebSocket Server">⚙️ Máy chủ</button>
+            </div>
+          </div>
+          <!-- Thanh cấu hình Server nâng cao (ẩn gọn mặc định) -->
+          <div id="online-server-config-bar" class="online-server-config-bar hidden">
+            <span class="osc-lbl">Máy chủ WebSocket:</span>
+            <input id="online-server-url" class="online-input aov-url-input" type="text" placeholder="ws://localhost:3000/ws" title="Địa chỉ WebSocket Server">
+            <button id="btn-online-reconnect" class="btn btn-sm btn-primary" type="button">KẾT NỐI LẠI</button>
+          </div>
+
+          <!-- Banner thông báo lời mời vào phòng thời gian thực -->
+          <div id="online-invite-banner" class="online-invite-banner hidden" role="alert">
+            <div class="online-invite-banner-info">
+              <span class="online-invite-badge">📨 LỜI MỜI CHIẾN ĐẤU</span>
+              <span id="online-invite-banner-text">Võ sĩ mời bạn vào phòng #----</span>
+            </div>
+            <div class="online-invite-banner-actions">
+              <button id="btn-online-invite-accept" class="btn btn-sm btn-primary" type="button">CHẤP NHẬN</button>
+              <button id="btn-online-invite-decline" class="btn btn-sm btn-secondary" type="button">BỎ QUA</button>
+            </div>
+          </div>
+
+          <!-- MÀN HÌNH 1: SẢNH CHỌN TƯỚNG & TÌM PHÒNG ĐẤU THƯỜNG -->
+          <div class="online-grid aov-lobby-grid">
+            <!-- CỘT TRÁI: HỒ SƠ NGƯỜI CHƠI, CHỌN CHẾ ĐỘ & LOADOUT XUẤT TRẬN -->
+            <div class="online-panel aov-season-panel">
+              <div class="aov-season-header">
+                <div class="aov-season-num">⚔️</div>
+                <div class="aov-season-sub">
+                  <strong>HỒ SƠ ĐẤU TRỰC TUYẾN</strong>
+                  <span id="online-profile-account-badge">Đấu Thường Tự Do • Không Tính Hạng</span>
+                </div>
+              </div>
+
+              <div class="aov-season-stats">
+                <div class="aov-stat-row"><span>Thắng Giao Hữu</span><strong id="aov-win-streak">0</strong></div>
+                <div class="aov-stat-row"><span>Thể Thức</span><strong class="gold">Giao Hữu 2P</strong></div>
+                <div class="aov-stat-row"><span>Trạng Thái</span><strong id="online-profile-net-label" style="color:#7dd3fc;">Đang chờ</strong></div>
+              </div>
+
+              <div id="online-hero-preview-card" class="opfp-hero-showcase aov-hero-mini-card">
+                <div class="opfp-hero-img-wrap aov-hero-mini-img">
+                  <img id="online-hero-preview-img" src="assets/images/characters/char_hero_nghi.png" alt="Võ Sĩ">
+                </div>
+                <div class="opfp-hero-meta">
+                  <span id="online-hero-preview-tag" class="opfp-hero-badge">VOVINAM TOÀN DIỆN</span>
+                  <h4 id="online-hero-preview-name">NGÔ NHẤT NGHỊ</h4>
+                  <p id="online-hero-preview-desc">Cân bằng công thủ • Né hoàn hảo &amp; Phản kích</p>
+                </div>
+              </div>
+
+              <div class="opfp-form-row">
+                <label class="online-field">
+                  <span>Tên Hiển Thị</span>
+                  <input id="online-player-name" class="online-input" type="text" maxlength="20" value="Võ Sĩ Họ Phó">
+                </label>
+                <label class="online-field">
+                  <span>Trang Phục (Skin)</span>
+                  <select id="online-skin-select" class="online-input">
+                    <option value="default">Mặc Định (Phàm Phẩm)</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="opfp-form-row">
+                <label class="online-field">
+                  <span>Võ Sĩ Xuất Trận</span>
+                  <select id="online-char-select" class="online-input">
+                    <option value="nghi">Ngô Nhất Nghị — Vovinam Toàn Diện</option>
+                    <option value="bichlam">Đình Bích Lâm — Quyền Cước Thủy Triều</option>
+                    <option value="dinhan">Triệu Đình An — Hổ Khiên Thiết Bích</option>
+                    <option value="hoanganh">Phó Đặng Hoàng Anh — Lôi Cước Trấn Sơn</option>
+                    <option value="dunghai">Phó Dung Hải — Song Đao Sát Thủ</option>
+                    <option value="vananh">Phó Văn Anh — Hậu Phương Thép</option>
+                    <option value="tiendang">Phó Tiến Đăng — Tàn Ảnh Liên Hoàn</option>
+                    <option value="thienkhanh">Châu Ngọc Thiên Khánh — Kiếm Xu Thiêu Hồn</option>
+                    <option value="huavudai">Hứa Vũ Đại — Ông Trùm Ám Khí</option>
+                    <option value="giangmanh">Ngô Giang Mạnh — Băng Phong Lão Gia</option>
+                  </select>
+                </label>
+                <label class="online-field">
+                  <span>Trợ Chiến [Phím H]</span>
+                  <select id="online-ally-select" class="online-input">
+                    <option value="auto">Tự Động Theo Hồi</option>
+                    <option value="bichlam">Đình Bích Lâm (Hồi Máu)</option>
+                    <option value="hoanganh">Phó Đặng Hoàng Anh (Tanker)</option>
+                    <option value="dunghai">Phó Dung Hải (Sát Thương)</option>
+                    <option value="dinhan">Triệu Đình An (Khiên Bích)</option>
+                    <option value="huavudai">Hứa Vũ Đại (Chiến Thuật)</option>
+                    <option value="giangmanh">Ngô Giang Mạnh (Băng Phản)</option>
+                    <option value="mocdang">Phó Mộc Đăng (EMP)</option>
+                    <option value="none">Độc Hành (Không Trợ Lực)</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="online-field">
+                <span>Chế Độ Thi Đấu (Chọn Đấu Trường)</span>
+                <div class="online-mode-switch">
+                  <button id="online-mode-pvp" class="online-mode-btn online-mode-card mode-card-pvp active" type="button">
+                    <span class="omc-badge">2P • BO3</span>
+                    <span class="omc-title">⚔️ 1v1 Võ Đài Đối Kháng</span>
+                    <span class="omc-meta">Quyết đấu kỹ năng thời gian thực</span>
+                  </button>
+                  <button id="online-mode-coop" class="online-mode-btn online-mode-card mode-card-coop" type="button">
+                    <span class="omc-badge">2P • 20 MÀN</span>
+                    <span class="omc-title">🤝 2P Co-op Chiến Dịch</span>
+                    <span class="omc-meta">Hợp lực công phá &amp; hạ Boss</span>
+                  </button>
+                </div>
+              </div>
+
+              <label id="online-coop-stage-row" class="online-field hidden">
+                <span>Chọn Màn Co-op Chiến Dịch (M1 – M20)</span>
+                <select id="online-coop-stage" class="online-input">
+                  <option value="1">Màn 1 — Con Hẻm Mưa Đỏ</option>
+                  <option value="4">Màn 4 — BOSS: Long Vương</option>
+                  <option value="9">Màn 9 — BOSS: Đình Bích Lâm</option>
+                  <option value="13">Màn 13 — BOSS: Phó Dung Hải</option>
+                  <option value="17">Màn 17 — BOSS: Triệu Vinh Tâm</option>
+                  <option value="20">Màn 20 — FINAL BOSS: Ngô Giang Mạnh</option>
+                </select>
+              </label>
+            </div>
+
+            <!-- CỘT PHẢI: ĐIỀU HƯỚNG SẢNH — DANH SÁCH PHÒNG | TÌM TRẬN NHANH | TẠO PHÒNG | VÕ SĨ ONLINE -->
+            <div class="online-panel opfp-arena-panel aov-rank-panel">
+              <div id="online-browser-panel" class="aov-browser-panel">
+                <!-- Thanh điều hướng 4 khu vực chuẩn game đối kháng -->
+                <div id="online-subnav-tabs" class="online-subnav-tabs" role="tablist">
+                  <button id="btn-onltab-rooms" class="online-subnav-tab active" data-onltab="rooms" type="button" role="tab">📋 DS Phòng</button>
+                  <button id="btn-onltab-quickmatch" class="online-subnav-tab" data-onltab="quickmatch" type="button" role="tab">⚡ Tìm Nhanh</button>
+                  <button id="btn-onltab-create" class="online-subnav-tab" data-onltab="create" type="button" role="tab">➕ Tạo Phòng</button>
+                  <button id="btn-onltab-players" class="online-subnav-tab" data-onltab="players" type="button" role="tab">🌐 Online (<span id="online-player-count-badge">0</span>)</button>
+                </div>
+
+                <!-- SUBVIEW 1: DANH SÁCH PHÒNG & NHẬP MÃ PHÒNG -->
+                <div id="online-view-rooms" class="online-subview">
+                  <div class="aov-top-search-bar">
+                    <div class="online-join-row aov-join-pill">
+                      <input id="online-join-code" class="online-input" type="text" maxlength="6" placeholder="Mã phòng (VD: VOV1)">
+                      <button id="btn-online-join-btn" class="btn btn-secondary aov-search-btn" type="button" title="Tìm &amp; Vào Phòng">🔍 VÀO</button>
+                    </div>
+                    <button id="btn-online-refresh-rooms" class="btn btn-sm aov-weekly-btn" type="button">↻ Làm mới</button>
+                  </div>
+
+                  <!-- Khung nhập mật khẩu nếu vào phòng riêng tư -->
+                  <div id="online-private-join-bar" class="online-private-join-bar hidden">
+                    <span id="online-private-join-label">🔒 Nhập mật khẩu phòng #<strong id="online-private-join-code">----</strong>:</span>
+                    <input id="online-join-password" class="online-input" type="password" maxlength="12" placeholder="Mật khẩu phòng...">
+                    <button id="btn-online-join-private-confirm" class="btn btn-sm btn-primary" type="button">VÀO PHÒNG</button>
+                    <button id="btn-online-join-private-cancel" class="btn btn-sm btn-secondary" type="button">HỦY</button>
+                  </div>
+
+                  <div class="aov-rooms-header">
+                    <span>DANH SÁCH PHÒNG ĐANG CHỜ</span>
+                    <span id="online-rooms-count-pill" class="online-rooms-count-pill">0 phòng</span>
+                  </div>
+                  <div id="online-rooms-list" class="online-rooms-list aov-rooms-list online-rooms-list-tall">
+                    <div class="online-empty-arena">
+                      <span class="empty-arena-ico">⚔️</span>
+                      <strong>CHƯA CÓ LÔI ĐÀI ĐANG CHỜ</strong>
+                      <span>Nhấn ➕ Tạo Phòng để mở đài mới hoặc ⚡ Tìm Nhanh để ghép cặp tự động!</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SUBVIEW 2: TÌM TRẬN NHANH (8 TRẠNG THÁI + TIMER + HỦY TÌM TRẬN) -->
+                <div id="online-view-quickmatch" class="online-subview hidden">
+                  <div id="online-qm-card" class="online-qm-card state-ready">
+                    <div class="online-qm-radar">
+                      <div class="online-qm-pulse-ring"></div>
+                      <span id="online-qm-icon" class="online-qm-icon">⚡</span>
+                    </div>
+                    <span id="online-qm-status-badge" class="online-qm-status-badge">SẴN SÀNG TÌM TRẬN</span>
+                    <h3 id="online-qm-status-title" class="online-qm-status-title">TÌM TRẬN NHANH TỰ ĐỘNG</h3>
+                    <p id="online-qm-status-desc" class="online-qm-status-desc">Chọn chế độ bên trái (1v1 Võ Đài hoặc 2P Co-op) rồi nhấn Bắt đầu để hệ thống ghép cặp đối thủ thời gian thực.</p>
+                    <div class="online-qm-timer-row">
+                      <span>Thời gian chờ:</span>
+                      <strong id="online-qm-timer">00:00</strong>
+                    </div>
+                    <div class="online-qm-actions">
+                      <button id="btn-online-qm-start" class="btn btn-primary" type="button">⚡ BẮT ĐẦU TÌM TRẬN</button>
+                      <button id="btn-online-cancel-search" class="btn btn-secondary hidden" type="button">✕ HỦY TÌM TRẬN</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SUBVIEW 3: TẠO PHÒNG MỚI (TÊN PHÒNG + CÔNG KHAI/RIÊNG TƯ + MẬT KHẨU) -->
+                <div id="online-view-create" class="online-subview hidden">
+                  <div class="online-create-form">
+                    <label class="online-field">
+                      <span>Tên Phòng Đấu</span>
+                      <input id="online-create-room-name" class="online-input" type="text" maxlength="32" placeholder="VD: Võ Đài Gia Tộc — Giao Hữu">
+                    </label>
+                    <div class="opfp-form-row">
+                      <label class="online-field">
+                        <span>Quyền Riêng Tư</span>
+                        <select id="online-create-privacy" class="online-input">
+                          <option value="public">🌐 Công Khai (Hiện ở Danh sách &amp; Ghép Nhanh)</option>
+                          <option value="private">🔒 Riêng Tư (Dùng Mã Phòng / Mật Khẩu)</option>
+                        </select>
+                      </label>
+                      <label class="online-field">
+                        <span>Giới Hạn Võ Sĩ</span>
+                        <input class="online-input" type="text" value="2 / 2 Võ Sĩ" readonly>
+                      </label>
+                    </div>
+                    <label id="online-create-password-row" class="online-field hidden">
+                      <span>Mật Khẩu Phòng (Tùy chọn cho phòng riêng tư)</span>
+                      <input id="online-create-password" class="online-input" type="password" maxlength="12" placeholder="Để trống nếu chỉ dùng Mã phòng / Lời mời">
+                    </label>
+                    <button id="btn-online-submit-create" class="btn btn-primary" type="button" style="width:100%;">➕ XÁC NHẬN TẠO PHÒNG &amp; MỞ SẢNH</button>
+                  </div>
+                </div>
+
+                <!-- SUBVIEW 4: VÕ SĨ ĐANG ONLINE & MỜI VÀO PHÒNG -->
+                <div id="online-view-players" class="online-subview hidden">
+                  <div class="aov-rooms-header">
+                    <span>NGƯỜI CHƠI ĐANG KẾT NỐI SERVER</span>
+                    <button id="btn-online-refresh-players" class="btn btn-sm aov-weekly-btn" type="button">↻ Cập nhật</button>
+                  </div>
+                  <div id="online-players-list" class="online-rooms-list online-rooms-list-tall">
+                    <div class="online-room-item"><span>Chưa có dữ liệu võ sĩ online. Kết nối Server để xem!</span></div>
+                  </div>
+                </div>
+
+                <!-- 3 Nút Tác Chiến Cuối Sảnh -->
+                <div class="aov-bottom-ctas">
+                  <button id="btn-online-quick-match" class="btn aov-cta-btn" type="button">⚡ Tìm Nhanh</button>
+                  <button id="btn-online-coop-quick" class="btn aov-cta-btn" type="button">🤝 2P Co-op</button>
+                  <button id="btn-online-create-room" class="btn aov-cta-btn primary" type="button">➕ Tạo Phòng</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MÀN HÌNH 2: PHÒNG CHỜ ĐẤU ONLINE TÁCH BIỆT HOÀN TOÀN -->
+          <div id="online-room-panel" class="vov-waiting-room-screen hidden">
+            <div class="vov-wr-topbar">
+              <div class="vov-wr-title-group">
+                <span class="shop-header-badge">🔥 PHÒNG CHỜ ĐẤU TRỰC TUYẾN</span>
+                <div class="online-room-code-banner vov-wr-code-banner">
+                  <strong id="online-room-name-display" style="color:#f8fafc;">Võ Đài Gia Tộc</strong>
+                  <span>MÃ: <strong id="online-room-code-display">----</strong></span>
+                  <span id="online-room-mode-label">1v1 Đấu Trường</span>
+                  <span id="online-room-privacy-tag" class="online-room-privacy-tag">🌐 Công khai</span>
+                </div>
+              </div>
+              <div class="vov-wr-top-actions">
+                <button id="btn-online-invite-modal" class="btn btn-sm btn-secondary" type="button" title="Mời võ sĩ đang online vào phòng">📨 MỜI ONLINE</button>
+                <button id="btn-online-copy-invite" class="btn btn-sm btn-secondary" type="button" title="Sao chép link mời bạn bè vào thẳng phòng">🔗 SAO CHÉP LINK</button>
+                <button id="btn-online-leave-room" class="btn btn-sm btn-secondary" type="button">◀ RỜI PHÒNG</button>
+              </div>
+            </div>
+
+            <!-- Danh sách mời nhanh người chơi online ngay trong phòng chờ -->
+            <div id="online-inroom-invite-drawer" class="online-inroom-invite-drawer hidden">
+              <div class="aov-rooms-header">
+                <span>📨 CHỌN VÕ SĨ ONLINE ĐỂ GỬI LỜI MỜI TRỰC TIẾP</span>
+                <button id="btn-online-close-invite-drawer" class="btn btn-sm btn-secondary" type="button">✕ Đóng</button>
+              </div>
+              <div id="online-inroom-players-list" class="online-rooms-list" style="max-height:110px;"></div>
+            </div>
+
+            <div class="online-room-slots opfp-vs-faceoff vov-wr-slots">
+              <div id="online-slot-p1" class="online-slot-card opfp-slot-card opfp-slot-p1 vov-wr-fighter-card">P1 (Chủ phòng): Đang tải...</div>
+              <div class="opfp-room-vs-emblem vov-wr-vs">VS</div>
+              <div id="online-slot-p2" class="online-slot-card opfp-slot-card opfp-slot-p2 vov-wr-fighter-card empty">P2: Đang chờ đối thủ...</div>
+            </div>
+
+            <!-- Thanh Đổi Nhanh Võ Sĩ / Trang Phục / Trợ Chiến ngay trong Phòng Chờ -->
+            <div id="online-inroom-loadout" class="online-inroom-loadout">
+              <span class="oil-title">🥋 ĐỘI HÌNH CỦA BẠN:</span>
+              <select id="online-inroom-char" class="online-input" title="Đổi Võ Sĩ"></select>
+              <select id="online-inroom-skin" class="online-input" title="Đổi Trang Phục"></select>
+              <select id="online-inroom-ally" class="online-input" title="Đổi Trợ Chiến"></select>
+            </div>
+
+            <div class="vov-wr-bottom-dock">
+              <div class="opfp-chat-wrap vov-wr-chat">
+                <div id="online-chat-log" class="opfp-chat-log">
+                  <div class="opfp-chat-sys">💬 Mời bạn qua link, mã phòng hoặc nút 📨 MỜI ONLINE rồi trò chuyện tại đây!</div>
+                </div>
+                <div class="opfp-quick-emotes">
+                  <button type="button" class="opfp-emote-btn" data-emote="👋 Chào đối thủ!">👋 Chào</button>
+                  <button type="button" class="opfp-emote-btn" data-emote="🔥 Chiến hết mình nhé!">🔥 Chiến!</button>
+                  <button type="button" class="opfp-emote-btn" data-emote="👏 Đánh hay quá!">👏 Quá đỉnh</button>
+                  <button type="button" class="opfp-emote-btn" data-emote="🔄 Làm ván tái đấu!">🔄 Tái đấu</button>
+                </div>
+                <div class="opfp-chat-input-row">
+                  <input id="online-chat-input" class="online-input" type="text" maxlength="80" placeholder="Nhắn nhanh với đối thủ...">
+                  <button id="btn-online-chat-send" class="btn btn-sm btn-secondary" type="button">GỬI</button>
+                </div>
+              </div>
+              <div class="vov-wr-cta-box">
+                <div id="online-wr-ready-hint" class="vov-wr-ready-hint">Đảm bảo đủ 2 võ sĩ SẴN SÀNG để bắt đầu trận đấu thời gian thực</div>
+                <div class="vov-wr-btn-pair">
+                  <button id="btn-online-ready" class="btn btn-secondary vov-wr-ready-btn active" type="button">✓ ĐÃ SẴN SÀNG</button>
+                  <button id="btn-online-start-match" class="btn btn-primary opfp-btn-slant vov-wr-start-btn" type="button">🔥 BẮT ĐẦU TRẬN ĐẤU</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions aov-footer-bar">
+            <div class="online-web-share-bar">
+              <span class="ows-badge">🌐 WEB SERVER LIVE</span>
+              <span id="online-share-web-url" class="ows-url">http://localhost:3000/</span>
+              <button id="btn-online-copy-web-url" class="btn btn-sm btn-secondary" type="button">🔗 SAO CHÉP LINK WEB</button>
+            </div>
+            <button id="btn-online-close" class="btn btn-secondary" type="button" style="flex-shrink:0;">ĐÓNG SẢNH</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL TÀI KHOẢN, LƯU CLOUD & BẢNG XẾP HẠNG TOÀN SERVER -->
+      <div id="account-modal" class="modal-overlay hidden">
+        <div class="modal-card wide-card online-modal-card">
+          <button class="modal-close-icon" id="btn-account-close-x" aria-label="Đóng">&times;</button>
+          <div class="online-modal-header">
+            <div>
+              <span class="shop-header-badge">☁️ LƯU TIẾN TRÌNH CLOUD • TÀI KHOẢN GIA TỘC</span>
+              <h2 class="modal-title" style="margin:4px 0 0;">TÀI KHOẢN &amp; BẢNG XẾP HẠNG VÕ ĐÀI</h2>
+            </div>
+          </div>
+
+          <div class="online-grid">
+            <div class="online-panel">
+              <div id="account-auth-panel" style="display:flex; flex-direction:column; gap:10px;">
+                <h3 class="online-panel-title">1. ĐĂNG NHẬP HOẶC TẠO TÀI KHOẢN</h3>
+                <p style="margin:0; font-size:11.5px; color:#94a3b8;">Đăng nhập để sao lưu Vàng, Kim Cương, Skin &amp; Màn chơi lên Server (chống mất save khi đổi máy).</p>
+                <label class="online-field">
+                  <span>Tên Tài Khoản (3-20 ký tự, không dấu)</span>
+                  <input id="acc-username" class="online-input" type="text" maxlength="20" placeholder="VD: nghi_vovinam">
+                </label>
+                <label class="online-field">
+                  <span>Mật Khẩu (từ 4 ký tự)</span>
+                  <input id="acc-password" class="online-input" type="password" maxlength="40" placeholder="••••••">
+                </label>
+                <label class="online-field">
+                  <span>Tên Võ Sĩ Hiển Thị (khi đăng ký mới)</span>
+                  <input id="acc-displayname" class="online-input" type="text" maxlength="24" placeholder="VD: Cao Thủ Họ Phó">
+                </label>
+                <div class="online-actions-row">
+                  <button id="btn-account-login" class="btn btn-primary" type="button">🔐 ĐĂNG NHẬP</button>
+                  <button id="btn-account-register" class="btn btn-secondary" type="button">✨ ĐĂNG KÝ MỚI</button>
+                </div>
+                <p id="acc-auth-feedback" class="vov-gate-feedback"></p>
+              </div>
+
+              <div id="account-profile-panel" class="hidden" style="display:flex; flex-direction:column; gap:10px;">
+                <h3 class="online-panel-title">1. HỒ SƠ CLOUD ĐANG ĐỒNG BỘ</h3>
+                <div class="online-slot-card">
+                  <strong id="account-profile-name">Võ Sĩ</strong>
+                  <span>🟢 Trạng thái: Đang bật tự động đồng bộ Cloud</span>
+                </div>
+                <div class="opfp-form-row">
+                  <div class="online-slot-card"><span>Thắng PvP</span><strong id="account-profile-wins">0</strong></div>
+                  <div class="online-slot-card"><span>Chiến Dịch</span><strong id="account-profile-stage">Màn 1</strong></div>
+                </div>
+                <div class="online-slot-card"><span>Bộ Sưu Tập</span><strong id="account-profile-heroes">1 Võ Sĩ</strong></div>
+                <div class="online-actions-row" style="margin-top:auto;">
+                  <button id="btn-account-sync-now" class="btn btn-primary" type="button">☁️ ĐỒNG BỘ CLOUD NGAY</button>
+                  <button id="btn-account-logout" class="btn btn-secondary" type="button">ĐĂNG XUẤT</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="online-panel">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 class="online-panel-title">2. TOP 20 CAO THỦ TOÀN SERVER</h3>
+                <button id="btn-account-refresh-lb" class="btn btn-sm btn-ghost" type="button">↻ Tải lại</button>
+              </div>
+              <div id="account-leaderboard-list" class="online-rooms-list" style="max-height:290px;">
+                <div class="opfp-chat-sys">Nhấn Tải lại để xem Bảng Xếp Hạng...</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions" style="margin-top:12px; justify-content:flex-end;">
+            <button id="btn-account-close" class="btn btn-secondary" type="button">ĐÓNG</button>
+          </div>
+        </div>
+      </div>
+
       <!-- THÔNG BÁO THÀNH TÍCH / MỞ KHÓA -->
       <div id="toast-stack" class="toast-stack"></div>
 
@@ -1141,72 +2621,94 @@
   </div>
 
   <!-- SCRIPT MODULES (thứ tự: hệ thống -> nhân vật -> sân khấu -> giao diện -> game) -->
-  <script src="js/core/audio.js?v=5.4"></script>
-  <script src="js/core/effects.js?v=5.4"></script>
-  <script src="js/entities/animation/animationData.js?v=5.9"></script>
-  <script src="js/entities/animation/animationBase.js?v=5.9"></script>
-  <script src="js/entities/animation/animationPose.js?v=5.9"></script>
-  <script src="js/entities/animation/animationRenderBase.js?v=5.9"></script>
-  <script src="js/entities/animation/animationWeapon.js?v=5.9"></script>
-  <script src="js/entities/animation/animationBody.js?v=5.9"></script>
-  <script src="js/entities/animation.js?v=5.9"></script>
-  <script src="js/core/input.js?v=5.4"></script>
-  <script src="js/combat/combat.js?v=5.4"></script>
-  <script src="js/core/save.js?v=5.4"></script>
-  <script src="js/entities/roster.js?v=5.4"></script>
-  <script src="js/features/investigation.js?v=5.4"></script>
-  <script src="js/features/flashback.js?v=5.4"></script>
-  <script src="js/features/confrontation.js?v=5.4"></script>
-  <script src="js/world/story.js?v=5.4"></script>
-  <script src="js/entities/player/playerBase.js?v=5.9"></script>
-  <script src="js/entities/player/playerDamage.js?v=5.9"></script>
-  <script src="js/entities/player/playerUltimate.js?v=5.9"></script>
-  <script src="js/entities/player/playerInput.js?v=5.9"></script>
-  <script src="js/entities/player.js?v=5.9"></script>
-  <script src="js/entities/enemy/baseEnemy.js?v=5.11"></script>
-  <script src="js/entities/enemy/enemyVariants.js?v=5.11"></script>
-  <script src="js/entities/enemy/enemyBosses.js?v=5.11"></script>
-  <script src="js/entities/enemy.js?v=5.11"></script>
-  <script src="js/entities/bosses2.js?v=5.4"></script>
-  <script src="js/combat/weapons.js?v=5.4"></script>
-  <script src="js/combat/props.js?v=5.4"></script>
-  <script src="js/data/stages.js?v=5.8"></script>
-  <script src="js/world/stageManager.js?v=5.8"></script>
-  <script src="js/world/stageRenderer.js?v=5.8"></script>
-  <script src="js/world/stages.js?v=5.8"></script>
-  <script src="js/world/scenery.js?v=5.4"></script>
-  <script src="js/ui/ranking.js?v=5.4"></script>
-  <script src="js/data/training.js?v=5.9"></script>
-  <script src="js/ui/training/trainingDummy.js?v=5.9"></script>
-  <script src="js/ui/training/trainingManagerBase.js?v=5.9"></script>
-  <script src="js/ui/training/trainingModes.js?v=5.9"></script>
-  <script src="js/ui/training/trainingManagerOverlay.js?v=5.9"></script>
-  <script src="js/ui/training.js?v=5.9"></script>
-  <script src="js/features/deduction.js?v=5.4"></script>
-  <script src="js/features/bossRush.js?v=5.4"></script>
-  <script src="js/entities/allySystem.js?v=5.4"></script>
-  <script src="js/ui/tutorial/tutorialDummy.js?v=5.12"></script>
-  <script src="js/ui/tutorial/tutorialManagerBase.js?v=5.12"></script>
-  <script src="js/ui/tutorial/tutorialManagerOverlay.js?v=5.12"></script>
-  <script src="js/ui/tutorial.js?v=5.12"></script>
-  <script src="js/ui/ui.js?v=5.6"></script>
-  <script src="js/ui/menu/charSlots.js?v=5.8"></script>
-  <script src="js/ui/menu/menuBase.js?v=5.8"></script>
-  <script src="js/ui/menu/charselect/charSelectCore.js?v=5.10"></script>
-  <script src="js/ui/menu/charselect/charSelectDemo.js?v=5.10"></script>
-  <script src="js/ui/menu/charselect/charSelectDeployment.js?v=5.10"></script>
-  <script src="js/ui/menu/charSelect.js?v=5.10"></script>
-  <script src="js/ui/menu/collections.js?v=5.8"></script>
-  <script src="js/ui/menu/settings.js?v=5.8"></script>
-  <script src="js/ui/menu/chronicles.js?v=5.8"></script>
-  <script src="js/ui/menu.js?v=5.8"></script>
-  <script src="js/core/gameBase.js?v=5.8"></script>
-  <script src="js/core/gameWave.js?v=5.8"></script>
-  <script src="js/core/gameCamera.js?v=5.8"></script>
-  <script src="js/core/gameFlow.js?v=5.8"></script>
-  <script src="js/core/gameStory.js?v=5.8"></script>
-  <script src="js/core/gameRender.js?v=5.8"></script>
-  <script src="js/core/game.js?v=5.8"></script>
-  <script src="js/core/main.js?v=5.4"></script>
+  <script src="js/core/audio.js?v=5.86"></script>
+  <script src="js/core/effects.js?v=5.87"></script>
+  <!-- H? TH?NG ??NG K? & NH?N V?T ??C L?P (ngo?i h?nh, animation, ch? s?, n?i t?i, tuy?t k?, ??ng minh) -->
+  <script src="js/entities/characters/characterRegistry.js?v=5.90"></script>
+  <script src="js/entities/characters/nghi.js?v=5.82"></script>
+  <script src="js/entities/characters/bichlam.js?v=5.89"></script>
+  <script src="js/entities/characters/huavudai.js?v=5.49"></script>
+  <script src="js/entities/characters/dinhan.js?v=5.49"></script>
+  <script src="js/entities/characters/hoanganh.js?v=5.49"></script>
+  <script src="js/entities/characters/dunghai.js?v=5.49"></script>
+  <script src="js/entities/characters/giangmanh.js?v=5.91"></script>
+  <script src="js/entities/characters/mocdang.js?v=5.49"></script>
+  <script src="js/entities/characters/haclang.js?v=5.49"></script>
+  <script src="js/entities/characters/thietquyen.js?v=5.49"></script>
+  <script src="js/entities/characters/huyetanh.js?v=5.49"></script>
+  <script src="js/entities/characters/longvuong.js?v=5.49"></script>
+  <script src="js/entities/characters/vinhtam.js?v=5.49"></script>
+  <script src="js/entities/characters/vananh.js?v=5.49"></script>
+  <script src="js/entities/characters/tiendang.js?v=5.82"></script>
+  <script src="js/entities/characters/thienkhanh.js?v=5.91"></script>
+  <script src="js/entities/animation/animationData.js?v=5.49"></script>
+  <script src="js/entities/animation/animationBase.js?v=5.49"></script>
+  <script src="js/entities/animation/animationPose.js?v=5.49"></script>
+  <script src="js/entities/animation/animationRenderBase.js?v=5.85"></script>
+  <script src="js/entities/animation/animationWeapon.js?v=5.82"></script>
+  <script src="js/entities/animation/animationArchetypes.js?v=5.82"></script>
+  <script src="js/entities/animation/animationBody.js?v=5.82"></script>
+  <script src="js/entities/animation.js?v=5.49"></script>
+  <script src="js/core/input.js?v=5.49"></script>
+  <script src="js/combat/combat.js?v=5.82"></script>
+  <script src="js/core/save.js?v=5.86"></script>
+  <script src="js/core/account.js?v=5.89"></script>
+  <script src="js/data/skins.js?v=5.89"></script>
+  <script src="js/entities/roster.js?v=5.49"></script>
+  <script src="js/features/investigation.js?v=5.49"></script>
+  <script src="js/features/flashback.js?v=5.49"></script>
+  <script src="js/features/confrontation.js?v=5.49"></script>
+  <script src="js/world/story.js?v=5.49"></script>
+  <script src="js/entities/player/playerBase.js?v=5.87"></script>
+  <script src="js/entities/player/playerDamage.js?v=5.87"></script>
+  <script src="js/entities/player/playerUltimate.js?v=5.49"></script>
+  <script src="js/entities/player/playerInput.js?v=5.82"></script>
+  <script src="js/entities/player.js?v=5.49"></script>
+  <script src="js/entities/enemy/baseEnemy.js?v=5.82"></script>
+  <script src="js/entities/enemy/enemyVariants.js?v=5.49"></script>
+  <script src="js/entities/enemy/enemyBosses.js?v=5.49"></script>
+  <script src="js/entities/enemy.js?v=5.49"></script>
+  <script src="js/entities/bosses2.js?v=5.49"></script>
+  <script src="js/combat/weapons.js?v=5.49"></script>
+  <script src="js/combat/props.js?v=5.49"></script>
+  <script src="js/data/stages.js?v=5.83"></script>
+  <script src="js/world/stageManager.js?v=5.49"></script>
+  <script src="js/world/stageRenderer.js?v=5.49"></script>
+  <script src="js/world/stages.js?v=5.49"></script>
+  <script src="js/world/scenery.js?v=5.91"></script>
+  <script src="js/ui/ranking.js?v=5.49"></script>
+  <script src="js/data/training.js?v=5.49"></script>
+  <script src="js/ui/training/trainingDummy.js?v=5.49"></script>
+  <script src="js/ui/training/trainingManagerBase.js?v=5.90"></script>
+  <script src="js/ui/training/trainingModes.js?v=5.87"></script>
+  <script src="js/ui/training/trainingManagerOverlay.js?v=5.49"></script>
+  <script src="js/ui/training.js?v=5.49"></script>
+  <script src="js/features/deduction.js?v=5.49"></script>
+  <script src="js/features/bossRush.js?v=5.49"></script>
+  <script src="js/entities/allySystem.js?v=5.49"></script>
+  <script src="js/ui/tutorial/tutorialDummy.js?v=5.49"></script>
+  <script src="js/ui/tutorial/tutorialManagerBase.js?v=5.49"></script>
+  <script src="js/ui/tutorial/tutorialManagerOverlay.js?v=5.49"></script>
+  <script src="js/ui/tutorial.js?v=5.49"></script>
+  <script src="js/ui/uiCore.js?v=5.81"></script>
+  <script src="js/ui/ui.js?v=5.91"></script>
+  <script src="js/ui/menu/charSlots.js?v=5.49"></script>
+  <script src="js/ui/menu/menuBase.js?v=5.49"></script>
+  <script src="js/ui/menu/charselect/charSelectCore.js?v=5.89"></script>
+  <script src="js/ui/menu/charselect/charSelectDemo.js?v=5.49"></script>
+  <script src="js/ui/menu/charselect/charSelectDeployment.js?v=5.49"></script>
+  <script src="js/ui/menu/charSelect.js?v=5.49"></script>
+  <script src="js/ui/menu/collections.js?v=5.86"></script>
+  <script src="js/ui/menu/settings.js?v=5.49"></script>
+  <script src="js/ui/menu/chronicles.js?v=5.49"></script>
+  <script src="js/ui/menu.js?v=5.49"></script>
+  <script src="js/core/gameBase.js?v=5.91"></script>
+  <script src="js/core/gameWave.js?v=5.91"></script>
+  <script src="js/core/gameCamera.js?v=5.49"></script>
+  <script src="js/core/gameFlow.js?v=5.91"></script>
+  <script src="js/core/gameStory.js?v=5.49"></script>
+  <script src="js/core/gameRender.js?v=5.91"></script>
+  <script src="js/core/game.js?v=5.91"></script>
+  <script src="js/core/main.js?v=5.82"></script>
 </body>
 </html>

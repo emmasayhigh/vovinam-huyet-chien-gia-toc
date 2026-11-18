@@ -875,11 +875,11 @@ kbd, .key-badge {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(4, 7, 14, 0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  z-index: 260;
-  display: flex;
+  background: rgba(4, 7, 14, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 99999 !important;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   pointer-events: auto !important;
@@ -934,20 +934,20 @@ kbd, .key-badge {
    7. CHẾ ĐỘ LUYỆN VÕ VOVINAM (TRAINING MODE & TIMING METER HUD)
    ========================================================================== */
 .training-overlay {
-  position: absolute;
+  position: absolute !important;
   top: auto !important;
   left: auto !important;
   bottom: 12px !important;
-  right: 14px !important;
+  right: 12px !important;
   height: auto !important;
-  transform: none;
+  transform: none !important;
   pointer-events: none;
-  z-index: 220;
-  width: min(392px, calc(100% - 24px)) !important;
-  max-width: min(392px, calc(100% - 24px)) !important;
-  min-width: 280px;
+  z-index: 220 !important;
+  width: 380px !important;
+  max-width: calc(100% - 24px) !important;
   box-sizing: border-box !important;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
 }
 
 .training-overlay.hidden {
@@ -1311,10 +1311,11 @@ kbd, .key-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
   color: #ffffff;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
   text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
   pointer-events: none;
 }
@@ -2480,4 +2481,438 @@ kbd, .key-badge {
   .free-training-card .training-actions {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+
+/* ==== VÕ ĐƯỜNG v2: danh sách võ sĩ cuộn được, mở rộng 20–30+ nhân vật ==== */
+.training-char-grid {
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  max-height: 232px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(250, 204, 21, 0.65) transparent;
+}
+
+.training-quick-roster-bar .quick-roster-pills {
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  max-height: 64px;
+  overflow-y: auto;
+}
+
+.t-char-avatar-img { object-position: top center; }
+
+/* Võ Đường v2 — thẻ gọn, bộ lọc & tìm kiếm */
+.t-roster-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
+.t-filter-pill {
+  padding: 4px 11px; border-radius: 14px; font-size: 10.5px; font-weight: 800; cursor: pointer;
+  background: rgba(8, 12, 22, 0.85); color: #cbd5e1; border: 1px solid rgba(229, 169, 60, 0.35);
+  transition: all 0.18s ease;
+}
+.t-filter-pill:hover { color: #ffd700; border-color: #ffd700; }
+.t-filter-pill.active { background: linear-gradient(135deg, rgba(212,160,23,.4), rgba(180,83,9,.65)); color: #ffd700; border-color: #ffd700; }
+.t-roster-search {
+  margin-left: auto; min-width: 150px; padding: 4px 10px; border-radius: 14px; font-size: 11px;
+  background: rgba(8, 12, 22, 0.9); color: #f8fafc; border: 1px solid rgba(56, 189, 248, 0.4); outline: none;
+}
+.t-roster-search:focus { border-color: #ffd700; }
+.training-char-grid .t-char-card-desc { display: none; }
+.training-char-grid .t-char-avatar-wrap { width: 52px; height: 52px; }
+.training-char-grid .t-char-card-status { margin-top: 4px; }
+
+/* Thanh đổi nhanh võ sĩ trong trận — thẻ ảnh giống màn chọn nhân vật */
+.training-quick-roster-bar .quick-roster-pills {
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 5px;
+  max-height: 138px;
+  overflow-y: auto;
+  padding-right: 3px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(250, 204, 21, 0.65) transparent;
+}
+.training-quick-roster-bar .quick-char-pill {
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0 3px 0 !important;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  position: relative;
+  background: linear-gradient(180deg, rgba(22, 28, 42, 0.9), rgba(10, 14, 24, 0.98));
+}
+.quick-char-pill .pill-thumb {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  object-fit: cover;
+  object-position: center 8%;
+  background: radial-gradient(circle at 50% 30%, rgba(30, 42, 65, 0.75), rgba(8, 12, 20, 0.98));
+}
+.training-quick-roster-bar .quick-char-pill .pill-name {
+  font-size: 8px;
+  max-width: 96%;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   VÕ ĐƯỜNG VOVINAM: GIAO DIỆN CHỌN VÕ SĨ 3 CỘT ĐẲNG CẤP CINEMATIC AAA
+   ========================================================================== */
+#training-mode-modal.cs-modal-screen {
+  z-index: 1000;
+}
+
+.training-cinematic-stage {
+  max-width: 1920px;
+  max-height: 1080px;
+}
+
+.training-cs-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: calc(100vh - 230px);
+  padding: 4px;
+}
+
+.training-hero-actions-panel {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 94%;
+  max-width: 720px;
+  z-index: 15;
+}
+
+.t-mode-action-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.btn-training-mode-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-display, 'Cinzel', serif);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  user-select: none;
+  text-align: left;
+}
+
+.btn-training-mode-action.btn-gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.28) 0%, rgba(180, 83, 9, 0.5) 100%), rgba(15, 23, 42, 0.95);
+  border: 1.5px solid #f59e0b;
+  color: #fef08a;
+}
+
+.btn-training-mode-action.btn-gold:hover {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.45) 0%, rgba(217, 119, 6, 0.7) 100%), rgba(20, 30, 55, 0.98);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.45);
+}
+
+.btn-training-mode-action.btn-blue {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.28) 0%, rgba(2, 132, 199, 0.5) 100%), rgba(15, 23, 42, 0.95);
+  border: 1.5px solid #38bdf8;
+  color: #e0f2fe;
+}
+
+.btn-training-mode-action.btn-blue:hover {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.45) 0%, rgba(3, 105, 161, 0.7) 100%), rgba(20, 30, 55, 0.98);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(56, 189, 248, 0.45);
+}
+
+.t-btn-icon {
+  font-size: 24px;
+}
+
+.t-btn-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.t-btn-main {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.t-btn-sub {
+  font-size: 10px;
+  opacity: 0.85;
+  font-family: var(--font-sans, sans-serif);
+}
+
+.t-btn-arrow {
+  font-size: 16px;
+  opacity: 0.75;
+}
+
+.t-drill-action-group {
+  flex: 1.15;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.t-drill-dropdown-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(8, 12, 20, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 4px;
+  padding: 4px 10px;
+}
+
+.t-drill-dropdown-wrap label {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 0.5px;
+}
+
+.t-drill-dropdown-wrap .training-select {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   VÕ ĐƯỜNG 3-TAB (VÕ SĨ / TRANG PHỤC / TRỢ CHIẾN) + COMPANION + LOADOUT BAR
+   ========================================================================== */
+#training-mode-modal #t-lq-tabs.cs-lq-tabs {
+  grid-template-columns: 0.84fr 1.18fr 1.12fr;
+  gap: 3px;
+}
+
+#training-mode-modal #t-lq-tabs .cs-lq-tab {
+  font-size: 9px;
+  padding: 6px 2px;
+  gap: 2px;
+  letter-spacing: 0.1px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#training-mode-modal #t-lq-tabs .cs-lq-tab-badge {
+  font-size: 8.5px;
+  padding: 1px 4px;
+  flex-shrink: 0;
+}
+
+#training-mode-modal #training-char-grid.cs-grid.hidden,
+#training-mode-modal #training-roster-filters.hidden,
+#training-mode-modal .t-roster-filters.hidden,
+#training-mode-modal .training-skin-grid.hidden,
+#training-mode-modal .training-support-grid.hidden,
+#training-mode-modal #training-support-grid.cs-grid.hidden,
+#training-mode-modal #training-support-grid.hidden {
+  display: none !important;
+}
+
+#training-mode-modal .cs-support-companion-card {
+  max-width: 200px;
+  top: 48px;
+  left: 8px;
+}
+
+#training-mode-modal .training-skin-grid,
+#training-mode-modal .training-support-grid {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+#training-mode-modal #training-support-grid.cs-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-rows: none !important;
+  grid-auto-rows: max-content !important;
+  align-content: start !important;
+  gap: 8px !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.6) rgba(8, 12, 22, 0.6);
+}
+
+#training-mode-modal #training-support-grid .t-support-card:not(.ally-card-auto) {
+  position: relative;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border-radius: 10px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: 3 / 3.9 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: linear-gradient(180deg, rgba(20, 27, 45, 0.96) 0%, rgba(8, 12, 22, 0.98) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#training-mode-modal #training-support-grid .t-support-card.selected,
+#training-mode-modal #training-support-grid .t-support-card.active {
+  border: 2px solid #ffd700 !important;
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.65) !important;
+}
+
+#training-mode-modal #training-support-grid .t-support-card.hero-busy {
+  opacity: 0.72;
+  cursor: not-allowed;
+  border-color: rgba(245, 158, 11, 0.75);
+}
+
+#training-mode-modal #training-support-grid .t-support-card.hero-busy .cs-card-img {
+  filter: grayscale(0.7) brightness(0.7);
+}
+
+#training-mode-modal #training-support-grid .t-support-card:not(.ally-card-auto) .cs-card-thumb-wrap {
+  position: relative !important;
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  background: radial-gradient(circle at 50% 28%, rgba(30, 42, 65, 0.85) 0%, rgba(8, 12, 20, 0.98) 100%);
+}
+
+#training-mode-modal #training-support-grid .t-support-card .cs-card-img {
+  position: static !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 12% !important;
+  display: block !important;
+}
+
+#training-mode-modal #training-support-grid .t-support-card:not(.ally-card-auto) .cs-card-element {
+  position: absolute !important;
+  top: 5px !important;
+  right: 5px !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: 21px !important;
+  height: 21px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  background: rgba(6, 10, 20, 0.9) !important;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  z-index: 6;
+}
+
+#training-mode-modal #training-support-grid .t-support-card:not(.ally-card-auto) .t-card-banner {
+  position: static !important;
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box;
+  padding: 5px 7px 6px !important;
+  background: linear-gradient(180deg, rgba(10, 15, 28, 0.96), rgba(5, 8, 16, 0.99)) !important;
+  border-top: 1px solid rgba(250, 204, 21, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: left;
+}
+
+#training-mode-modal #training-support-grid .t-card-banner .cs-card-name {
+  display: block;
+  width: 100%;
+  font-size: 10px !important;
+  font-weight: 800;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#training-mode-modal #training-support-grid .t-card-role-sub {
+  display: block;
+  width: 100%;
+  font-size: 8.8px;
+  font-weight: 600;
+  color: var(--char-color, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#training-mode-modal #training-support-grid .t-support-card.ally-card-auto {
+  grid-column: 1 / -1;
+  aspect-ratio: auto !important;
+  height: auto !important;
+  min-height: 58px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+#training-mode-modal #training-support-grid .t-support-card.ally-card-auto .ally-auto-tag {
+  position: static;
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 8.5px;
+  font-weight: 900;
+  background: rgba(250, 204, 21, 0.2);
+  color: #fde047;
+  border: 1px solid rgba(250, 204, 21, 0.55);
+}
+
+#training-mode-modal #training-support-grid .t-solo-art {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: radial-gradient(circle at 50% 40%, rgba(168, 85, 247, 0.35), rgba(15, 23, 42, 0.96));
+}
+
+#training-mode-modal #training-support-grid .t-solo-icon {
+  font-size: 28px;
+  filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8));
+}
+
+#training-mode-modal #training-support-grid .t-solo-label {
+  font-size: 8.5px;
+  font-weight: 900;
+  color: #e9d5ff;
+  letter-spacing: 0.5px;
+}
+
+#training-mode-modal #training-skin-grid .cs-skin-art-wrap {
+  overflow: hidden;
+}
+
+#training-mode-modal .t-loadout-summary-bar {
+  margin-top: 2px;
+  margin-bottom: 2px;
+  flex-shrink: 0;
 }

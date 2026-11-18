@@ -7,8 +7,13 @@ class MenuManagerChronicles extends window.MenuManagerSettings {
   // ==========================================================================
   // BIÊN NIÊN SỬ HỌ PHÓ — HỒ SƠ ĐIỀU TRA ĐA LỚP
   // ==========================================================================
-  showChronicles(targetTab = 'docs') {
+  showChronicles(targetTab = 'docs', opts = {}) {
     if (!this.chroniclesModal) return;
+    if (opts && typeof opts.fromCampaignHub === 'boolean') {
+      this._chroniclesFromCampaignHub = opts.fromCampaignHub;
+    } else {
+      this._chroniclesFromCampaignHub = !!this._returnToCampaignHub;
+    }
     if (window.game && window.game.state === 'PLAYING') {
       this._chroniclesWasPlaying = true;
       window.game.state = 'PAUSED';
@@ -27,6 +32,12 @@ class MenuManagerChronicles extends window.MenuManagerSettings {
     if (this._chroniclesWasPlaying && window.game && window.game.state === 'PAUSED') {
       window.game.state = 'PLAYING';
       this._chroniclesWasPlaying = false;
+    } else if (this._chroniclesFromCampaignHub || this._returnToCampaignHub) {
+      this._chroniclesFromCampaignHub = false;
+      this._returnToCampaignHub = false;
+      if (typeof this.showCampaignHub === 'function') {
+        this.showCampaignHub();
+      }
     }
     if (window.input && typeof window.input.clearAll === 'function') {
       window.input.clearAll();

@@ -1,7 +1,27 @@
 /**
  * VOVINAM: HUYẾT CHIẾN GIA TỘC
- * js/allySystem.js - Hệ thống Đồng Minh Hỗ Trợ Thực Chiến & Chiêu Phối Hợp Co-op
+ * js/entities/allySystem.js - Hệ thống Đồng Minh Hỗ Trợ Thực Chiến & Chiêu Phối Hợp Co-op.
+ *
+ * Hồ sơ kỹ năng, chỉ số và hiệu ứng chiến đấu của từng đồng minh được tách riêng trong js/entities/characters/*.js.
  */
+
+if (!window.CharacterRegistry && typeof require === 'function') {
+  try { require('./characters/bootstrap.js'); } catch (_) {}
+}
+
+const ALLY_PROFILES = window.CharacterRegistry
+  ? window.CharacterRegistry.buildAllyProfilesMap()
+  : {};
+window.ALLY_PROFILES = ALLY_PROFILES;
+
+function clearPlayerAllyBuffs(player) {
+  if (!player) return;
+  player.allyDmgBuff = 1.0;
+  player.allyDmgReduction = 0;
+  player.allyEnergyRate = 1.0;
+  player.allyCounterBuff = 1.0;
+  if (player.shieldHp) player.shieldHp = 0;
+}
 
 class SummonedAlly {
   constructor(charId, x, y) {
@@ -12,84 +32,292 @@ class SummonedAlly {
     this.vx = 0;
     this.vy = 0;
     this.facing = 1;
-    this.state = 'idle'; // 'idle', 'walk', 'run', 'attack', 'coop', 'skill'
+    this.state = 'idle'; // 'idle', 'walk', 'run', 'attack', 'coop', 'skill', 'hurt', 'knockdown'
     this.animTime = 0;
     this.stateTimer = 0;
     this.stateDuration = 0.5;
-    this.duration = 25.0; // 25 giây chiến đấu trên sân
-    this.maxDuration = 25.0;
-    this.hp = 800;
-    this.maxHp = 800;
+    this.duration = Infinity;
+    this.maxDuration = Infinity;
     this.isDead = false;
+    this.invincibleTimer = 0;
+    this.invulnerable = false;
+    this.isEntering = false;
+    this.entryTimer = 0;
+    this.entryStartX = x;
+    this.entryTargetX = x;
+    this.entryDir = 1;
+    this._lastEntryX = x;
     this.coopCooldown = 0;
     this.specialTimer = 0;
     this.attackCooldown = 0;
+    this.fieldTime = 0;
+    this.recallLockDuration = 5.0;
+    this.exitMode = null;
+    this.exitTimer = 0;
+    this.vz = 0;
 
-    // Thiết lập chỉ số và kỹ năng theo từng nhân vật
-    const defs = {
-      hoanganh: {
-        name: 'Đặng Hoàng Anh',
-        title: 'Thần Cước Trấn Sơn',
-        styleType: 'boss_hoanganh',
-        speed: 190,
-        dmg: 55,
-        trait: 'rapid_strikes'
-      },
-      dunghai: {
-        name: 'Phó Dung Hải',
-        title: 'Song Đao Sát Thủ',
-        styleType: 'boss_dunghai',
-        speed: 175,
-        dmg: 65,
-        trait: 'guard_breaker'
-      },
-      mocdang: {
-        name: 'Phó Mộc Đăng',
-        title: 'Kiến Trúc Sư Thần Số',
-        styleType: 'npc_mocdang',
-        speed: 160,
-        dmg: 45,
-        trait: 'emp_control'
-      },
-      bichlam: {
-        name: 'Đình Bích Lâm',
-        title: 'Mãnh Tướng Bến Cảng',
-        styleType: 'boss_bichlam',
-        speed: 210,
-        dmg: 48,
-        trait: 'heal_speed_buff'
-      },
-      dinhan: {
-        name: 'Triệu Đình An',
-        title: 'Cận Vệ Thiết Bích',
-        styleType: 'boss_dinhan',
-        speed: 180,
-        dmg: 52,
-        trait: 'shield_taunt'
-      },
-      huavudai: {
-        name: 'Hứa Vũ Đại',
-        title: 'Ông Trùm Mạng Lưới',
-        styleType: 'npc_huavudai',
-        speed: 185,
-        dmg: 50,
-        trait: 'tactical_command'
-      }
-    };
-
-    this.profile = defs[charId] || defs.hoanganh;
+    this.profile = ALLY_PROFILES[charId] || ALLY_PROFILES.bichlam;
+    const baseHp = Math.round((this.profile.hp || 1200) * 0.5); // Cân bằng: đồng minh có 1/2 máu gốc, hết máu sẽ rút lui
+    this.hp = baseHp;
+    this.maxHp = baseHp;
+    this.isRetreating = false;
     this.characterKey = charId;
     this.characterId = charId;
-    this.trait = this.profile.trait;
+    this.id = 'ally_' + charId;
     this.styleType = this.profile.styleType;
     this.isAlly = true;
     this.type = 'ally';
+
+    if (window.CharacterRegistry) {
+      window.CharacterRegistry.onAllySpawn(this);
+    }
+  }
+
+  isInvulnerable() {
+    return !!(this.isEntering || this.isRetreating || this.invulnerable || this.invincibleTimer > 0);
+  }
+
+  startEntryRun(startX, targetX, y) {
+    this.entryStartX = startX;
+    this.entryTargetX = targetX;
+    this.x = startX;
+    this._lastEntryX = startX;
+    if (typeof y === 'number') this.y = y;
+    this.entryDir = (targetX >= startX) ? 1 : -1;
+    this.facing = this.entryDir;
+    const runSpeed = 560;
+    this.vx = this.entryDir * runSpeed;
+    this.vy = 0;
+    this.z = 0;
+    this.vz = 0;
+    this.state = 'run';
+    this.isEntering = true;
+    this.invulnerable = true;
+    const dist = Math.abs(targetX - startX);
+    this.entryTimer = Math.max(0.35, Math.min(0.75, dist / runSpeed));
+    this.stateTimer = 0;
+    this.stateDuration = this.entryTimer;
+  }
+
+  finishEntry(snapToTarget = true) {
+    if (!this.isEntering) return;
+    if (snapToTarget && typeof this.entryTargetX === 'number') {
+      this.x = this.entryTargetX;
+    }
+    this._lastEntryX = this.x;
+    this.isEntering = false;
+    this.entryTimer = 0;
+    this.invulnerable = false;
+    this.vx = 0;
+    this.vy = 0;
+    if (this.state === 'run') {
+      this.state = 'idle';
+      this.stateTimer = 0;
+    }
+  }
+
+  setState(state, duration = 0.5) {
+    this.state = state;
+    this.stateTimer = 0;
+    this.stateDuration = duration;
+    this.animTime = 0;
+  }
+
+  takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+    if (this.isDead || this.isInvulnerable()) {
+      if (window.effectManager && (this.isEntering || this.isRetreating)) {
+        window.effectManager.addFloatingText('🛡️ BẤT TỬ!', this.x, this.y - 140, 'dodge');
+      }
+      return;
+    }
+
+    let finalDamage = amount;
+    if (window.CharacterRegistry) {
+      finalDamage = window.CharacterRegistry.modifyAllyDamageTaken(this, finalDamage);
+    }
+
+    this.hp = Math.max(0, this.hp - finalDamage);
+
+    if (window.effectManager) {
+      window.effectManager.addFloatingText(`-${finalDamage}`, this.x, this.y - 140, 'hurt');
+      window.effectManager.createHitSparks(this.x, this.y - 70, 8, false);
+    }
+
+    this.vx = knockbackX * 22;
+    if (isKnockdown) {
+      this.setState('knockdown', 1.0);
+    } else {
+      this.setState('hurt', 0.28);
+    }
+
+    if (this.hp <= 0) {
+      this.retreat();
+    }
+  }
+
+  // Thu hồi hoặc hết máu: đồng minh KHÔNG chết mà rời sân bằng cách chạy đi (bất tử suốt lúc chạy ra)
+  retreat(reason = 'exhausted', forcedMode = null) {
+    if (this.isDead) return;
+    this.isDead = true;
+    this.isEntering = false;
+    this.isRetreating = true;
+    this.invulnerable = true;
+    this.invincibleTimer = 999;
+    if (reason !== 'recalled') {
+      this.hp = 0;
+    }
+    this.stateTimer = 0;
+    this.stateDuration = 0.90;
+
+    const mode = forcedMode || 'run';
+    this.exitMode = mode;
+    this.exitTimer = 0.90;
+    if (mode === 'leap') {
+      this.state = 'jump_up';
+      this.vz = 880;
+      this.z = -6;
+      this.vx = -(this.facing || 1) * 140;
+    } else {
+      const camX = (window.game && window.game.camera && window.game.camera.x) || 0;
+      const dir = (this.x - camX < 640) ? -1 : 1;
+      this.facing = dir;
+      this.state = 'run';
+      this.vx = dir * 600;
+      this.vz = 0;
+      this.z = 0;
+    }
+
+    const game = window.game;
+    clearPlayerAllyBuffs(game && game.player);
+
+    if (window.audioManager && window.audioManager.playWhoosh) window.audioManager.playWhoosh();
+    if (window.effectManager) {
+      window.effectManager.createDust(this.x, this.y, 18);
+      if (mode === 'leap' && typeof window.effectManager.createShockRing === 'function') {
+        window.effectManager.createShockRing(this.x, this.y, '#00d2ff');
+      }
+      const msg = (reason === 'recalled')
+        ? `${this.profile.name.toUpperCase()} RÚT VỀ!`
+        : `${this.profile.name.toUpperCase()} KIỆT SỨC — RÚT LUI!`;
+      window.effectManager.addFloatingText(msg, this.x, this.y - 160, reason === 'recalled' ? 'dodge' : 'warn');
+    }
+    if (window.uiManager && reason !== 'recalled') {
+      window.uiManager.showAlertBanner(`${this.profile.name.toUpperCase()} BỊ THƯƠNG NẶNG, RÚT LUI! (SẼ TRỞ LẠI Ở TRẬN SAU)`);
+    }
+    const mgr = window.allyManager || window.allySystem;
+    if (mgr) {
+      if (mgr._cleanupTimer) {
+        clearTimeout(mgr._cleanupTimer);
+        mgr._cleanupTimer = null;
+      }
+      if (reason !== 'recalled') {
+        mgr.cooldown = 30.0;
+        mgr.gauge = 0;
+      }
+    }
+  }
+
+  updateRetreatAnimation(dt) {
+    this.exitTimer = Math.max(0, (this.exitTimer || 0) - dt);
+    this.animTime += dt;
+    this.stateTimer += dt;
+    this.x += (this.vx || 0) * dt;
+    if (this.exitMode === 'leap') {
+      this.z -= (this.vz || 880) * dt;
+    }
+    if (window.effectManager && Math.random() < 0.5 && typeof window.effectManager.addGhostTrail === 'function') {
+      window.effectManager.addGhostTrail(this, 'rgba(0, 210, 255, 0.45)');
+    }
+  }
+
+  die() {
+    if (this.isDead) return;
+    this.isDead = true;
+    this.hp = 0;
+    this.state = 'knockdown';
+    this.stateTimer = 0;
+    this.stateDuration = 1.2;
+
+    const game = window.game;
+    clearPlayerAllyBuffs(game && game.player);
+
+    if (window.audioManager) {
+      window.audioManager.playHeavyHit();
+    }
+    if (window.effectManager) {
+      window.effectManager.triggerFlash('#ef4444', 0.35);
+      window.effectManager.createShockRing(this.x, this.y, '#ef4444');
+      window.effectManager.addFloatingText(`ĐỒNG MINH ${this.profile.name.toUpperCase()} ĐÃ GỤC NGÃ!`, this.x, this.y - 160, 'warn');
+    }
+    if (window.uiManager) {
+      window.uiManager.showAlertBanner(`ĐỒNG MINH ĐÃ GỤC NGÃ: ${this.profile.name.toUpperCase()}!`);
+    }
+
+    const mgr = window.allyManager || window.allySystem;
+    if (mgr) {
+      mgr.cooldown = 30.0;
+      mgr.gauge = 0;
+      if (mgr._cleanupTimer) clearTimeout(mgr._cleanupTimer);
+      mgr._cleanupTimer = setTimeout(() => {
+        if (mgr.activeAlly === this) mgr.activeAlly = null;
+      }, 1200);
+    }
   }
 
   update(dt, player, enemies) {
-    this.duration -= dt;
-    if (this.duration <= 0) {
-      this.isDead = true;
+    if (this.isDead) return;
+    this.fieldTime = (this.fieldTime || 0) + dt;
+
+    if (this.invincibleTimer > 0) this.invincibleTimer -= dt;
+
+    if (this.isEntering) {
+      const movedManually = typeof this._lastEntryX === 'number' && Math.abs(this.x - this._lastEntryX) > 1;
+      if (movedManually || this.specialTimer >= 4.5) {
+        this.finishEntry(false);
+      } else {
+        this.animTime += dt;
+        this.stateTimer += dt;
+        this.entryTimer -= dt;
+        if (this.coopCooldown > 0) this.coopCooldown -= dt;
+        if (this.attackCooldown > 0) this.attackCooldown -= dt;
+        this.specialTimer += dt;
+        if (window.CharacterRegistry) {
+          window.CharacterRegistry.updateAllySkill(this, dt, player, enemies);
+        }
+        this.x += (this.vx || 0) * dt;
+        this._lastEntryX = this.x;
+        this.state = 'run';
+        this.invulnerable = true;
+        if (window.effectManager && Math.random() < 0.45 && typeof window.effectManager.addGhostTrail === 'function') {
+          window.effectManager.addGhostTrail(this, 'rgba(0, 210, 255, 0.40)');
+        }
+        const reached = (this.entryDir > 0 && this.x >= this.entryTargetX) ||
+          (this.entryDir < 0 && this.x <= this.entryTargetX) ||
+          this.entryTimer <= 0;
+        if (reached) {
+          this.finishEntry(true);
+          if (player) this.facing = player.facing || 1;
+        }
+        return;
+      }
+    }
+
+    if (this.state === 'hurt') {
+      this.stateTimer += dt;
+      if (this.stateTimer >= this.stateDuration) {
+        this.state = 'idle';
+        this.stateTimer = 0;
+      }
+      return;
+    }
+
+    if (this.state === 'knockdown') {
+      this.stateTimer += dt;
+      if (this.stateTimer >= this.stateDuration) {
+        this.state = 'idle';
+        this.stateTimer = 0;
+        this.invincibleTimer = 0.5;
+      }
       return;
     }
 
@@ -99,44 +327,9 @@ class SummonedAlly {
     if (this.attackCooldown > 0) this.attackCooldown -= dt;
     this.specialTimer += dt;
 
-    // Hiệu ứng đặc trưng liên tục
-    if (this.charId === 'bichlam') {
-      // Hồi máu nhẹ định kỳ cho người chơi (+12 HP mỗi 2.5s)
-      if (this.specialTimer >= 2.5 && player && player.hp < player.maxHp) {
-        this.specialTimer = 0;
-        player.hp = Math.min(player.maxHp, player.hp + 12);
-        if (window.uiManager) window.uiManager.updatePlayerHp(player.hp, player.maxHp);
-        if (window.effectManager) {
-          window.effectManager.addFloatingText('+12 HP', player.x, player.y - 150, 'heal');
-          window.effectManager.createShockRing(player.x, player.y, '#34d399');
-        }
-      }
-    } else if (this.charId === 'dinhan') {
-      // Thiết bích khiên: tạo xung kích bảo vệ và hút đòn về phía mình
-      if (this.specialTimer >= 3.2) {
-        this.specialTimer = 0;
-        if (window.effectManager) {
-          window.effectManager.createShockRing(this.x, this.y, '#d4a017');
-          window.effectManager.addFloatingText('THIẾT BÍCH KHIÊN!', this.x, this.y - 150, 'warn');
-        }
-        (enemies || []).forEach(e => {
-          if (!e.isDead && Math.hypot(e.x - this.x, e.y - this.y) < 190) {
-            e.takeDamage(35, Math.sign(e.x - this.x) * 6, false);
-            if (typeof e.setState === 'function') e.setState('hurt', 0.5);
-          }
-        });
-      }
-    } else if (this.charId === 'huavudai') {
-      // Chiến thuật mạng lưới ngầm: kích thích năng lượng & tăng sát thương
-      if (this.specialTimer >= 4.0 && player) {
-        this.specialTimer = 0;
-        if (window.effectManager) {
-          window.effectManager.createDust(player.x, player.y, 16, 25);
-          window.effectManager.addFloatingText('CHIẾN THUẬT NGẦM +20% SÁT THƯƠNG!', player.x, player.y - 160, 'dodge');
-        }
-        player.dmgMul = (player.dmgMul || 1) * 1.2;
-        setTimeout(() => { if (player) player.dmgMul = Math.max(1, (player.dmgMul || 1) / 1.2); }, 3000);
-      }
+    // Kỹ năng định kỳ & hào quang riêng của từng đồng minh (từ module nhân vật)
+    if (window.CharacterRegistry) {
+      window.CharacterRegistry.updateAllySkill(this, dt, player, enemies);
     }
 
     // Nếu đang trong đòn đánh hoặc co-op, đợi hết animation
@@ -154,8 +347,7 @@ class SummonedAlly {
     let targetEnemy = null;
     const isPlayerInDanger = (player.state === 'knockdown' || player.state === 'hurt' || (player.hp / player.maxHp < 0.3));
 
-    // Tìm kẻ địch gần người chơi nhất nếu nguy hiểm, hoặc kẻ địch gần đồng minh
-    const aliveEnemies = (enemies || []).filter(e => !e.isDead);
+    const aliveEnemies = (enemies || []).filter((e) => !e.isDead);
     if (isPlayerInDanger && aliveEnemies.length) {
       aliveEnemies.sort((a, b) => Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y));
       targetEnemy = aliveEnemies[0];
@@ -169,16 +361,14 @@ class SummonedAlly {
       this.facing = (targetEnemy.x >= this.x) ? 1 : -1;
 
       if (distToEnemy > 90) {
-        // Áp sát kẻ địch
         const dirX = Math.sign(targetEnemy.x - this.x);
         const dirY = Math.sign(targetEnemy.y - this.y);
         this.vx = dirX * this.profile.speed;
         this.vy = dirY * (this.profile.speed * 0.45);
         this.x += this.vx * dt;
-        this.y += this.vy * dt;
+        this.y = Math.max(515, Math.min(638, this.y + this.vy * dt));
         this.state = 'run';
       } else {
-        // Tấn công kẻ địch
         this.vx = 0;
         this.vy = 0;
         if (this.attackCooldown <= 0) {
@@ -188,7 +378,6 @@ class SummonedAlly {
         }
       }
     } else {
-      // Không có địch: đi theo sau người chơi giữ cự ly ~110px
       const followX = player.x - player.facing * 110;
       const followY = player.y;
       const dist = Math.hypot(followX - this.x, followY - this.y);
@@ -198,7 +387,7 @@ class SummonedAlly {
         const dirY = Math.sign(followY - this.y);
         this.facing = player.facing;
         this.x += dirX * this.profile.speed * 0.85 * dt;
-        this.y += dirY * this.profile.speed * 0.45 * dt;
+        this.y = Math.max(515, Math.min(638, this.y + dirY * this.profile.speed * 0.45 * dt));
         this.state = 'walk';
       } else {
         this.facing = player.facing;
@@ -208,128 +397,104 @@ class SummonedAlly {
   }
 
   performAllyAttack(target) {
+    if (this.isEntering) {
+      const movedManually = typeof this._lastEntryX === 'number' && Math.abs(this.x - this._lastEntryX) > 1;
+      this.finishEntry(!movedManually);
+    }
     this.state = 'attack';
     this.stateTimer = 0;
     this.stateDuration = 0.55;
-    this.attackCooldown = 1.1;
+    this.attackCooldown = 1.35;
 
-    let dmg = this.profile.dmg;
-    if (this.charId === 'hoanganh') {
-      // Hoàng Anh: Đòn cước bạt sơn gây choáng
-      target.takeDamage(dmg, this.facing * 8, true);
-      target.poise = Math.max(0, (target.poise || 50) - 35);
-      if (window.audioManager) window.audioManager.playHeavyHit();
-      if (window.effectManager) {
-        window.effectManager.createShockRing(target.x, target.y, '#ffd700');
-        window.effectManager.addFloatingText('SƠN CƯỚC!', this.x, this.y - 140, 'crit');
-      }
-    } else if (this.charId === 'dunghai') {
-      // Dung Hải: Phá phòng thủ
-      if (target.superArmor) target.superArmor = false;
-      target.takeDamage(dmg, this.facing * 6, true);
-      if (window.audioManager) window.audioManager.playWhoosh();
-      if (window.effectManager) {
-        window.effectManager.createHitSparks(target.x, target.y - 80, 15, true);
-        window.effectManager.addFloatingText('PHÁ THỦ!', target.x, target.y - 140, 'warn');
-      }
-    } else if (this.charId === 'mocdang') {
-      // Mộc Đăng: EMP Drone Stun
-      target.takeDamage(dmg, 0, false);
-      target.setState('hurt', 0.8);
-      if (window.audioManager) window.audioManager.playChime();
-      if (window.effectManager) {
-        window.effectManager.createShockRing(target.x, target.y, '#00d2ff');
-        window.effectManager.addFloatingText('XUNG ĐIỆN EMP!', target.x, target.y - 140, 'dodge');
-      }
-    } else if (this.charId === 'dinhan') {
-      // Triệu Đình An: Chùy thép húc văng
-      target.takeDamage(dmg, this.facing * 9, true);
-      if (typeof target.setState === 'function') target.setState('knockdown', 1.4);
-      if (window.audioManager) window.audioManager.playExplosion();
-      if (window.effectManager) {
-        window.effectManager.createShockRing(target.x, target.y, '#d4a017');
-        window.effectManager.addFloatingText('XUNG KÍCH!', target.x, target.y - 140, 'crit');
-      }
-    } else if (this.charId === 'huavudai') {
-      // Hứa Vũ Đại: Đòn xô đẩy áp sát
-      target.takeDamage(dmg, this.facing * 7, false);
-      if (window.audioManager) window.audioManager.playPunchHit();
-      if (window.effectManager) {
-        window.effectManager.createHitSparks(target.x, target.y - 70, 10, false);
-        window.effectManager.addFloatingText('ĐẨY LÙI!', target.x, target.y - 140, 'heal');
-      }
-    } else {
-      // Bích Lâm: Liên hoàn cước bạt phong
-      target.takeDamage(dmg, this.facing * 5, true);
-      if (window.audioManager) window.audioManager.playPunchHit();
-      if (window.effectManager) {
-        window.effectManager.createHitSparks(target.x, target.y - 80, 12, false);
-      }
+    const isBossTarget = !!(target.isBoss || String(target.type || '').startsWith('boss_'));
+    const rawDmg = this.profile.dmg || 75;
+    const dmg = isBossTarget ? Math.max(16, Math.round(rawDmg * 0.40)) : rawDmg;
+
+    if (window.CharacterRegistry && window.CharacterRegistry.performAllyAttack(this, target, dmg, isBossTarget)) {
+      return;
+    }
+
+    target.takeDamage(dmg, isBossTarget ? 0 : this.facing * 5, !isBossTarget);
+    if (window.audioManager) window.audioManager.playPunchHit();
+    if (window.effectManager) {
+      window.effectManager.createHitSparks(target.x, target.y - 80, 12, false);
     }
   }
 
   triggerCoopAttack(player, target) {
     if (this.coopCooldown > 0 || !target || target.isDead) return;
+    if (this.isEntering) {
+      const movedManually = typeof this._lastEntryX === 'number' && Math.abs(this.x - this._lastEntryX) > 1;
+      this.finishEntry(!movedManually);
+    }
     this.coopCooldown = 8.0;
     this.state = 'coop';
     this.stateTimer = 0;
     this.stateDuration = 0.7;
 
-    // Dịch chuyển áp sát đối diện người chơi
     this.facing = -player.facing;
     this.x = target.x + player.facing * 75;
     this.y = target.y;
 
-    // Đòn song sát cực mạnh
-    const coopDmg = Math.round(180 * (player.dmgMul || 1));
-    target.takeDamage(coopDmg, 0, true);
-    if (typeof target.setState === 'function') {
-      target.setState('knockdown', 2.2);
+    const coopInfo = this.profile.coopSkill || { name: 'SONG LONG XUẤT HẢI' };
+    const isBossTarget = !!(target.isBoss || String(target.type || '').startsWith('boss_'));
+    const baseDmg = window.CharacterRegistry
+      ? window.CharacterRegistry.getAllyCoopBaseDamage(this, player, target)
+      : 240;
+
+    const effectiveBase = isBossTarget ? Math.round(baseDmg * 0.55) : baseDmg;
+    const coopDmg = Math.round(effectiveBase * (player.dmgMul || 1));
+    target.takeDamage(coopDmg, 0, !isBossTarget);
+    if (!isBossTarget && typeof target.setState === 'function') {
+      target.setState('knockdown', 2.0);
     }
 
-
-    if (window.game) window.game.hitStop = 0.12;
+    if (window.game) window.game.hitStop = 0.15;
     if (window.audioManager) {
       window.audioManager.playExplosion();
-      window.audioManager.playGong(0.6);
+      window.audioManager.playGong(0.7);
     }
     if (window.effectManager) {
-      window.effectManager.triggerFlash('#ffd700', 0.5);
-      window.effectManager.triggerScreenShake(16, 0.4);
-      window.effectManager.createShockRing(target.x, target.y, '#ffd700');
-      window.effectManager.addFloatingText('SONG LONG XUẤT HẢI!', target.x, target.y - 180, 'crit');
+      window.effectManager.triggerFlash(this.profile.roleColor || '#ffd700', 0.5);
+      window.effectManager.triggerScreenShake(18, 0.45);
+      window.effectManager.createShockRing(target.x, target.y, this.profile.roleColor || '#ffd700');
+      window.effectManager.addFloatingText(`CO-OP: ${coopInfo.name.toUpperCase()}!`, target.x, target.y - 180, 'crit');
       window.effectManager.addFloatingText(coopDmg, target.x, target.y - 130, 'crit');
     }
     if (window.uiManager) {
-      window.uiManager.showAlertBanner('CO-OP ATTACK: SONG LONG XUẤT HẢI!');
+      window.uiManager.showAlertBanner(`CO-OP TẤN CÔNG: ${coopInfo.name.toUpperCase()} (${coopDmg} DMG)!`);
     }
   }
 
   draw(ctx, camera) {
     const sx = this.x - camera.x;
-    const sy = this.y - camera.y;
+    const sy = this.y + (this.z || 0) - camera.y;
     if (sx < -100 || sx > 1280 + 100) return;
 
-    // Nhãn tên và thanh thời gian tồn tại trên đầu đồng minh
+    const isInvulnPhase = !!(this.isEntering || this.isRetreating);
+
     ctx.save();
     ctx.font = '800 11px Montserrat, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = isInvulnPhase ? '#7dd3fc' : '#ffffff';
     ctx.shadowColor = '#000';
     ctx.shadowBlur = 5;
-    ctx.fillText(`ĐỒNG MINH: ${this.profile.name.toUpperCase()}`, sx, sy - 145);
+    ctx.fillText(`ĐỒNG MINH: ${this.profile.name.toUpperCase()}${isInvulnPhase ? ' • BẤT TỬ' : ''}`, sx, sy - 146);
 
-    // Thanh thời gian tồn tại (25s)
-    const barW = 80;
-    const barH = 5;
-    const pct = Math.max(0, this.duration / this.maxDuration);
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    const barW = 86;
+    const barH = 6;
+    const hpPct = Math.max(0, Math.min(1, this.hp / this.maxHp));
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(sx - barW / 2, sy - 138, barW, barH);
-    ctx.fillStyle = '#00d2ff';
-    ctx.fillRect(sx - barW / 2, sy - 138, barW * pct, barH);
-    ctx.strokeStyle = '#ffd700';
-    ctx.lineWidth = 1;
+    ctx.fillStyle = isInvulnPhase ? '#38bdf8' : (hpPct > 0.5 ? '#10b981' : (hpPct > 0.25 ? '#f59e0b' : '#ef4444'));
+    ctx.fillRect(sx - barW / 2, sy - 138, barW * hpPct, barH);
+    ctx.strokeStyle = isInvulnPhase ? '#38bdf8' : '#ffffff';
+    ctx.lineWidth = isInvulnPhase ? 1.5 : 1;
     ctx.strokeRect(sx - barW / 2, sy - 138, barW, barH);
+
+    ctx.font = '700 9px Montserrat, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(isInvulnPhase ? '🛡️ BẤT TỬ' : `${Math.ceil(this.hp)} / ${this.maxHp} HP`, sx, sy - 128);
     ctx.restore();
   }
 }
@@ -339,18 +504,28 @@ class AllyManager {
     this.gauge = 0; // 0 - 100%
     this.maxGauge = 100;
     this.activeAlly = null;
+    this.retreatingAlly = null;
     this.cooldown = 0;
-    this.cooldownMax = 35; // 35s hồi chiêu
+    this.cooldownMax = 35;
     this.summonCooldown = 35;
     this.summonDuration = 25;
+    this._cleanupTimer = null;
   }
 
   reset() {
+    if (this._cleanupTimer) {
+      clearTimeout(this._cleanupTimer);
+      this._cleanupTimer = null;
+    }
     if (this.activeAlly) {
       if (window.effectManager) {
         window.effectManager.createDust(this.activeAlly.x, this.activeAlly.y, 10);
       }
       this.activeAlly = null;
+    }
+    this.retreatingAlly = null;
+    if (window.game && window.game.player) {
+      clearPlayerAllyBuffs(window.game.player);
     }
     this.cooldown = 0;
     this.gauge = 0;
@@ -368,39 +543,56 @@ class AllyManager {
   isAnyAllyUnlocked() {
     const save = window.saveManager;
     if (!save) return true;
-    const allies = save.data.allyAvailability || {};
-    return Object.values(allies).some(Boolean);
+    const allAllyKeys = Object.keys(ALLY_PROFILES);
+    return allAllyKeys.some((k) => save.isAllyUnlocked(k));
   }
 
-  getBestAvailableAlly() {
+  getBestAvailableAlly(excludeHeroId = null) {
+    const currentHeroId = excludeHeroId
+      || (window.game && window.game.player && (window.game.player.charId || window.game.player.characterId))
+      || (window.saveManager && window.saveManager.data && window.saveManager.data.selectedCharacter)
+      || 'nghi';
+
     const sel = this.selectedAllyId || (window.saveManager && window.saveManager.data && window.saveManager.data.selectedAlly);
     if (sel && sel !== 'auto') {
       if (sel === 'none') return null;
-      return sel;
+      if (sel !== currentHeroId && ALLY_PROFILES[sel]) {
+        return sel;
+      }
     }
 
-    // Trong Võ Đường huấn luyện: Luôn có đồng môn chi viện để người chơi tập luyện gọi viện trợ
     if (window.trainingManager && window.trainingManager.isActive) {
-      return 'bichlam';
+      return currentHeroId === 'bichlam' ? 'hoanganh' : 'bichlam';
     }
 
     const save = window.saveManager;
-    if (!save) return 'bichlam';
-    const allies = save.data.allyAvailability || {};
-    const trust = save.data.characterTrust || {};
+    if (!save) return currentHeroId === 'bichlam' ? 'hoanganh' : 'bichlam';
+    const trust = (save.data && save.data.characterTrust) || {};
 
-    if (allies.hoanganh && trust.hoanganh >= 50) return 'hoanganh';
-    if (allies.dunghai && trust.dunghai >= 40) return 'dunghai';
-    if (allies.mocdang && trust.mocdang >= 50) return 'mocdang';
-    if (allies.dinhan) return 'dinhan';
-    if (allies.huavudai) return 'huavudai';
-    if (allies.bichlam) return 'bichlam';
+    const priorityCandidates = [
+      { id: 'giangmanh', minTrust: 0 },
+      { id: 'hoanganh', minTrust: 40 },
+      { id: 'dunghai', minTrust: 30 },
+      { id: 'mocdang', minTrust: 0 },
+      { id: 'dinhan', minTrust: 0 },
+      { id: 'huavudai', minTrust: 0 },
+      { id: 'bichlam', minTrust: 0 }
+    ];
 
-    // Fallback: đồng minh nào có cờ true
-    for (const [k, v] of Object.entries(allies)) {
-      if (v) return k;
+    for (const c of priorityCandidates) {
+      if (c.id === currentHeroId) continue;
+      if (save.isAllyUnlocked(c.id) && (trust[c.id] || 0) >= c.minTrust) {
+        return c.id;
+      }
     }
-    return 'bichlam';
+
+    const allAllyKeys = Object.keys(ALLY_PROFILES);
+    for (const k of allAllyKeys) {
+      if (k === currentHeroId) continue;
+      if (save.isAllyUnlocked(k)) return k;
+    }
+
+    return currentHeroId === 'bichlam' ? 'hoanganh' : 'bichlam';
   }
 
   canSummon() {
@@ -408,13 +600,38 @@ class AllyManager {
     return !this.activeAlly && this.cooldown <= 0 && this.gauge >= this.maxGauge;
   }
 
-  summonAlly(forceCharId = null, customPlayer = null) {
-    if (this.activeAlly) {
-      if (window.uiManager) window.uiManager.showToast('ĐỒNG MINH HIỆN ĐANG CÓ MẶT TRÊN SÂN!');
+  canRecall() {
+    return !!(this.activeAlly && !this.activeAlly.isDead && (this.activeAlly.fieldTime || 0) >= (this.activeAlly.recallLockDuration || 5.0));
+  }
+
+  recallAlly(forcedExitMode = null) {
+    if (!this.activeAlly || this.activeAlly.isDead) return false;
+    const lockDur = this.activeAlly.recallLockDuration || 5.0;
+    const elapsed = this.activeAlly.fieldTime || 0;
+    if (elapsed < lockDur) {
+      const waitSec = Math.max(1, Math.ceil(lockDur - elapsed));
+      if (window.uiManager) {
+        window.uiManager.showToast(`⏳ ĐỢI ${waitSec}S NỮA MỚI THU HỒI ĐƯỢC ĐỒNG MINH!`);
+      }
+      if (window.effectManager) {
+        window.effectManager.addFloatingText(`⏳ CÒN ${waitSec}S MỚI THU VỀ ĐƯỢC!`, this.activeAlly.x, this.activeAlly.y - 155, 'stale');
+      }
       return false;
     }
+    const ally = this.activeAlly;
+    ally.retreat('recalled', forcedExitMode);
+    this.retreatingAlly = ally;
+    this.activeAlly = null;
+    this.cooldown = 12.0;
+    this.updateHUD();
+    return true;
+  }
 
-    // Trong Võ Đường: bỏ qua hồi chiêu và nạp đầy thanh chi viện để người chơi tập luyện
+  summonAlly(forceCharId = null, customPlayer = null) {
+    if (this.activeAlly) {
+      return this.recallAlly();
+    }
+
     if (window.trainingManager && window.trainingManager.isActive) {
       this.cooldown = 0;
       this.gauge = this.maxGauge;
@@ -425,20 +642,48 @@ class AllyManager {
       return false;
     }
 
-    const allyId = forceCharId || this.getBestAvailableAlly();
+    const game = window.game;
+    const player = customPlayer || (game && game.player);
+    if (!player) return false;
+
+    const currentHeroId = (player && (player.charId || player.characterId))
+      || (window.saveManager && window.saveManager.data && window.saveManager.data.selectedCharacter)
+      || 'nghi';
+
+    let allyId = forceCharId;
+    if (allyId && (allyId === currentHeroId || !ALLY_PROFILES[allyId])) {
+      allyId = null;
+    }
+    if (!allyId) {
+      allyId = this.getBestAvailableAlly(currentHeroId);
+    }
+    if (allyId === currentHeroId) {
+      allyId = this.getBestAvailableAlly(currentHeroId);
+    }
+
     if (!allyId) {
       if (window.uiManager) window.uiManager.showToast('CHƯA CÓ ĐỒNG MINH NÀO SẴN SÀNG — Hãy tiếp tục cốt truyện để kết giao!');
       return false;
     }
 
-    const game = window.game;
-    const player = customPlayer || (game && game.player);
-    if (!player) return false;
+    if (this._cleanupTimer) {
+      clearTimeout(this._cleanupTimer);
+      this._cleanupTimer = null;
+    }
 
-    // Spawn đồng minh sau lưng người chơi
-    const spawnX = player.x - (player.facing || 1) * 90;
-    const spawnY = player.y;
-    this.activeAlly = new SummonedAlly(allyId, spawnX, spawnY);
+    const stageW = window.stageManager ? window.stageManager.stageWidth : 2600;
+    const targetX = Math.max(35, Math.min(stageW - 35, player.x - (player.facing || 1) * 90));
+    const spawnY = Math.max(515, Math.min(638, player.y || 580));
+    const pFacing = (player.facing || 1) >= 0 ? 1 : -1;
+    const camX = (window.game && window.game.camera && typeof window.game.camera.x === 'number') ? window.game.camera.x : null;
+    let startX = targetX - pFacing * 240;
+    if (camX !== null) {
+      startX = pFacing > 0 ? Math.min(startX, camX - 40) : Math.max(startX, camX + 1320);
+    }
+    if (Math.abs(targetX - startX) < 160) startX = targetX - pFacing * 220;
+    if (Math.abs(targetX - startX) > 340) startX = targetX - Math.sign(targetX - startX) * 320;
+    this.activeAlly = new SummonedAlly(allyId, targetX, spawnY);
+    this.activeAlly.startEntryRun(startX, targetX, spawnY);
     this.gauge = 0;
 
     if (window.audioManager) {
@@ -447,14 +692,13 @@ class AllyManager {
     }
     if (window.effectManager) {
       window.effectManager.triggerFlash('#00d2ff', 0.4);
-      window.effectManager.createShockRing(spawnX, spawnY, '#00d2ff');
-      window.effectManager.createDust(spawnX, spawnY, 20);
+      window.effectManager.createShockRing(targetX, spawnY, '#00d2ff');
+      window.effectManager.createDust(startX, spawnY, 20);
     }
     if (window.uiManager) {
       window.uiManager.showAlertBanner(`ĐỒNG MINH XUẤT TRẬN: ${this.activeAlly.profile.name.toUpperCase()}!`);
     }
 
-    // Thông báo cho hệ thống luyện võ nếu đang tập
     if (window.trainingManager && window.trainingManager.isActive) {
       window.trainingManager.recordAction('ally_summon');
     }
@@ -477,25 +721,35 @@ class AllyManager {
     if (this.activeAlly) {
       this.activeAlly.update(dt, player, enemies);
       if (this.activeAlly.isDead) {
-        // Rời sân
         if (window.effectManager) {
           window.effectManager.createDust(this.activeAlly.x, this.activeAlly.y, 15);
         }
+        this.retreatingAlly = this.activeAlly;
         this.activeAlly = null;
-        this.cooldown = this.cooldownMax;
+        if (!this.retreatingAlly.isRetreating) {
+          this.cooldown = this.cooldownMax;
+        }
         if (window.uiManager) window.uiManager.showToast('ĐỒNG MINH ĐÃ RÚT LUI KHỎI CHIẾN TRƯỜNG!');
       }
       this.updateHUD();
     }
+
+    if (this.retreatingAlly) {
+      if (typeof this.retreatingAlly.updateRetreatAnimation === 'function') {
+        this.retreatingAlly.updateRetreatAnimation(dt);
+      }
+      if ((this.retreatingAlly.exitTimer || 0) <= 0) {
+        this.retreatingAlly = null;
+      }
+    }
   }
 
-  checkCoopTrigger(player, attackerHitbox) {
+  checkCoopTrigger(player) {
     if (!this.activeAlly || this.activeAlly.coopCooldown > 0) return false;
     const dist = Math.hypot(this.activeAlly.x - player.x, this.activeAlly.y - player.y);
 
-    // Nếu người chơi và đồng minh đứng gần nhau trong cự ly 140px và người chơi đang ra đòn nặng/combo
     if (dist < 140 && window.game && window.game.enemies) {
-      const nearest = window.game.enemies.find(e => !e.isDead && Math.hypot(e.x - player.x, e.y - player.y) < 130);
+      const nearest = window.game.enemies.find((e) => !e.isDead && Math.hypot(e.x - player.x, e.y - player.y) < 130);
       if (nearest) {
         this.activeAlly.triggerCoopAttack(player, nearest);
         return true;
@@ -504,18 +758,22 @@ class AllyManager {
     return false;
   }
 
-
   updateHUD() {
     const badge = document.getElementById('ally-ready-badge');
     if (!badge) return;
 
-    const allyId = this.getBestAvailableAlly();
+    const currentHeroId = (window.game && window.game.player && (window.game.player.charId || window.game.player.characterId))
+      || (window.saveManager && window.saveManager.data && window.saveManager.data.selectedCharacter)
+      || 'nghi';
+    const allyId = this.getBestAvailableAlly(currentHeroId);
     const allyDef = (allyId && window.CHARACTERS && window.CHARACTERS[allyId]) ? window.CHARACTERS[allyId] : null;
     const allyName = allyDef ? allyDef.name : 'ĐỒNG MINH';
 
     if (this.activeAlly) {
+      const waitSec = Math.max(0, Math.ceil((this.activeAlly.recallLockDuration || 5.0) - (this.activeAlly.fieldTime || 0)));
+      const recallHint = waitSec > 0 ? `THU VỀ SAU ${waitSec}S` : '[H] THU VỀ';
       badge.classList.remove('hidden');
-      badge.textContent = `🤝 ${this.activeAlly.profile.name.toUpperCase()} ĐANG HỖ TRỢ: ${Math.ceil(this.activeAlly.duration)}S`;
+      badge.textContent = `🤝 ${this.activeAlly.profile.name.toUpperCase()} (${Math.ceil(this.activeAlly.hp)}/${this.activeAlly.maxHp} HP) • ${recallHint}`;
       badge.className = 'ally-badge active';
     } else if (this.canSummon()) {
       badge.classList.remove('hidden');
@@ -534,9 +792,14 @@ class AllyManager {
     if (this.activeAlly) {
       this.activeAlly.draw(ctx, camera);
     }
+    if (this.retreatingAlly) {
+      this.retreatingAlly.draw(ctx, camera);
+    }
   }
 }
 
 const allyManager = new AllyManager();
+window.SummonedAlly = SummonedAlly;
 window.AllyManager = AllyManager;
 window.allyManager = allyManager;
+window.allySystem = allyManager;

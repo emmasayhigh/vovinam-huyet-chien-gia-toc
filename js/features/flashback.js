@@ -23,6 +23,7 @@ class FlashbackMission {
   }
 
   startMission() {
+    this.cancel();
     this.isActive = true;
     this.progress = 0;
     this.securityAlert = 0;
@@ -31,6 +32,9 @@ class FlashbackMission {
 
     // Cấu hình game để chuyển sang chế độ hồi ức
     if (window.game) {
+      if (typeof window.game.resetTransientModes === 'function') {
+        window.game.resetTransientModes({ keepFlashback: true });
+      }
       window.game.state = 'PLAYING';
       // Ép nhân vật chơi là Dung Hải
       window.game.player.setCharacter('dunghai');
@@ -228,6 +232,9 @@ class FlashbackMission {
 
   finishMission() {
     this.isActive = false;
+    if (window.game) {
+      window.game.state = 'STAGE_CLEAR';
+    }
     if (window.audioManager) {
       window.audioManager.stopBGM();
       window.audioManager.playVictory();
@@ -242,8 +249,10 @@ class FlashbackMission {
     }
 
     // Kết thúc và trở về Biên Niên Sử hoặc Màn Hình Chính
-    setTimeout(() => {
-      if (window.game) {
+    if (this._finishTimer) clearTimeout(this._finishTimer);
+    this._finishTimer = setTimeout(() => {
+      this._finishTimer = null;
+      if (window.game && window.game.state === 'STAGE_CLEAR') {
         window.game.state = 'MENU';
         // Khôi phục nhân vật mặc định
         const savedChar = (window.saveManager && window.saveManager.data.selectedCharacter) || 'nghi';
@@ -257,6 +266,14 @@ class FlashbackMission {
         }
       }
     }, 1500);
+  }
+
+  cancel() {
+    this.isActive = false;
+    if (this._finishTimer) {
+      clearTimeout(this._finishTimer);
+      this._finishTimer = null;
+    }
   }
 
   render(ctx, camera) {

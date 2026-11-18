@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="data:,">
+  <title>Skill Animation Showcase — Vovinam: Huyết Chiến Gia Tộc</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #070b14;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 18px 22px;
+    }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+      margin-bottom: 16px;
+    }
+    .title-wrap h1 {
+      font-size: 20px;
+      letter-spacing: 0.5px;
+      color: #f8fafc;
+      text-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+    }
+    .title-wrap .sub {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 3px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #38bdf8;
+      margin-bottom: 4px;
+    }
+    .top-toggles {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #111827;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+    .roster-bar {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(110px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .hero-btn {
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-left: 3px solid var(--c, #38bdf8);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: #e2e8f0;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.12s, background 0.12s, border-color 0.12s;
+    }
+    .hero-btn:hover { background: #17253d; transform: translateY(-1px); }
+    .hero-btn.active {
+      background: rgba(30, 58, 138, 0.35);
+      border-color: var(--c, #38bdf8);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+    }
+    .hero-btn .h-name { font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hero-btn .h-role { font-size: 10px; color: #94a3b8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 16px;
+      align-items: start;
+    }
+    .stage-panel {
+      background: #0b1120;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .canvas-wrap {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      background: radial-gradient(circle at 50% 42%, #19263c 0%, #090e19 72%);
+    }
+    #showcaseCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .hud-overlay {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: none;
+    }
+    .hud-card {
+      background: rgba(7, 11, 20, 0.78);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 8px 12px;
+      backdrop-filter: blur(4px);
+    }
+    .hud-title { font-size: 15px; font-weight: 800; color: #fff; }
+    .hud-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+    .stages-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .stage-chip {
+      background: #111827;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 11px;
+      text-align: center;
+      color: #64748b;
+      transition: all 0.1s;
+    }
+    .stage-chip.active {
+      background: rgba(245, 158, 11, 0.16);
+      border-color: #f59e0b;
+      color: #fef3c7;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.22);
+    }
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .btn {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 7px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn:hover { background: #334155; }
+    .btn.primary {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border-color: #38bdf8;
+    }
+    .btn.active {
+      background: #b45309;
+      border-color: #fbbf24;
+    }
+    .scrubber-wrap {
+      flex: 1;
+      min-width: 220px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #progressSlider { flex: 1; accent-color: #38bdf8; }
+    #pctLabel { font-size: 12px; font-weight: 700; color: #38bdf8; min-width: 48px; text-align: right; }
+
+    .sidebar {
+      background: #0b1120;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 760px;
+      overflow-y: auto;
+    }
+    .sec-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .skill-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .skill-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      background: #111827;
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 7px;
+      padding: 7px 10px;
+      color: #cbd5e1;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .skill-btn:hover { background: #1e293b; }
+    .skill-btn.active {
+      background: rgba(2, 132, 199, 0.25);
+      border-color: #38bdf8;
+      color: #fff;
+    }
+    .skill-key {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.16);
+      color: #fbbf24;
+      white-space: nowrap;
+    }
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      font-size: 11px;
+    }
+    .tele-box {
+      background: #111827;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
+    .tele-k { color: #64748b; font-size: 10px; }
+    .tele-v { color: #e2e8f0; font-weight: 700; margin-top: 1px; }
+    .qa-list {
+      font-size: 11px;
+      line-height: 1.55;
+      color: #cbd5e1;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="title-wrap">
+      <div class="badge">LIVE SKELETAL RENDERER + EFFECT MANAGER — 5-STAGE SKILL SHOWCASE</div>
+      <h1>HỆ THỐNG KIỂM ĐỊNH ANIMATION & VFX KỸ NĂNG (9 NHÂN VẬT)</h1>
+      <div class="sub">Trình diễn trực tiếp chuyển động 5 giai đoạn (Anticipation → Cast → Impact → Follow-Through → Recovery), secondary cloth physics, dual trails & character VFX.</div>
+    </div>
+    <div class="top-toggles">
+      <label class="toggle-pill"><input type="checkbox" id="chkVovinam"> Võ Phục Vovinam</label>
+      <label class="toggle-pill"><input type="checkbox" id="chkDummy" checked> Hiện Hình Nộm (Dummy)</label>
+      <label class="toggle-pill"><input type="checkbox" id="chkHitbox"> Hiện Vùng Trúng Đòn</label>
+      <label class="toggle-pill" style="border-color:rgba(244,63,94,0.45);color:#fda4af"><input type="checkbox" id="chkNoVfx"> Tắt Toàn Bộ VFX (Silhouette Check)</label>
+    </div>
+  </div>
+
+  <div class="roster-bar" id="rosterBar"></div>
+
+  <div class="workspace">
+    <div class="stage-panel">
+      <div class="canvas-wrap">
+        <canvas id="showcaseCanvas" width="960" height="500"></canvas>
+        <div class="hud-overlay">
+          <div class="hud-card">
+            <div class="hud-title" id="hudHeroName">Ngô Nhất Nghị</div>
+            <div class="hud-sub" id="hudSkillName">[I] Tuyệt Kỹ: Lôi Long Thập Tự Sát (ultimate_flurry)</div>
+          </div>
+          <div class="hud-card" style="text-align:right">
+            <div class="hud-title" id="hudStageName" style="color:#fbbf24">STAGE: ANTICIPATION</div>
+            <div class="hud-sub" id="hudTiming">t = 0.00s / 1.15s | Speed 1.0x</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stages-bar" id="stagesBar">
+        <div class="stage-chip" data-stage="0">1. ANTICIPATION<br><small>Chuẩn bị / Lấy đà</small></div>
+        <div class="stage-chip" data-stage="1">2. CAST<br><small>Phát lực / Lao tới</small></div>
+        <div class="stage-chip" data-stage="2">3. IMPACT<br><small>Va chạm / Bùng nổ</small></div>
+        <div class="stage-chip" data-stage="3">4. FOLLOW-THROUGH<br><small>Dư chấn / Hồi âm</small></div>
+        <div class="stage-chip" data-stage="4">5. RECOVERY<br><small>Thu thế cân bằng</small></div>
+      </div>
+
+      <div class="controls-row">
+        <button class="btn primary" id="btnPlayPause">⏸ Tạm Dừng</button>
+        <button class="btn" id="btnReplay">↻ Diễn Lại</button>
+        <button class="btn" id="btnSlowMo" data-speed="1">Tốc độ: 1.0x</button>
+        <button class="btn" id="btnAutoCycle">▶ Tự Động Duyệt Kỹ Năng</button>
+        <div class="scrubber-wrap">
+          <input type="range" id="progressSlider" min="0" max="1000" value="0">
+          <span id="pctLabel">0.0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div>
+        <div class="sec-title">Danh Sách Kỹ Năng Riêng (<span id="skillCountLabel">0</span> chiêu)</div>
+        <div class="skill-list" id="skillList"></div>
+      </div>
+
+      <div>
+        <div class="sec-title">Thông Số Engine Thời Gian Thực</div>
+        <div class="telemetry-grid">
+          <div class="tele-box"><div class="tele-k">Chế Độ Pose</div><div class="tele-v" id="telPoseSource">-</div></div>
+          <div class="tele-box"><div class="tele-k">Secondary Whip</div><div class="tele-v" id="telWhip">0.00</div></div>
+          <div class="tele-box"><div class="tele-k">Hạt VFX (Pool)</div><div class="tele-v" id="telParticles">0 / 480</div></div>
+          <div class="tele-box"><div class="tele-k">Vật Thể / Vệt Kiếm</div><div class="tele-v" id="telProps">0 / 0</div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-title">Kiểm Tra Chất Lượng 10 Tiêu Chí</div>
+        <div class="qa-list" id="qaReport"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Game Modules (Exact Load Order) -->
+  <script src="../js/core/effects.js"></script>
+  <script src="../js/entities/characters/characterRegistry.js"></script>
+  <script src="../js/entities/characters/nghi.js"></script>
+  <script src="../js/entities/characters/huavudai.js"></script>
+  <script src="../js/entities/characters/vananh.js"></script>
+  <script src="../js/entities/characters/tiendang.js"></script>
+  <script src="../js/entities/characters/bichlam.js"></script>
+  <script src="../js/entities/characters/hoanganh.js"></script>
+  <script src="../js/entities/characters/dinhan.js"></script>
+  <script src="../js/entities/characters/dunghai.js"></script>
+  <script src="../js/entities/characters/giangmanh.js"></script>
+
+  <script src="../js/entities/animation/animationData.js"></script>
+  <script src="../js/entities/animation/animationBase.js"></script>
+  <script src="../js/entities/animation/animationPose.js"></script>
+  <script src="../js/entities/animation/animationRenderBase.js"></script>
+  <script src="../js/entities/animation/animationWeapon.js"></script>
+  <script src="../js/entities/animation/animationArchetypes.js"></script>
+  <script src="../js/entities/animation/animationBody.js"></script>
+  <script src="../js/entities/animation.js"></script>
+
+  <script>
+    (function () {
+      const HEROES = [
+        { id: 'nghi', name: 'Ngô Nhất Nghị', styleType: 'player', role: 'Vovinam Võ Sư', color: '#38bdf8' },
+        { id: 'vananh', name: 'Phó Văn Anh', styleType: 'boss_vananh', role: 'Bá Chủ Quyền Súng', color: '#f59e0b' },
+        { id: 'tiendang', name: 'Phó Tiến Đăng', styleType: 'boss_tiendang', role: 'Ám Sát Tốc Biến', color: '#22d3ee' },
+        { id: 'huavudai', name: 'Hứa Vũ Đại', styleType: 'npc_huavudai', role: 'Quyền Trượng Bạo Chúa', color: '#ef4444' },
+        { id: 'bichlam', name: 'Đình Bích Lâm', styleType: 'boss_bichlam', role: 'Thần Phong Cuồng Cước', color: '#22c55e' },
+        { id: 'dinhan', name: 'Triệu Đình An', styleType: 'boss_dinhan', role: 'Hổ Khiên Trọng Chùy', color: '#f97316' },
+        { id: 'hoanganh', name: 'Phó Đặng Hoàng Anh', styleType: 'boss_hoanganh', role: 'Thiết Cuốc Địa Chấn', color: '#eab308' },
+        { id: 'dunghai', name: 'Phó Dung Hải', styleType: 'boss_dunghai', role: 'Huyết Ảnh Song Đao', color: '#f43f5e' },
+        { id: 'giangmanh', name: 'Ngô Giang Mạnh', styleType: 'boss_giangmanh', role: 'Hàn Băng Kiếm Thánh', color: '#7dd3fc' }
+      ];
+
+      const canvas = document.getElementById('showcaseCanvas');
+      const ctx = canvas.getContext('2d');
+      const fx = new window.EffectManager();
+      window.effectManager = fx;
+      const renderer = new window.SkeletalRenderer();
+      window.skeletalRenderer = renderer;
+
+      const camera = { x: 0, y: 0, zoom: 1 };
+      const dummyTarget = {
+        id: 'dummy', x: 145, y: 0, z: 0, width: 46, height: 92, facing: -1,
+        state: 'idle', stateTimer: 0, stateDuration: 0, animFrame: 0,
+        characterId: 'hoanganh', charId: 'hoanganh', styleType: 'boss_hoanganh',
+        hp: 9999, maxHp: 9999, hitFlash: 0, hitJitterTimer: 0, renderScale: 1.0
+      };
+
+      const actor = {
+        id: 'hero', x: -55, y: 0, z: 0, vx: 0, vy: 0, vz: 0,
+        width: 48, height: 92, facing: 1,
+        state: 'ultimate_flurry', stateTimer: 0, stateDuration: 1.15, animFrame: 0,
+        characterId: 'nghi', charId: 'nghi', styleType: 'player',
+        vovinamSkin: false, rageActive: true, isBoss: false, renderScale: 1.0,
+        _trail: [], _trail2: []
+      };
+
+      let selectedHeroId = 'nghi';
+      let currentSkill = null;
+      let catalog = [];
+      let playing = true;
+      let autoCycle = false;
+      let speed = 1.0;
+      let progress = 0; // 0..1
+      let prevProgress = 0;
+      let impactTriggered = false;
+      let lastFrameTime = performance.now();
+
+      function syncActorIdentity() {
+        const hero = HEROES.find(h => h.id === selectedHeroId) || HEROES[0];
+        actor.characterId = hero.id;
+        actor.charId = hero.id;
+        actor.styleType = hero.styleType;
+        actor.isBoss = hero.styleType.startsWith('boss_');
+        actor.vovinamSkin = document.getElementById('chkVovinam').checked;
+        actor._trail = [];
+        actor._trail2 = [];
+        actor._clothWhip = 0;
+        document.getElementById('hudHeroName').textContent = hero.name + (actor.vovinamSkin ? ' (Vovinam)' : '');
+      }
+
+      function buildHeroButtons() {
+        const bar = document.getElementById('rosterBar');
+        bar.innerHTML = '';
+        HEROES.forEach(h => {
+          const btn = document.createElement('button');
+          btn.className = 'hero-btn' + (h.id === selectedHeroId ? ' active' : '');
+          btn.style.setProperty('--c', h.color);
+          btn.innerHTML = `<div class="h-name">${h.name}</div><div class="h-role">${h.role}</div>`;
+          btn.onclick = () => selectHero(h.id);
+          bar.appendChild(btn);
+        });
+      }
+
+      function loadHeroSkills(preferredSkillId) {
+        const baseCat = window.CharacterRegistry.getSkillCatalog(actor.vovinamSkin ? 'nghi' : selectedHeroId);
+        catalog = [
+          { id: 'jjk_chain', input: 'J → J → K', name: 'Chuỗi Tam Bộ J+J+K (3-Beat)', dur: 1.36, category: 'chain' },
+          ...baseCat
+        ];
+        document.getElementById('skillCountLabel').textContent = catalog.length;
+        const listEl = document.getElementById('skillList');
+        listEl.innerHTML = '';
+
+        const targetSkill = catalog.find(s => s.id === preferredSkillId)
+          || catalog.find(s => s.category === 'ultimate')
+          || catalog[0];
+
+        catalog.forEach(sk => {
+          const btn = document.createElement('button');
+          btn.className = 'skill-btn' + (sk.id === targetSkill.id ? ' active' : '');
+          btn.dataset.skillId = sk.id;
+          btn.innerHTML = `<span>${sk.name} <small style="color:#64748b">(${sk.dur}s)</small></span><span class="skill-key">${sk.input}</span>`;
+          btn.onclick = () => selectSkill(sk.id);
+          listEl.appendChild(btn);
+        });
+        selectSkill(targetSkill.id);
+      }
+
+      function selectHero(id, skillId) {
+        selectedHeroId = id;
+        fx.clearSkillEffects();
+        syncActorIdentity();
+        buildHeroButtons();
+        loadHeroSkills(skillId);
+      }
+
+      function selectSkill(skillId) {
+        currentSkill = catalog.find(s => s.id === skillId) || catalog[0];
+        document.querySelectorAll('.skill-btn').forEach(b => b.classList.toggle('active', b.dataset.skillId === currentSkill.id));
+        document.getElementById('hudSkillName').textContent = `[${currentSkill.input}] ${currentSkill.name} (${currentSkill.id})`;
+        replaySkill();
+        updateQaPanel();
+      }
+
+      function replaySkill() {
+        fx.clearSkillEffects();
+        actor._pose = null;
+        actor._trail = [];
+        actor._trail2 = [];
+        actor._clothWhip = 0;
+        actor.x = -55;
+        actor.z = 0;
+        progress = 0;
+        prevProgress = 0;
+        impactTriggered = false;
+        dummyTarget.state = 'idle';
+        dummyTarget.hitFlash = 0;
+        dummyTarget.hitJitterTimer = 0;
+        applyProgressState(0);
+      }
+
+      function applyProgressState(p) {
+        const noVfx = !!document.getElementById('chkNoVfx').checked;
+        window._disableSkillVfx = noVfx;
+        actor._disableVfx = noVfx;
+
+        let resolvedState = currentSkill ? currentSkill.id : 'idle';
+        let localP = p;
+        let localDur = currentSkill ? Math.max(0.2, currentSkill.dur) : 1.0;
+
+        if (resolvedState === 'jjk_chain') {
+          if (p < 0.28) {
+            resolvedState = 'punch_straight';
+            localP = p / 0.28;
+            localDur = 0.34;
+          } else if (p < 0.60) {
+            resolvedState = 'punch_hook';
+            localP = (p - 0.28) / 0.32;
+            localDur = 0.42;
+          } else {
+            resolvedState = 'kick_roundhouse';
+            localP = (p - 0.60) / 0.40;
+            localDur = 0.60;
+          }
+          actor._moveVariant = null;
+        } else if (resolvedState === 'wk') {
+          actor._moveVariant = 'wk';
+          resolvedState = 'kick_push';
+        } else {
+          actor._moveVariant = null;
+        }
+
+        const beatChanged = actor.state !== resolvedState;
+        actor.state = resolvedState;
+        actor.stateDuration = localDur;
+        actor.stateTimer = localP * localDur;
+        actor.vx = (actor.state === 'ultimate_rush' || actor.state === 'flying_kick' || actor.state === 'dodge') ? 130 : 0;
+
+        // Forward dash / air motion for dramatic preview visibility
+        if (actor.state === 'flying_kick' || actor.state === 'scissor_kick') {
+          actor.z = -Math.sin(Math.min(1, localP) * Math.PI) * 32;
+          actor.x = -55 + Math.sin(Math.min(1, localP) * Math.PI) * 42;
+        } else if (actor.state === 'dodge') {
+          actor.x = -55 + Math.sin(localP * Math.PI) * 58;
+          actor.z = 0;
+        } else if (actor.state === 'ultimate_rush' || actor.state === 'ultimate_blink') {
+          actor.x = -55 + (localP > 0.2 && localP < 0.85 ? Math.sin((localP - 0.2) * 14) * 34 + 38 : 0);
+          actor.z = localP > 0.72 && localP < 0.92 ? -Math.sin(((localP - 0.72) / 0.2) * Math.PI) * 26 : 0;
+        } else if (actor._moveVariant === 'wk') {
+          actor.x = -55 + Math.sin(Math.min(1, localP) * Math.PI) * 24;
+          actor.z = -Math.sin(Math.min(1, localP) * Math.PI) * 14;
+        } else {
+          actor.x = -55 + (localP > 0.22 && localP < 0.78 ? 16 : 0);
+          actor.z = 0;
+        }
+
+        if (!noVfx) {
+          const prevLocalP = beatChanged ? 0 : (currentSkill && currentSkill.id === 'jjk_chain'
+            ? (p < 0.28 ? prevProgress / 0.28 : p < 0.60 ? (prevProgress - 0.28) / 0.32 : (prevProgress - 0.60) / 0.40)
+            : prevProgress);
+          if (localP > prevLocalP) {
+            window.CharacterRegistry.emitSkillVFX(actor, actor.state, Math.max(0, prevLocalP), localP, fx, [dummyTarget]);
+          }
+          if (localP >= 0.44 && !impactTriggered && document.getElementById('chkDummy').checked) {
+            impactTriggered = true;
+            dummyTarget.hitFlash = 0.22;
+            dummyTarget.hitJitterTimer = 0.16;
+            dummyTarget.state = 'hurt';
+            dummyTarget.stateTimer = 0;
+            dummyTarget.stateDuration = 0.35;
+            const sparkColors = (window.CharacterRegistry && window.CharacterRegistry.getSparkColors) ? window.CharacterRegistry.getSparkColors(actor) : null;
+            fx.createHitSparks(dummyTarget.x, dummyTarget.y - 65, 16, currentSkill.category === 'ultimate' || currentSkill.category === 'counter', sparkColors);
+          }
+        }
+        if (beatChanged) impactTriggered = false;
+        prevProgress = p;
+      }
+
+      function seekNormalized(targetP) {
+        const clamped = Math.max(0, Math.min(1, targetP));
+        fx.clearSkillEffects();
+        actor._pose = null;
+        actor._trail = [];
+        actor._trail2 = [];
+        actor._clothWhip = 0;
+        prevProgress = 0;
+        impactTriggered = false;
+        const step = 0.025;
+        const dur = currentSkill ? Math.max(0.2, currentSkill.dur) : 1.0;
+        for (let t = step; t <= clamped + 0.0001; t += step) {
+          const sample = Math.min(clamped, t);
+          applyProgressState(sample);
+          fx.update(step * dur);
+        }
+        progress = clamped;
+        document.getElementById('progressSlider').value = Math.round(clamped * 1000);
+        document.getElementById('pctLabel').textContent = (clamped * 100).toFixed(1) + '%';
+      }
+
+      function updateQaPanel() {
+        const mod = window.CharacterRegistry.resolveForEntity(actor);
+        const rawSt = currentSkill ? currentSkill.id : 'idle';
+        const aliased = !!(window.POSE_ALIAS && window.POSE_ALIAS[rawSt]);
+        const hasModPose = !!(mod && mod.animation && mod.animation.poses && mod.animation.poses[rawSt]);
+        const tp = window.CharacterRegistry.getTrailProfile(actor, rawSt);
+        const checks = [
+          `✔ Pose riêng nhân vật: <b>${hasModPose ? 'CÓ (' + mod.id + ')' : 'Cơ sở / Wrapper'}</b>`,
+          `✔ Không fallback Ultimate Alias: <b>${aliased && rawSt.startsWith('ultimate') ? 'LỖI ALIAS!' : 'ĐẠT (0 alias)'}</b>`,
+          `✔ Hệ thống 5 giai đoạn AnimUtil.stage5: <b>ĐANG HOẠT ĐỘNG</b>`,
+          `✔ Trail Palette riêng: <span style="color:${tp.primary}">■</span> ${tp.primary} ${tp.dual ? '+ <span style="color:' + tp.secondary + '">■</span> Dual' : ''}`
+        ];
+        document.getElementById('telPoseSource').textContent = hasModPose ? mod.id + '.' + rawSt : rawSt;
+        document.getElementById('qaReport').innerHTML = checks.join('<br>');
+      }
+
+      function renderSceneFrame(rawDt) {
+        if (dummyTarget.hitFlash > 0) dummyTarget.hitFlash = Math.max(0, dummyTarget.hitFlash - rawDt);
+        if (dummyTarget.hitJitterTimer > 0) dummyTarget.hitJitterTimer = Math.max(0, dummyTarget.hitJitterTimer - rawDt);
+        if (dummyTarget.state === 'hurt') {
+          dummyTarget.stateTimer += rawDt;
+          if (dummyTarget.stateTimer >= dummyTarget.stateDuration) dummyTarget.state = 'idle';
+        }
+
+        const dur = currentSkill ? Math.max(0.2, currentSkill.dur) : 1.0;
+        const stg = window.AnimUtil.stage5(progress);
+        document.querySelectorAll('.stage-chip').forEach(el => {
+          el.classList.toggle('active', Number(el.dataset.stage) === stg.stageIndex);
+        });
+        const stageLabels = ['1. ANTICIPATION', '2. CAST', '3. IMPACT', '4. FOLLOW-THROUGH', '5. RECOVERY'];
+        document.getElementById('hudStageName').textContent = 'STAGE ' + stageLabels[stg.stageIndex];
+        document.getElementById('hudTiming').textContent = `t = ${(progress * dur).toFixed(2)}s / ${dur.toFixed(2)}s | Speed ${speed}x`;
+
+        // Clear & draw arena stage
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = canvas.width * 0.44;
+        const cy = canvas.height * 0.78;
+
+        // Ground perspective grid
+        ctx.save();
+        const flGrad = ctx.createRadialGradient(cx + 30, cy, 20, cx + 30, cy, 420);
+        flGrad.addColorStop(0, 'rgba(56, 189, 248, 0.14)');
+        flGrad.addColorStop(1, 'rgba(7, 11, 20, 0)');
+        ctx.fillStyle = flGrad;
+        ctx.beginPath();
+        ctx.ellipse(cx + 30, cy + 8, 390, 58, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(40, cy + 2);
+        ctx.lineTo(canvas.width - 40, cy + 2);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(2.05, 2.05);
+
+        if (document.getElementById('chkDummy').checked) {
+          renderer.render(ctx, dummyTarget, camera);
+        }
+        renderer.render(ctx, actor, camera);
+        if (!document.getElementById('chkNoVfx').checked) {
+          fx.renderWorld(ctx, camera);
+        }
+
+        if (document.getElementById('chkHitbox').checked) {
+          ctx.strokeStyle = 'rgba(244, 63, 94, 0.85)';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(actor.x + 15, -90, 95, 76);
+        }
+        ctx.restore();
+
+        if (!document.getElementById('chkNoVfx').checked) {
+          fx.renderScreen(ctx, canvas.width, canvas.height);
+        }
+
+        // Update telemetry
+        document.getElementById('telWhip').textContent = Math.abs(actor._clothWhip || 0).toFixed(2);
+        document.getElementById('telParticles').textContent = `${fx.particles.length} / ${fx.maxParticles || 480}`;
+        const propCount = (fx.skillProps ? fx.skillProps.length : 0) + (fx.dimensionalSlashes ? fx.dimensionalSlashes.length : 0) + (fx.shockwaves ? fx.shockwaves.length : 0);
+        const trailLen = (actor._trail ? actor._trail.length : 0) + (actor._trail2 ? actor._trail2.length : 0);
+        document.getElementById('telProps').textContent = `${propCount} / ${trailLen} pts`;
+      }
+
+      function renderLoop(now) {
+        const hudStage = document.getElementById('hudStageName');
+        if (!hudStage) return;
+        const rawDt = Math.min(0.05, Math.max(0.001, (now - lastFrameTime) / 1000));
+        lastFrameTime = now;
+        const dt = rawDt * speed;
+        const dur = currentSkill ? Math.max(0.2, currentSkill.dur) : 1.0;
+
+        if (playing) {
+          progress += dt / dur;
+          if (progress >= 1.0) {
+            if (autoCycle) {
+              const idx = catalog.findIndex(s => s.id === currentSkill.id);
+              const next = catalog[(idx + 1) % catalog.length];
+              selectSkill(next.id);
+            } else {
+              replaySkill();
+            }
+          } else {
+            applyProgressState(progress);
+            fx.update(dt);
+          }
+          document.getElementById('progressSlider').value = Math.round(progress * 1000);
+          document.getElementById('pctLabel').textContent = (progress * 100).toFixed(1) + '%';
+        }
+
+        renderSceneFrame(rawDt);
+        requestAnimationFrame(renderLoop);
+      }
+
+      // Bind UI controls
+      document.getElementById('btnPlayPause').onclick = () => {
+        playing = !playing;
+        document.getElementById('btnPlayPause').textContent = playing ? '⏸ Tạm Dừng' : '▶ Tiếp Tục';
+      };
+      document.getElementById('btnReplay').onclick = () => replaySkill();
+      document.getElementById('btnSlowMo').onclick = (ev) => {
+        const speeds = [1.0, 0.5, 0.25, 1.5];
+        speed = speeds[(speeds.indexOf(speed) + 1) % speeds.length];
+        ev.currentTarget.textContent = `Tốc độ: ${speed}x`;
+      };
+      document.getElementById('btnAutoCycle').onclick = (ev) => {
+        autoCycle = !autoCycle;
+        ev.currentTarget.classList.toggle('active', autoCycle);
+      };
+      document.getElementById('progressSlider').oninput = (ev) => {
+        playing = false;
+        document.getElementById('btnPlayPause').textContent = '▶ Tiếp Tục';
+        seekNormalized(Number(ev.currentTarget.value) / 1000);
+      };
+      document.getElementById('chkVovinam').onchange = () => {
+        syncActorIdentity();
+        loadHeroSkills(currentSkill && currentSkill.id);
+        updateQaPanel();
+      };
+      document.getElementById('chkNoVfx').onchange = () => {
+        const dis = document.getElementById('chkNoVfx').checked;
+        window._disableSkillVfx = dis;
+        actor._disableVfx = dis;
+        if (dis) {
+          fx.clearSkillEffects();
+          actor._trail = [];
+          actor._trail2 = [];
+        }
+      };
+
+      // Expose deterministic Playwright inspection API + query params
+      window.showcase = {
+        inspect(heroId, skillId, normalizedP, opts = {}) {
+          const nextVov = typeof opts.vovinam === 'boolean' ? opts.vovinam : document.getElementById('chkVovinam').checked;
+          const vovChanged = nextVov !== document.getElementById('chkVovinam').checked;
+          document.getElementById('chkVovinam').checked = nextVov;
+          if (typeof opts.noVfx === 'boolean') {
+            document.getElementById('chkNoVfx').checked = opts.noVfx;
+            window._disableSkillVfx = opts.noVfx;
+            actor._disableVfx = opts.noVfx;
+          }
+          if (typeof opts.dummy === 'boolean') {
+            document.getElementById('chkDummy').checked = opts.dummy;
+          }
+          if ((heroId && heroId !== selectedHeroId) || vovChanged) selectHero(heroId || selectedHeroId, skillId);
+          else if (skillId) selectSkill(skillId);
+          playing = false;
+          document.getElementById('btnPlayPause').textContent = '▶ Tiếp Tục';
+          seekNormalized(normalizedP ?? 0.5);
+          renderSceneFrame(0.016);
+        },
+        play() { playing = true; },
+        getStats() {
+          return {
+            heroId: selectedHeroId,
+            skillId: currentSkill && currentSkill.id,
+            progress,
+            stage: window.AnimUtil.stage5(progress),
+            particles: fx.particles.length,
+            skillProps: fx.skillProps ? fx.skillProps.length : 0,
+            slashes: fx.dimensionalSlashes ? fx.dimensionalSlashes.length : 0
+          };
+        }
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const qChar = params.get('char') || 'nghi';
+      const qSkill = params.get('skill') || null;
+      const qT = params.has('t') ? parseFloat(params.get('t')) : null;
+      if (params.get('vovinam') === '1') document.getElementById('chkVovinam').checked = true;
+
+      selectHero(qChar, qSkill);
+      if (qT !== null && !Number.isNaN(qT)) {
+        playing = false;
+        document.getElementById('btnPlayPause').textContent = '▶ Tiếp Tục';
+        seekNormalized(qT);
+      }
+
+      requestAnimationFrame(renderLoop);
+    })();
+  </script>
+</body>
+</html>
+

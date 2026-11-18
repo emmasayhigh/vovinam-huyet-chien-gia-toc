@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-20261107-VOVINAM-SKIN-SKILLS",
+  "title": "Ẩn Thanh Trang Phục Nổi & Kế Thừa Bộ Kỹ Năng Ngô Nhất Nghị Khi Mặc Võ Phục Vovinam",
+  "author": "Antigravity Senior Architect",
+  "date": "2026-11-07",
+  "objective": "Ẩn thanh chọn trang phục nổi (.cs-wardrobe-bar) vướng víu dưới chân nhân vật ở màn hình chọn tướng, đồng thời nâng cấp logic chiến đấu: bất kỳ nhân vật nào khi trang bị Võ Phục Vovinam (Lam Võ Phục) sẽ tự động kế thừa và sử dụng trọn vẹn bộ chiêu thức, thế võ, đòn chân kẹp cổ W+K, phản đòn và tuyệt kỹ Long Hổ Xuất Sơn của Ngô Nhất Nghị.",
+  "requestedBehavior": "1. Ẩn thanh .cs-wardrobe-bar trong màn hình chọn nhân vật (người chơi chọn trang phục qua Tab TRANG PHỤC hoặc modal xuất trận). 2. Khi nhân vật mặc Võ Phục Vovinam, CharacterRegistry và PlayerBase tự động chuyển toàn bộ cơ chế chiến đấu sang chuẩn Vovinam của Ngô Nhất Nghị (đòn chân kẹp scissor_kick, tuyệt kỹ ultimate_flurry Long Hổ Xuất Sơn, nội tại Cương Nhu Phối Triển & Bất Khuất Thân Pháp). 3. Khi mặc trang phục mặc định, nhân vật giữ nguyên phong cách cá nhân.",
+  "allowedFiles": [
+    "css/menu.css",
+    "js/entities/characters/characterRegistry.js",
+    "js/entities/player/playerBase.js",
+    "js/entities/player/playerInput.js",
+    "js/ui/menu/charselect/charSelectCore.js",
+    "js/ui/menu/charselect/charSelectDeployment.js",
+    "tests/test_vovinam_skin_skills.js",
+    "tasks/TASK-VOVINAM-SKIN-SKILLS.json",
+    "docs/FEATURE_REGISTRY.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-CMB-001"
+  ],
+  "dependencies": [
+    "CharacterRegistry",
+    "PlayerBase",
+    "SaveManager",
+    "MenuManagerCharSelectCore"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 40,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "tests/test_combat.js",
+    "tests/test_vovinam_skin_skills.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "Thanh .cs-wardrobe-bar được ẩn sạch sẽ khỏi khu vực biểu diễn võ đài",
+    "Khi mặc Võ Phục Vovinam, bất kỳ nhân vật nào cũng tung được đòn chân kẹp scissor_kick và tuyệt kỹ Long Hổ Xuất Sơn",
+    "Khi mặc trang phục mặc định, nhân vật giữ nguyên 100% đòn đánh cá nhân ban đầu",
+    "Tất cả 19 test suite gốc và test skin mới đều PASS 100%",
+    "Pre-commit quality gate exit code 0"
+  ]
+}

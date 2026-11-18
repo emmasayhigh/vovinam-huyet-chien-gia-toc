@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-20261115-UI-OVERHAUL-3",
+  "title": "UI System Overhaul 3.0 — Performance Foundation, Võ Đường, Settings, Kho Đồ & Unified Motion",
+  "author": "Antigravity Senior UI/UX & Frontend Performance Architect",
+  "date": "2026-11-15",
+  "objective": "Khắc phục triệt để giật lag GUI, lỗi đè chữ trong Võ Đường (#training-mode-modal), lỗi z-index keybindings, thiếu tổ chức ở Cài Đặt (#settings-modal) và biến Kho Đồ (#skills-equip-modal) thành màn hình trang bị & bộ sưu tập thực thụ, đồng bộ hệ thống animation và tối ưu hiệu năng toàn cục.",
+  "requestedBehavior": "1. Tối ưu rAF scheduler, xóa trùng lặp listener, cache DOM & pre-decode ảnh chân dung, giảm mạnh backdrop-filter blur. 2. Thiết kế lại Võ Đường (#training-mode-modal) & tinh gọn #char-select-modal sạch đẹp, không đè chữ, phông nền võ đường tách bạch. 3. Thiết kế lại Cài Đặt (#settings-modal) theo nhóm rõ ràng + sửa triệt để #keybindings-modal z-index & listener cleanup. 4. Thiết kế lại Kho Đồ (#skills-equip-modal) thành studio Trang Bị Võ Phục / Vũ Khí / Chiêu Thức / Thành Tựu dùng dữ liệu thật 100%. 5. Hệ thống transition/animation thống nhất hỗ trợ prefers-reduced-motion.",
+  "allowedFiles": [
+    "index.html",
+    "css/base.css",
+    "css/menu.css",
+    "css/char-select.css",
+    "css/modals-chronicles.css",
+    "css/training.css",
+    "css/ui-overhaul.css",
+    "js/ui/uiCore.js",
+    "js/ui/ui.js",
+    "js/ui/menu/menuBase.js",
+    "js/ui/menu/charselect/charSelectCore.js",
+    "js/ui/menu/charselect/charSelectDemo.js",
+    "js/ui/menu/collections.js",
+    "js/ui/menu/settings.js",
+    "js/ui/training/trainingManagerOverlay.js",
+    "js/core/gameBase.js",
+    "js/core/main.js",
+    "tests/test_ui_overhaul_3.js",
+    "docs/BASELINE_REPORT.md",
+    "docs/FEATURE_REGISTRY.md",
+    "tasks/TASK-UI-OVERHAUL-3.json"
+  ],
+  "relatedFeatures": [
+    "FEAT-UI-001",
+    "FEAT-UI-002",
+    "FEAT-TRN-001",
+    "FEAT-CHR-001"
+  ],
+  "dependencies": [
+    "UICore",
+    "UIManager",
+    "MenuManager",
+    "TrainingManager",
+    "SaveManager",
+    "WeaponSystem"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 900,
+    "authorizedRemovals": [
+      {
+        "name": "duplicate menu bindings cleanup in main.js and unused CSS/markup replaced in overhaul",
+        "file": "index.html"
+      }
+    ]
+  },
+  "requiredTests": [
+    "tests/test_ui_overhaul_3.js",
+    "tests/test_ally_select_screen.js",
+    "tests/test_campaign_and_ally_ui.js",
+    "tests/test_char_select_passives_and_ally_title.js",
+    "tests/test_v5_features.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "Võ Đường (#training-mode-modal) có bố cục sạch, card không đè text, phông nền tách bạch, đổi tướng & mở/đóng mượt mà",
+    "Hết hoàn toàn rAF chạy ngầm dư thừa khi đang mở modal, giảm số backdrop-filter xuống <= 4 phần tử đang hiển thị",
+    "Settings (#settings-modal) & Keybindings (#keybindings-modal) phân nhóm hiện đại, Keybindings mở nổi đúng lớp và không rò rỉ listener",
+    "Kho Đồ (#skills-equip-modal) hiển thị trang bị Võ Phục thật, thông số Vũ Khí thật từ WEAPON_DEFS, Chiêu Thức và Thành Tựu/Hồ Sơ",
+    "24+ bộ test regression pass 100% và headless Chromium smoke + benchmark đạt cải thiện rõ rệt với 0 console error"
+  ]
+}
+

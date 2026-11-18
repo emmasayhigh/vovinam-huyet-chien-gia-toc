@@ -173,7 +173,12 @@ class TutorialManagerBase {
   isTutorialNeeded() {
     const save = window.saveManager;
     if (!save || !save.data) return false;
-    return (!save.data.tutorialCompleted && !save.data.tutorialSkipped);
+    if (typeof save.isTutorialNeeded === 'function') {
+      return save.isTutorialNeeded();
+    }
+    if (save.data.tutorialCompleted || save.data.tutorialSkipped) return false;
+    if (save.data.completedStages && save.data.completedStages.length > 0) return false;
+    return true;
   }
 
   /**
@@ -202,6 +207,14 @@ class TutorialManagerBase {
       if (window.effectManager) {
         window.effectManager.isRaining = false;
         window.effectManager.rainDrops = [];
+        window.effectManager.particles = [];
+        window.effectManager.floatingTexts = [];
+      }
+      if (window.propSystem) {
+        window.propSystem.props = [];
+      }
+      if (window.weaponSystem) {
+        window.weaponSystem.reset(game.player);
       }
 
       game.state = 'TUTORIAL';
@@ -244,21 +257,12 @@ class TutorialManagerBase {
   }
 
   /**
-   * Kích hoạt gợi ý tân thủ ngay trong trận đấu thực chiến Màn 1
+   * Không chèn giao diện khảo hạch võ đường đè lên màn chiến dịch thực tế
    */
   startIngameTutorial() {
-    this.isActive = true;
-    this.isIngame = true;
-    this.currentStepIndex = 0;
-    this.stepProgress = 0;
-    this.autoStepTimer = 0;
-
-    this.showOverlay();
-    this.setupStep(0);
-
-    if (window.audioManager && typeof window.audioManager.playSkill === 'function') {
-      window.audioManager.playSkill();
-    }
+    this.isActive = false;
+    this.isIngame = false;
+    this.hideOverlay();
   }
 
   setupStep(index) {

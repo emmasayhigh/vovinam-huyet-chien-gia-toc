@@ -18,18 +18,26 @@ class GameCamera extends window.GameWave {
   }
 
   updateCamera(dt) {
+    if (!this.player) return;
+    if (!Number.isFinite(this.player.x)) this.player.x = (this.arenaLocked ? this.arenaMinX + 120 : 200);
+    if (!Number.isFinite(this.player.y)) this.player.y = 575;
+    if (!Number.isFinite(this.camera.x)) this.camera.x = Math.max(0, this.player.x - this.width * 0.4);
+    if (!Number.isFinite(this.camera.y)) this.camera.y = 0;
+
     // Look-Ahead mượt theo hướng nhìn & căn khung hình đối kháng khi đấu Boss (DUEL)
     const facing = (this.player && this.player.facing) ? this.player.facing : 1;
     const lookAheadOffset = facing > 0 ? this.width * 0.36 : this.width * 0.44;
     let targetCameraX = this.player.x - lookAheadOffset;
 
-    if (this.combatMode === 'DUEL' && this.currentBoss && !this.currentBoss.isDead) {
+    if (this.combatMode === 'DUEL' && this.currentBoss && !this.currentBoss.isDead && Number.isFinite(this.currentBoss.x)) {
       const midX = (this.player.x * 0.65 + this.currentBoss.x * 0.35);
       targetCameraX = midX - this.width * 0.42;
     }
 
-    // Lerp mượt mà
-    this.camera.x += (targetCameraX - this.camera.x) * 6.5 * dt;
+    if (Number.isFinite(targetCameraX)) {
+      // Lerp mượt mà
+      this.camera.x += (targetCameraX - this.camera.x) * 6.5 * dt;
+    }
 
     if (this.camPunchTimer > 0) {
       this.camPunchTimer = Math.max(0, this.camPunchTimer - dt);

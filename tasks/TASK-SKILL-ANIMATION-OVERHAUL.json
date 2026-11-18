@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-SKILL-ANIMATION-OVERHAUL",
+  "title": "Complete Character Skill Animation Overhaul & Per-Fighter Choreography (9 Playable Characters)",
+  "author": "Antigravity Senior Game Animator & Canvas Rendering Engineer",
+  "date": "2026-11-13",
+  "objective": "Eliminate shared template animations across all 9 playable characters by introducing a 5-stage skill choreography engine (Anticipation -> Cast -> Impact -> Follow-Through -> Recovery), per-character weapon/martial-style attack/counter/dodge/finisher/ultimate poses, damped secondary motion, and deterministic character-signature Canvas VFX without altering combat rules, stats, hitboxes, or state IDs.",
+  "requestedBehavior": "1. Multi-stage easing & stage-progress evaluation in AnimUtil + damped secondary motion physics across cloth/hair/sleeves/plumes/weapons. 2. Eliminate all Ultimate POSE_ALIAS fallbacks (huavudai, bichlam, dunghai, giangmanh) and upgrade all 9 ultimates + finishers + counters + dodges + combos to match each character's identity & weapons. 3. Replace generic cyan/setTimeout EffectManager bursts with deterministic dt-driven character-signature VFX primitives and pooled bounded particle lifecycle. 4. Build an interactive Skill Animation Showcase (harness/preview_skill_showcase.html) using the live SkeletalRenderer + EffectManager with 5-stage timeline, replay, and slow-mo inspection, and enrich Character Select Demo VFX. 5. Maintain 100% pass rate on all regression suites, interface guards, and browser smoke checks.",
+  "allowedFiles": [
+    "index.html",
+    "js/core/effects.js",
+    "js/core/gameRender.js",
+    "js/combat/combat.js",
+    "js/entities/player/playerBase.js",
+    "js/entities/player/playerInput.js",
+    "js/entities/player/playerUltimate.js",
+    "js/entities/characters/characterRegistry.js",
+    "js/entities/characters/nghi.js",
+    "js/entities/characters/vananh.js",
+    "js/entities/characters/tiendang.js",
+    "js/entities/characters/huavudai.js",
+    "js/entities/characters/bichlam.js",
+    "js/entities/characters/dinhan.js",
+    "js/entities/characters/hoanganh.js",
+    "js/entities/characters/dunghai.js",
+    "js/entities/characters/giangmanh.js",
+    "js/entities/animation/animationData.js",
+    "js/entities/animation/animationBase.js",
+    "js/entities/animation/animationPose.js",
+    "js/entities/animation/animationRenderBase.js",
+    "js/entities/animation/animationWeapon.js",
+    "js/entities/animation/animationArchetypes.js",
+    "js/entities/animation/animationBody.js",
+    "js/ui/menu/charselect/charSelectDemo.js",
+    "harness/preview_skill_showcase.html",
+    "tests/test_skill_animation_overhaul.js",
+    "harness/run-tests.js",
+    "tasks/TASK-SKILL-ANIMATION-OVERHAUL.json"
+  ],
+  "relatedFeatures": [
+    "FEAT-ANM-001",
+    "FEAT-CMB-001",
+    "FEAT-VFX-001",
+    "FEAT-CHR-001"
+  ],
+  "dependencies": [
+    "EffectManager",
+    "CharacterRegistry",
+    "SkeletalRenderer",
+    "PlayerBase",
+    "CombatSystem"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 350,
+    "authorizedRemovals": [
+      "setTimeout scheduling inside EffectManager.createUltimateBlast replaced with dt-driven scheduledEffects"
+    ]
+  },
+  "requiredTests": [
+    "tests/validate_index_scripts.js",
+    "tests/test_character_visual_fidelity.js",
+    "tests/test_vovinam_skin_skills.js",
+    "tests/test_skill_animation_overhaul.js",
+    "tests/test_combat.js"
+  ],
+  "acceptanceCriteria": [
+    "Every playable character has unique 5-stage animations for Ultimates, Finishers, Counters, Dodges, and Combos matching their silhouette and weapon identity",
+    "Zero Ultimates rely on POSE_ALIAS fallbacks to normal attacks",
+    "Zero setTimeout calls remain inside skill VFX bursts",
+    "Particle arrays remain bounded and cleanly clear on state transitions",
+    "Skill Animation Showcase renders real SkeletalRenderer + EffectManager frames cleanly with 5-stage timeline",
+    "All regression suites and headless Chromium browser smoke checks pass with 0 console errors"
+  ]
+}
+
