@@ -13,7 +13,9 @@
     "js/ui/training/trainingManagerOverlay.js",
     "js/ui/training/trainingManagerBase.js",
     "js/core/game.js",
+    "js/core/gameBase.js",
     "js/core/gameFlow.js",
+    "js/ui/tutorial/tutorialManagerBase.js",
     "js/core/input.js",
     "js/core/main.js",
     "js/core/account.js",
@@ -36,6 +38,9 @@
     "tests/test_online_multiplayer.js",
     "tests/test_ally_select_screen.js",
     "tests/test_skin_registry_and_cloud_auth.js",
+    "tests/test_campaign_and_ally_ui.js",
+    "tests/test_tutorial_trigger.js",
+    "tests/test_campaign_and_ally_ui.js",
     "Dockerfile",
     ".dockerignore",
     "tasks/TASK-020.json"
@@ -63,6 +68,8 @@
     "tests/test_char_select_passives_and_ally_title.js",
     "tests/test_online_multiplayer.js",
     "tests/test_skin_registry_and_cloud_auth.js",
+    "tests/test_tutorial_trigger.js",
+    "tests/test_campaign_and_ally_ui.js",
     "tests/test_ui_overhaul_3.js",
     "tests/validate_index_scripts.js"
   ],

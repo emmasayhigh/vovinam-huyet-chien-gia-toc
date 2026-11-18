@@ -149,6 +149,14 @@ assert(vanAnhJs.includes("id: 'vananh'") && vanAnhJs.includes('Phó Văn Anh') &
 assert(tienDangJs.includes("id: 'tiendang'") && tienDangJs.includes('Phó Tiến Đăng') && tienDangJs.includes('ANH BA — TIÊN PHONG TÁC CHIẾN') && tienDangJs.includes("shopCurrency: 'gold'"), 'tiendang.js defines Phó Tiến Đăng (Anh Ba — Tiên Phong Tác Chiến) purchasable with Gold');
 assert(collectionsJs.includes('showShop(') && collectionsJs.includes('purchaseShopCharacter(') && indexHtml.includes('id="shop-tabs-bar"'), 'collections.js & index.html implement separated Character (Gold) and Skin (Diamond) shop tabs');
 
+// 11. Verify click propagation & non-black first-time Tutorial/Campaign canvas entry
+const tutBaseJs = fs.readFileSync(path.join(rootDir, 'js/ui/tutorial/tutorialManagerBase.js'), 'utf8');
+const gameBaseJs = fs.readFileSync(path.join(rootDir, 'js/core/gameBase.js'), 'utf8');
+assert(menuBaseJs.includes("el.addEventListener('click', (e) => { this.click(); fn(e); })"), 'menuBase.js forwards click event e so stopPropagation prevents #chapter-map-modal opening over #tutorial-invite-modal');
+assert(menuBaseJs.includes('hideAll(force = false)') && menuBaseJs.includes("if (!force && dossierReturn === 'char-select'"), 'menuBase.js hideAll(force) prevents reopening char-select when launching stage/tutorial');
+assert(tutBaseJs.includes('window.menuManager.hideAll(true)') && tutBaseJs.includes('game.render()'), 'tutorialManagerBase.js hides stray menus and forces initial dojo frame render in startTutorial()');
+assert(gameBaseJs.includes("this.state === 'MENU' && typeof document !== 'undefined'") && gameBaseJs.includes('if (stageData && stageData.escape)'), 'gameBase.js always renders canvas in non-MENU states and guards stageData.escape');
+
 console.log(`=== Campaign Hub & Ally UI Tests Complete: ${passed} passed, ${failed} failed ===`);
 if (failed > 0) {
     process.exit(1);

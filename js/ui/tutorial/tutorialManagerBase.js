@@ -197,6 +197,17 @@ class TutorialManagerBase {
     }
     this.stepGraceTimer = 0.2;
 
+    if (window.menuManager && typeof window.menuManager.hideAll === 'function') {
+      window.menuManager.hideAll(true);
+    }
+    if (typeof document !== 'undefined') {
+      const inviteModal = document.getElementById('tutorial-invite-modal');
+      if (inviteModal) {
+        inviteModal.classList.add('hidden');
+        inviteModal.style.display = 'none';
+      }
+    }
+
     if (window.allyManager && typeof window.allyManager.reset === 'function') {
       window.allyManager.reset();
     }
@@ -242,6 +253,9 @@ class TutorialManagerBase {
         window.uiManager.showHUD();
         window.uiManager.setCharacterHUD(game.player);
         window.uiManager.showAlertBanner('🥋 BÀN TAY THÉP ĐẶT LÊN TRÁI TIM TỪ ÁI');
+      }
+      if (typeof game.render === 'function') {
+        try { game.render(); } catch (renderErr) { console.error('[Tutorial Render Error]', renderErr); }
       }
       if (window.audioManager && typeof window.audioManager.playVovinamKiai === 'function') {
         window.audioManager.playVovinamKiai('salute');

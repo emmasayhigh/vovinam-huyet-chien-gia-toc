@@ -180,7 +180,7 @@ class MenuManagerBase {
       const el = document.getElementById(id);
       if (!el || el.__vovClickBound) return;
       el.__vovClickBound = true;
-      if (el) el.addEventListener('click', () => { this.click(); fn(); });
+      if (el) el.addEventListener('click', (e) => { this.click(); fn(e); });
     };
 
     // Campaign Hub (Chiến Dịch Cốt Truyện)
@@ -687,7 +687,7 @@ class MenuManagerBase {
     }
   }
 
-  hideAll() {
+  hideAll(force = false) {
     const wasDossierOpen = !!(this.dossierModal && !this.dossierModal.classList.contains('hidden'));
     const dossierReturn = wasDossierOpen ? this._dossierReturnTarget : null;
     this._dossierReturnTarget = null;
@@ -718,15 +718,15 @@ class MenuManagerBase {
     if (window.deductionManager) window.deductionManager.hideBoard();
     if (window.bossRushManager) window.bossRushManager.hideMenu({ returnToParent: false });
 
-    if (dossierReturn === 'char-select' && this.charModal) {
+    if (!force && dossierReturn === 'char-select' && this.charModal) {
       this.charModal.classList.remove('hidden');
       return;
     }
-    if (dossierReturn === 'shop' && typeof this.showShop === 'function') {
+    if (!force && dossierReturn === 'shop' && typeof this.showShop === 'function') {
       this.showShop();
       return;
     }
-    if (dossierReturn === 'player-profile' && typeof this.showPlayerProfile === 'function') {
+    if (!force && dossierReturn === 'player-profile' && typeof this.showPlayerProfile === 'function') {
       this.showPlayerProfile();
       return;
     }

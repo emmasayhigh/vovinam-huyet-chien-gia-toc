@@ -378,18 +378,27 @@ class GameBase {
         return;
       }
 
-      // Render Đồ Họa (Tối ưu hóa: Bỏ qua render game nền khi đang mở modal toàn màn hình như Chọn Nhân Vật, Chọn Đồng Minh, Chiến Dịch)
-      const isFullScreenModalOpen = !!(typeof document !== 'undefined' && document.querySelector && document.querySelector('.cs-modal-screen:not(.hidden)'));
+      // Render Đồ Họa (Tối ưu hóa: Chỉ bỏ qua render nền khi đang ở MENU với modal toàn màn hình như Võ Đường / Chọn Đồng Minh)
+      const isFullScreenModalOpen = !!(this.state === 'MENU' && typeof document !== 'undefined' && document.querySelector && document.querySelector('.cs-modal-screen:not(.hidden)'));
       if (!isFullScreenModalOpen) {
-        this.render();
+        try {
+          this.render();
+        } catch (renderErr) {
+          console.error('[GameRender Error]', renderErr);
+        }
       }
     } catch (loopErr) {
       console.error('[GameLoop Error]', loopErr);
+      if (this.state !== 'MENU') {
+        try { this.render(); } catch (_) {}
+      }
     }
 
     // Reset Input Pressed Flag sau mỗi frame
     if (window.input) {
-      window.input.update();
+      try {
+        window.input.update();
+      } catch (_) {}
     }
 
     requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
@@ -512,8 +521,8 @@ class GameBase {
     }
 
     // 7. Nhiệm vụ trốn thoát: chạy tới cửa là thắng, thỉnh thoảng có kẻ đuổi theo
-    const stageData = window.stageManager.getCurrentStage();
-    if (stageData.escape) {
+    const stageData = window.stageManager ? window.stageManager.getCurrentStage() : null;
+    if (stageData && stageData.escape) {
       this.escapeTimer -= dt;
       if (this.escapeTimer <= 0) {
         this.escapeTimer = stageData.chaserInterval || 4.5;

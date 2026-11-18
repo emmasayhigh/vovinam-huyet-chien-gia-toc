@@ -653,7 +653,7 @@ class MenuManagerCharSelectDeployment extends window.MenuManagerCharSelectDemo {
     if (allyModal) allyModal.classList.add('hidden');
 
     if (this.isCampaignMode) {
-      this.hideAll();
+      this.hideAll(true);
       const stageToStart = Number(this.deploymentTargetStage || (window.saveManager && window.saveManager.data.currentStage) || 1);
       if (stageToStart === 1 && window.tutorialManager && typeof window.tutorialManager.isTutorialNeeded === 'function' && window.tutorialManager.isTutorialNeeded()) {
         window.tutorialManager.showInviteModal(
