@@ -6,6 +6,14 @@
   const TOKEN_KEY = 'vovinam_auth_token';
   const USER_CACHE_KEY = 'vovinam_auth_user';
   const LOCAL_ACCOUNTS_KEY = 'vovinam_local_accounts_v1';
+  const DEFAULT_CLOUD_SERVER_URL = 'https://vovinam-huyet-chien-gia-toc.onrender.com';
+
+  if (typeof root.VOVINAM_DEFAULT_SERVER_URL !== 'string' || !root.VOVINAM_DEFAULT_SERVER_URL.trim()) {
+    const host = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
+    if (!/^(localhost|127\.0\.0\.1)$/i.test(host)) {
+      root.VOVINAM_DEFAULT_SERVER_URL = DEFAULT_CLOUD_SERVER_URL;
+    }
+  }
 
   class AccountManager {
     constructor() {
@@ -141,8 +149,11 @@
             }
             if (typeof localStorage !== 'undefined') {
               const savedSrv = localStorage.getItem('vovinam_online_server_url');
-              if (savedSrv && savedSrv.trim()) {
-                return savedSrv.trim().replace(/\/+$/, '').replace(/^wss:/i, 'https:').replace(/^ws:/i, 'http:').replace(/\/ws$/i, '');
+              const normSaved = savedSrv ? savedSrv.trim().replace(/\/+$/, '').replace(/^wss:/i, 'https:').replace(/^ws:/i, 'http:').replace(/\/ws$/i, '') : '';
+              const curOrigin = (window.location && window.location.origin) ? window.location.origin.replace(/\/+$/, '') : '';
+              const isStaticSelf = Boolean(normSaved && curOrigin && normSaved === curOrigin && !/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || ''));
+              if (normSaved && !isStaticSelf) {
+                return normSaved;
               }
             }
           } catch (_) {}

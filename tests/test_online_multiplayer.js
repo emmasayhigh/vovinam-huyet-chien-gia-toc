@@ -892,6 +892,31 @@ function connectWsClient(port) {
   window.onlineManager.leaveMatch(false);
   console.log('✓ TEST 11: PvP & Co-op HP Sync Integrity passed');
 
+  // -------------------------------------------------------------------------
+  // TEST 12: Production Cloud Default Server URL Resolution (Render + Vercel)
+  // -------------------------------------------------------------------------
+  {
+    const prevLoc = window.location;
+    const prevDef = window.VOVINAM_DEFAULT_SERVER_URL;
+    window.VOVINAM_DEFAULT_SERVER_URL = '';
+    window.location = {
+      protocol: 'https:',
+      host: 'vovinam-huyet-chien-gia-toc.vercel.app',
+      hostname: 'vovinam-huyet-chien-gia-toc.vercel.app',
+      origin: 'https://vovinam-huyet-chien-gia-toc.vercel.app',
+      search: ''
+    };
+    const wsFromVercel = window.onlineManager.getDefaultWsUrl();
+    assert.strictEqual(
+      wsFromVercel,
+      'wss://vovinam-huyet-chien-gia-toc.onrender.com/ws',
+      'Trên domain công khai Vercel, getDefaultWsUrl phải tự động trỏ tới server Render wss://...'
+    );
+    window.VOVINAM_DEFAULT_SERVER_URL = prevDef;
+    window.location = prevLoc;
+  }
+  console.log('✓ TEST 12: Production Cloud Default Server URL Resolution passed');
+
   console.log('\n================================================');
   console.log('ALL ONLINE MULTIPLAYER TESTS PASSED 100%!');
   console.log('================================================');

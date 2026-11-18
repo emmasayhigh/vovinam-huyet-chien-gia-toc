@@ -382,12 +382,22 @@ class OnlineManager {
         if (typeof localStorage !== 'undefined') {
           const savedSrv = localStorage.getItem('vovinam_online_server_url');
           if (savedSrv && savedSrv.trim()) {
-            return this.normalizeServerUrls(savedSrv).wsUrl;
+            const normSaved = this.normalizeServerUrls(savedSrv);
+            const curOrigin = (window.location.origin || '').replace(/\/+$/, '');
+            const isStaticSelf = Boolean(normSaved.httpBase && curOrigin && normSaved.httpBase === curOrigin && !/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || ''));
+            if (!isStaticSelf) {
+              return normSaved.wsUrl;
+            }
           }
         }
       } catch (_) {}
-      if (typeof window.VOVINAM_DEFAULT_SERVER_URL === 'string' && window.VOVINAM_DEFAULT_SERVER_URL.trim()) {
-        return this.normalizeServerUrls(window.VOVINAM_DEFAULT_SERVER_URL).wsUrl;
+      const defaultServer = (typeof window.VOVINAM_DEFAULT_SERVER_URL === 'string' && window.VOVINAM_DEFAULT_SERVER_URL.trim())
+        ? window.VOVINAM_DEFAULT_SERVER_URL
+        : ((window.location && window.location.host && !/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || ''))
+          ? 'https://vovinam-huyet-chien-gia-toc.onrender.com'
+          : '');
+      if (defaultServer) {
+        return this.normalizeServerUrls(defaultServer).wsUrl;
       }
       if (window.location.host) {
         const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -932,15 +942,19 @@ class OnlineManager {
     const urlSpan = this._el('online-share-web-url');
     if (!urlSpan || typeof fetch !== 'function') return;
     try {
-      const res = await fetch('/api/online/info');
+      const norm = this.normalizeServerUrls(this.getDefaultWsUrl());
+      const infoEndpoint = norm.httpBase ? `${norm.httpBase}/api/online/info` : '/api/online/info';
+      const res = await fetch(infoEndpoint);
+      if (!res.ok) return;
       const data = await res.json();
       if (data && data.ok) {
         const isLocal = (typeof window !== 'undefined' && window.location && /localhost|127\.0\.0\.1/.test(window.location.hostname || ''));
+        const curPageUrl = (typeof window !== 'undefined' && window.location && window.location.origin) ? `${window.location.origin}/` : 'http://localhost:3000/';
         const bestUrl = (isLocal && Array.isArray(data.lanUrls) && data.lanUrls.length > 0)
           ? data.lanUrls[0]
-          : (data.currentUrl || (typeof window !== 'undefined' && window.location ? window.location.href : 'http://localhost:3000/'));
+          : (isLocal ? (data.currentUrl || curPageUrl) : curPageUrl);
         urlSpan.textContent = bestUrl;
-        urlSpan.title = (Array.isArray(data.lanUrls) && data.lanUrls.length > 0)
+        urlSpan.title = (isLocal && Array.isArray(data.lanUrls) && data.lanUrls.length > 0)
           ? `Địa chỉ LAN chơi chung: ${data.lanUrls.join(' | ')}`
           : bestUrl;
       }
