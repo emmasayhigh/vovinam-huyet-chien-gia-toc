@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="css/campaign-hub.css?v=5.50">
   <link rel="stylesheet" href="css/features.css?v=5.50">
   <link rel="stylesheet" href="css/training.css?v=5.50">
-  <link rel="stylesheet" href="css/ui-overhaul.css?v=5.91">
+  <link rel="stylesheet" href="css/ui-overhaul.css?v=5.92">
 </head>
 <body>
   <!-- Container trò chơi -->
@@ -315,59 +315,69 @@
         <!-- Lớp phủ ánh sáng & gradient điện ảnh -->
         <div class="menu-cinematic-overlay"></div>
 
-        <!-- MÀN HÌNH ĐĂNG NHẬP / CHỌN MÁY CHỦ KHỞI ĐẦU AAA -->
+        <!-- MÀN HÌNH ĐĂNG NHẬP BẮT BUỘC AAA -->
         <div id="login-gate-overlay" class="vov-login-gate">
           <div class="vov-gate-backdrop"></div>
           <div class="vov-gate-content">
             <div class="vov-gate-hero-side">
               <div class="vov-gate-server-pill" id="gate-server-status">
                 <span class="vov-server-dot online"></span>
-                <span id="gate-server-label">MÁY CHỦ S1: ĐOẠN NGHĨA ĐÀI — ONLINE</span>
+                <span id="gate-server-label">MÁY CHỦ VIỆT VÕ ĐẠO • TRỰC TUYẾN</span>
               </div>
               <div class="vov-gate-brand">
-                <span class="vov-gate-kicker">VIỆT VÕ ĐẠO • HUYẾT CHIẾN GIA TỘC • ONLINE EDITION</span>
+                <span class="vov-gate-kicker">VIỆT VÕ ĐẠO • HUYẾT CHIẾN GIA TỘC</span>
                 <h2 class="vov-gate-logo">VOVINAM<br><span>HUYẾT CHIẾN GIA TỘC</span></h2>
-                <p class="vov-gate-tagline">Đăng nhập tài khoản để đồng bộ Cloud toàn bộ Võ Sĩ, Skin Chí Tôn &amp; Bảng Xếp Hạng Đấu Trường Online!</p>
+                <p class="vov-gate-tagline">Đăng nhập tài khoản Gia Tộc để đồng bộ tiến trình Cloud, mở khóa Võ Sĩ, Skin Chí Tôn và tham chiến Đấu Đài PvP / Co-op trực tuyến.</p>
               </div>
-              <div class="vov-gate-server-select-row">
-                <label for="gate-server-select">Cụm Máy Chủ:</label>
-                <select id="gate-server-select" class="online-input">
-                  <option value="s1">S1: Đoạn Nghĩa Đài (Server Cloud Chính)</option>
-                  <option value="local">S2: Phòng Tập Offline / Lưu Trữ Nội Bộ</option>
-                </select>
+              <div class="vov-gate-pillars">
+                <span class="vov-gate-pillar-pill">☁️ Đồng Bộ Cloud</span>
+                <span class="vov-gate-pillar-pill">⚔️ Đấu Đài 1v1 PvP</span>
+                <span class="vov-gate-pillar-pill">🤝 2P Co-op Chiến Dịch</span>
               </div>
               <div class="vov-gate-hero-art">
-                <img src="assets/images/characters/char_hero_nghi.png" alt="Ngô Nhất Nghị" class="vov-gate-char-main">
-                <img src="assets/images/characters/char_thienkhanh_vovinam.png" alt="Thiên Khánh" class="vov-gate-char-sub">
+                <div class="vov-gate-art-card is-main">
+                  <img src="assets/images/characters/char_hero_nghi.png" alt="Ngô Nhất Nghị" class="vov-gate-char-main">
+                  <span class="vov-gate-art-tag">NGÔ NHẤT NGHỊ</span>
+                </div>
+                <div class="vov-gate-art-card is-sub">
+                  <img src="assets/images/characters/char_thienkhanh_vovinam.png" alt="Thiên Khánh" class="vov-gate-char-sub">
+                  <span class="vov-gate-art-tag">CHÂU NGỌC THIÊN KHÁNH</span>
+                </div>
               </div>
             </div>
 
             <div class="vov-gate-card">
               <div class="vov-gate-card-head">
-                <span class="shop-header-badge">🔐 CỔNG ĐĂNG NHẬP VÕ ĐÀI</span>
-                <h3>TRIỆU HỒI ĐẠI SẢNH</h3>
+                <span class="shop-header-badge">🔐 XÁC THỰC VÕ SĨ</span>
+                <h3 id="gate-card-title">ĐĂNG NHẬP TÀI KHOẢN</h3>
+              </div>
+
+              <div class="vov-gate-tabs" role="tablist">
+                <button id="btn-gate-tab-login" class="vov-gate-tab active" type="button" role="tab" aria-selected="true">ĐĂNG NHẬP</button>
+                <button id="btn-gate-tab-register" class="vov-gate-tab" type="button" role="tab" aria-selected="false">ĐĂNG KÝ MỚI</button>
               </div>
 
               <div id="gate-auth-form" class="vov-gate-form">
                 <label class="online-field">
-                  <span>Tên Tài Khoản (Username)</span>
-                  <input id="gate-username" class="online-input vov-gate-input" type="text" maxlength="24" placeholder="VD: nguyenvana">
+                  <span>Tên Tài Khoản</span>
+                  <input id="gate-username" class="online-input vov-gate-input" type="text" maxlength="24" autocomplete="username" placeholder="Nhập tên đăng nhập (VD: nguyenvana)">
+                </label>
+                <label id="gate-displayname-row" class="online-field hidden">
+                  <span>Tên Võ Sĩ Hiển Thị</span>
+                  <input id="gate-displayname" class="online-input vov-gate-input" type="text" maxlength="24" placeholder="Tên hiển thị trên Lôi Đài &amp; BXH">
                 </label>
                 <label class="online-field">
                   <span>Mật Khẩu</span>
-                  <input id="gate-password" class="online-input vov-gate-input" type="password" maxlength="64" placeholder="Nhập mật khẩu (tối thiểu 3 ký tự)">
-                </label>
-                <label class="online-field">
-                  <span>Tên Võ Sĩ Hiển Thị (khi tạo mới)</span>
-                  <input id="gate-displayname" class="online-input vov-gate-input" type="text" maxlength="24" placeholder="VD: Tiểu Long Họ Phó">
+                  <div class="vov-gate-pw-wrap">
+                    <input id="gate-password" class="online-input vov-gate-input" type="password" maxlength="64" autocomplete="current-password" placeholder="Nhập mật khẩu (tối thiểu 3 ký tự)">
+                    <button id="btn-gate-toggle-pw" class="vov-gate-pw-eye" type="button" title="Hiện/Ẩn mật khẩu">👁</button>
+                  </div>
                 </label>
 
                 <div class="vov-gate-actions">
-                  <button id="btn-gate-login" class="btn btn-primary vov-gate-btn-main" type="button">⚔️ ĐĂNG NHẬP &amp; VÀO GAME</button>
-                  <div class="vov-gate-sub-btns">
-                    <button id="btn-gate-register" class="btn btn-secondary" type="button">✨ ĐĂNG KÝ MỚI</button>
-                    <button id="btn-gate-guest" class="btn btn-ghost vov-gate-guest-btn" type="button">🎮 CHƠI NGAY (KHÁCH)</button>
-                  </div>
+                  <button id="btn-gate-login" class="btn btn-primary vov-gate-btn-main" type="button">⚔️ ĐĂNG NHẬP VÀO ĐẠI SẢNH</button>
+                  <button id="btn-gate-register" class="btn btn-primary vov-gate-btn-main hidden" type="button">✨ TẠO TÀI KHOẢN &amp; XUẤT TRẬN</button>
+                  <button id="btn-gate-switch-mode" class="vov-gate-mode-link" type="button">Chưa có tài khoản? <strong>Đăng ký ngay</strong></button>
                 </div>
                 <p id="gate-auth-feedback" class="vov-gate-feedback"></p>
               </div>
@@ -386,8 +396,7 @@
               </div>
 
               <div class="vov-gate-footer-note">
-                <span>🌐 Đồng Bộ Cloud + PvP 1v1 + 2P Co-op Real-time</span>
-                <span>v5.89</span>
+                <span>🔒 Dữ liệu Võ Sĩ, Trang Phục &amp; Xếp Hạng lưu an toàn trên Cloud</span>
               </div>
             </div>
           </div>
@@ -2167,14 +2176,7 @@
             <div class="online-conn-bar aov-conn-bar">
               <span id="online-ping-badge" class="online-ping-badge">Ping: -- ms</span>
               <span id="online-conn-status" class="online-conn-pill">⚪ Chưa kết nối</span>
-              <button id="btn-online-toggle-server" class="btn btn-sm btn-secondary" type="button" title="Cấu hình địa chỉ WebSocket Server">⚙️ Máy chủ</button>
             </div>
-          </div>
-          <!-- Thanh cấu hình Server nâng cao (ẩn gọn mặc định) -->
-          <div id="online-server-config-bar" class="online-server-config-bar hidden">
-            <span class="osc-lbl">Máy chủ WebSocket:</span>
-            <input id="online-server-url" class="online-input aov-url-input" type="text" placeholder="ws://localhost:3000/ws" title="Địa chỉ WebSocket Server">
-            <button id="btn-online-reconnect" class="btn btn-sm btn-primary" type="button">KẾT NỐI LẠI</button>
           </div>
 
           <!-- Banner thông báo lời mời vào phòng thời gian thực -->
@@ -2472,12 +2474,7 @@
             </div>
           </div>
 
-          <div class="modal-actions aov-footer-bar">
-            <div class="online-web-share-bar">
-              <span class="ows-badge">🌐 WEB SERVER LIVE</span>
-              <span id="online-share-web-url" class="ows-url">http://localhost:3000/</span>
-              <button id="btn-online-copy-web-url" class="btn btn-sm btn-secondary" type="button">🔗 SAO CHÉP LINK WEB</button>
-            </div>
+          <div class="modal-actions aov-footer-bar" style="justify-content:flex-end;">
             <button id="btn-online-close" class="btn btn-secondary" type="button" style="flex-shrink:0;">ĐÓNG SẢNH</button>
           </div>
         </div>
@@ -2652,7 +2649,7 @@
   <script src="js/core/input.js?v=5.49"></script>
   <script src="js/combat/combat.js?v=5.82"></script>
   <script src="js/core/save.js?v=5.86"></script>
-  <script src="js/core/account.js?v=5.92"></script>
+  <script src="js/core/account.js?v=5.93"></script>
   <script src="js/data/skins.js?v=5.89"></script>
   <script src="js/entities/roster.js?v=5.49"></script>
   <script src="js/features/investigation.js?v=5.49"></script>

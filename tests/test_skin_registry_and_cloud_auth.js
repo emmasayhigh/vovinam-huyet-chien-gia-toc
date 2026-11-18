@@ -301,7 +301,13 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
       delete global.window.location;
       delete global.fetch;
     }
-    console.log('✓ TEST 4: InputManager typing guard & AccountManager gate auto-register passed');
+
+    const indexSrc = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
+    assert.ok(!indexSrc.includes('id="btn-gate-guest"'), 'Đã bỏ nút Chơi Ngay (Khách), bắt buộc đăng nhập');
+    assert.ok(!indexSrc.includes('id="online-server-config-bar"'), 'Đã bỏ thanh Máy chủ WebSocket khỏi sảnh Online');
+    assert.ok(!indexSrc.includes('class="online-web-share-bar"'), 'Đã bỏ thanh WEB SERVER LIVE khỏi footer sảnh Online');
+    assert.ok(indexSrc.includes('id="btn-gate-tab-login"') && indexSrc.includes('id="btn-gate-tab-register"'), 'Cổng đăng nhập có tab Đăng Nhập / Đăng Ký Mới chuyên nghiệp');
+    console.log('✓ TEST 4: InputManager typing guard & AccountManager mandatory auth gate passed');
   } finally {
     server.close();
     try { fs.unlinkSync(tmpFile); } catch (_) {}

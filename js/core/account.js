@@ -339,6 +339,7 @@
       this._setGateFeedback('');
       this._setAccountFeedback('');
       this._toast('Đã đăng xuất tài khoản.');
+      this.showLoginGate();
     }
 
     _setGateFeedback(msg, isError = false) {
@@ -491,13 +492,20 @@
       }
       const gateForm = this._el('gate-auth-form');
       const gateWelcome = this._el('gate-welcome-panel');
+      const gateTabs = this._el('login-gate-overlay') && this._el('login-gate-overlay').querySelector
+        ? this._el('login-gate-overlay').querySelector('.vov-gate-tabs')
+        : null;
       if (gateForm && gateForm.classList) gateForm.classList.toggle('hidden', this.isLoggedIn());
       if (gateWelcome && gateWelcome.classList) gateWelcome.classList.toggle('hidden', !this.isLoggedIn());
+      if (gateTabs && gateTabs.classList) gateTabs.classList.toggle('hidden', this.isLoggedIn());
 
       try {
-        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('vov_gate_passed') === '1') {
+        if (this.isLoggedIn() && typeof sessionStorage !== 'undefined' && sessionStorage.getItem('vov_gate_passed') === '1') {
           const gate = this._el('login-gate-overlay');
           if (gate && gate.classList) gate.classList.add('hidden');
+        } else if (!this.isLoggedIn()) {
+          const gate = this._el('login-gate-overlay');
+          if (gate && gate.classList) gate.classList.remove('hidden');
         }
       } catch (_) {}
     }
@@ -569,7 +577,7 @@
           if (prefix === 'gate') this.dismissLoginGate();
           else this.loadLeaderboard();
         } else {
-          setFb((res && res.error) || 'Thao tác thất bại — thử lại hoặc Chơi Ngay (Khách)!', true);
+          setFb((res && res.error) || 'Thao tác thất bại — vui lòng kiểm tra lại thông tin tài khoản!', true);
         }
       };
 
@@ -588,13 +596,50 @@
       });
       onClick('btn-account-refresh-lb', () => this.loadLeaderboard());
 
+      let gateMode = 'login';
+      const setGateMode = (mode) => {
+        gateMode = mode === 'register' ? 'register' : 'login';
+        const isReg = gateMode === 'register';
+        const tabLogin = this._el('btn-gate-tab-login');
+        const tabReg = this._el('btn-gate-tab-register');
+        const btnLogin = this._el('btn-gate-login');
+        const btnReg = this._el('btn-gate-register');
+        const dispRow = this._el('gate-displayname-row');
+        const titleEl = this._el('gate-card-title');
+        const linkBtn = this._el('btn-gate-switch-mode');
+        if (tabLogin && tabLogin.classList) tabLogin.classList.toggle('active', !isReg);
+        if (tabReg && tabReg.classList) tabReg.classList.toggle('active', isReg);
+        if (btnLogin && btnLogin.classList) btnLogin.classList.toggle('hidden', isReg);
+        if (btnReg && btnReg.classList) btnReg.classList.toggle('hidden', !isReg);
+        if (dispRow && dispRow.classList) dispRow.classList.toggle('hidden', !isReg);
+        if (titleEl) titleEl.textContent = isReg ? 'ĐĂNG KÝ VÕ SĨ MỚI' : 'ĐĂNG NHẬP TÀI KHOẢN';
+        if (linkBtn) {
+          linkBtn.innerHTML = isReg
+            ? 'Đã có tài khoản? <strong>Quay lại Đăng nhập</strong>'
+            : 'Chưa có tài khoản? <strong>Đăng ký ngay</strong>';
+        }
+        this._setGateFeedback('', false);
+      };
+
+      onClick('btn-gate-tab-login', () => setGateMode('login'));
+      onClick('btn-gate-tab-register', () => setGateMode('register'));
+      onClick('btn-gate-switch-mode', () => setGateMode(gateMode === 'login' ? 'register' : 'login'));
+      onClick('btn-gate-toggle-pw', () => {
+        const pwEl = this._el('gate-password');
+        const eyeEl = this._el('btn-gate-toggle-pw');
+        if (!pwEl) return;
+        const show = pwEl.type === 'password';
+        pwEl.type = show ? 'text' : 'password';
+        if (eyeEl) eyeEl.textContent = show ? '🙈' : '👁';
+      });
+
       onClick('btn-gate-login', () => runAuthFlow({ prefix: 'gate', isRegister: false }));
       onClick('btn-gate-register', () => runAuthFlow({ prefix: 'gate', isRegister: true }));
-      onClick('btn-gate-guest', () => {
-        this.dismissLoginGate();
-        this._toast('🎮 Vào Đại Sảnh ở chế độ Khách (Lưu nội bộ trên máy)');
-      });
       onClick('btn-gate-enter', () => {
+        if (!this.isLoggedIn()) {
+          this._setGateFeedback('Vui lòng đăng nhập để vào Đại Sảnh!', true);
+          return;
+        }
         this.dismissLoginGate();
       });
       onClick('btn-gate-switch', () => {
@@ -610,7 +655,7 @@
             inp.addEventListener('keydown', (e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
-                runAuthFlow({ prefix, isRegister: false });
+                runAuthFlow({ prefix, isRegister: prefix === 'gate' && gateMode === 'register' });
               }
             });
           }
