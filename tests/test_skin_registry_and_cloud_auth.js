@@ -100,6 +100,21 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
   assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'namcheo' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê đúng Ông Năm Chèo');
 
   // Đăng ký thử 1 skin mới động hoàn toàn
+  assert.ok(window.SkinRegistry.getForCharacter('thienkhanh').some((s) => s.id === 'thantrung'), 'Thiên Khánh có skin Thần Trùng đăng ký sẵn');
+  assert.ok(window.SkinRegistry.getForCharacter('huavudai').some((s) => s.id === 'chodoinon'), 'Hứa Vũ Đại có skin Chó Trắng Mũi Đỏ Đội Nón đăng ký sẵn');
+  assert.strictEqual(
+    window.SkinRegistry.resolveImage('thienkhanh', 'thantrung'),
+    'assets/images/characters/char_thienkhanh_thantrung.png',
+    'SkinRegistry.resolveImage trả đúng ảnh Thần Trùng'
+  );
+  assert.strictEqual(
+    window.SkinRegistry.resolveImage('huavudai', 'chodoinon'),
+    'assets/images/characters/char_huavudai_chodoinon.png',
+    'SkinRegistry.resolveImage trả đúng ảnh Chó Đội Nón'
+  );
+  assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'thantrung' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê Thần Trùng');
+  assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'chodoinon' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê Chó Trắng Mũi Đỏ Đội Nón');
+
   window.SkinRegistry.register('thienkhanh', {
     id: 'test_huyet_linh',
     name: 'Huyết Linh Tà Tôn',
@@ -110,11 +125,13 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     image: 'assets/images/characters/char_thienkhanh.png'
   });
   const tkSkins = window.SkinRegistry.getForCharacter('thienkhanh');
-  assert.strictEqual(tkSkins.length, 3, 'SkinRegistry.register tự thêm skin vào danh sách nhân vật');
+  assert.strictEqual(tkSkins.length, 4, 'SkinRegistry.register tự thêm skin vào danh sách nhân vật (default, vovinam, thantrung, test_huyet_linh)');
   assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'test_huyet_linh'), 'Skin mới đăng ký tự động xuất hiện trong ShopSkins');
 
   // Kiểm chứng runtime skin styles đã tách hoàn toàn khỏi file nhân vật
   assert.ok(window.SkinRegistry.getRuntimeStyle('bichlam', 'namcheo').style.scarfColor === '#0ea5e9', 'SkinRegistry giữ runtime style Ông Năm Chèo');
+  assert.ok(window.SkinRegistry.getRuntimeStyle('thienkhanh', 'thantrung').style.thanTrungHood === true, 'SkinRegistry giữ runtime style Thần Trùng');
+  assert.ok(window.SkinRegistry.getRuntimeStyle('huavudai', 'chodoinon').style.dogHead === true, 'SkinRegistry giữ runtime style Chó Đội Nón');
   assert.ok(window.SkinRegistry.getRuntimeStyle('thienkhanh', 'vovinam').style.coinVeil === true, 'SkinRegistry giữ runtime style Vovinam Thiên Khánh');
   const bichlamSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/characters/bichlam.js'), 'utf8');
   const thienkhanhSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/characters/thienkhanh.js'), 'utf8');

@@ -5,6 +5,13 @@
  */
 
 (function () {
+  function isChoDoiNonSkin(entity) {
+    return !!(entity && (
+      entity.equippedSkin === 'chodoinon' ||
+      (window.CharacterRegistry && typeof window.CharacterRegistry.getEquippedSkin === 'function' && window.CharacterRegistry.getEquippedSkin(entity) === 'chodoinon')
+    ));
+  }
+
   window.CharacterRegistry.register({
     id: 'huavudai',
     uiSlotOrder: 2,
@@ -508,10 +515,31 @@
           fx.createGroundCrack(gx + dir * 52, gy, 88, '#ef4444');
           fx.createDust(gx + dir * 42, gy, 10, 44);
         } else if (st === 'ultimate_command') {
-          if (cross(0.12)) fx.createImperialSeal(gx, gy, 105, 0.65, '#facc15');
-          if (cross(0.28)) fx.createOrbitalPillar(gx + dir * 150, gy, '#ef4444');
-          if (cross(0.52)) fx.createOrbitalPillar(gx + dir * 310, gy, '#dc2626');
-          if (cross(0.76)) fx.createOrbitalPillar(gx + dir * 470, gy, '#facc15');
+          if (isChoDoiNonSkin(e)) {
+            if (prevP < 0.1) e._ultDogBiteTick = 0;
+            if (cross(0.12)) {
+              fx.createImperialSeal(gx, gy, 110, 0.65, '#dc2626');
+              if (typeof fx.addFloatingText === 'function') fx.addFloatingText('🐶 BẠCH KHUYỂN HIỆN HÌNH!', gx, gy - 155, 'crit');
+            }
+            const marks = [0.28, 0.52, 0.76];
+            marks.forEach((m, i) => {
+              const bit = 1 << i;
+              if (cross(m) && !((e._ultDogBiteTick || 0) & bit)) {
+                e._ultDogBiteTick = (e._ultDogBiteTick || 0) | bit;
+                const tx = gx + dir * (150 + i * 160);
+                if (typeof fx.createDogJawsBite === 'function') {
+                  fx.createDogJawsBite(tx, gy, dir, i === 2 ? 1.18 : 1.0);
+                } else {
+                  fx.createOrbitalPillar(tx, gy, '#dc2626');
+                }
+              }
+            });
+          } else {
+            if (cross(0.12)) fx.createImperialSeal(gx, gy, 105, 0.65, '#facc15');
+            if (cross(0.28)) fx.createOrbitalPillar(gx + dir * 150, gy, '#ef4444');
+            if (cross(0.52)) fx.createOrbitalPillar(gx + dir * 310, gy, '#dc2626');
+            if (cross(0.76)) fx.createOrbitalPillar(gx + dir * 470, gy, '#facc15');
+          }
         }
       }
     },
@@ -530,17 +558,33 @@
         duration: 1.35
       },
       execute(player, st, dt, enemies, { p, hitEnemy }) {
+        if (p < 0.1) player._ultDogBiteTick = 0;
         const marks = [0.28, 0.52, 0.76];
+        const isDog = isChoDoiNonSkin(player);
         marks.forEach((m, i) => {
           const bit = 1 << i;
           if (p > m && !(player._ultFlags & bit)) {
             player._ultFlags |= bit;
             const tx = player.x + player.facing * (150 + i * 160);
             if (window.effectManager) {
-              window.effectManager.createOrbitalPillar(tx, player.y, i === 2 ? '#facc15' : '#ef4444');
-              window.effectManager.createDust(tx, player.y, 18, 100);
-              window.effectManager.triggerScreenShake(12, 0.25);
-              window.effectManager.addFloatingText('OANH TẠC!', tx, player.y - 170, 'counter');
+              if (isDog) {
+                if (!((player._ultDogBiteTick || 0) & bit)) {
+                  player._ultDogBiteTick = (player._ultDogBiteTick || 0) | bit;
+                  if (typeof window.effectManager.createDogJawsBite === 'function') {
+                    window.effectManager.createDogJawsBite(tx, player.y, player.facing || 1, i === 2 ? 1.18 : 1.0);
+                  } else {
+                    window.effectManager.createOrbitalPillar(tx, player.y, '#dc2626');
+                  }
+                }
+                window.effectManager.createDust(tx, player.y, 18, 100);
+                window.effectManager.triggerScreenShake(13, 0.28);
+                window.effectManager.addFloatingText(i === 2 ? '🦷 BẠCH KHUYỂN ĐỚP XÁC!' : '🐶 NGOẠM!', tx, player.y - 175, 'crit');
+              } else {
+                window.effectManager.createOrbitalPillar(tx, player.y, i === 2 ? '#facc15' : '#ef4444');
+                window.effectManager.createDust(tx, player.y, 18, 100);
+                window.effectManager.triggerScreenShake(12, 0.25);
+                window.effectManager.addFloatingText('OANH TẠC!', tx, player.y - 170, 'counter');
+              }
             }
             if (window.audioManager) window.audioManager.playHeavyHit();
             for (const e of enemies) {

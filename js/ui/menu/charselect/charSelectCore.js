@@ -878,8 +878,13 @@ class MenuManagerCharSelectCore extends window.MenuManagerBase {
     }
     this.renderSkinGrid();
     this.updateWardrobeButtons();
+    const skinDef = (window.SkinRegistry && typeof window.SkinRegistry.getSkin === 'function' && slot)
+      ? window.SkinRegistry.getSkin(slot.id, skinType)
+      : null;
     if (slot && slot.id === 'nghi') {
       this.showToast('Ngô Nhất Nghị mặc định đã khoác Lam Võ Phục Vovinam Chính Thống 🥋');
+    } else if (skinDef && skinDef.toast) {
+      this.showToast(skinDef.toast);
     } else if (skinType === 'namcheo') {
       this.showToast('🌊 Đã trang bị: Ông Năm Chèo — Thủy Bá Bến Cảng (Đổi hiệu ứng Sóng Nước)!');
     } else {

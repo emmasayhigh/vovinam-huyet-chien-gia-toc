@@ -436,8 +436,11 @@ function connectWsClient(port) {
   // -------------------------------------------------------------------------
   const prevPropsCount = window.effectManager.skillProps.length;
   window.onlineManager.handleServerMessage({ type: 'vfx_event', kind: 'croc_bite', x: 640, y: 580, dir: 1, scale: 1.0 });
-  window.onlineManager.handleServerMessage({ type: 'vfx_event', kind: 'taoist_fiend', x: 520, y: 580, facing: 1, life: 4, maxLife: 5 });
-  assert.ok(window.effectManager.skillProps.length >= prevPropsCount + 2, 'vfx_event spawns Cá Sấu & Tiểu Quỷ on remote client');
+  window.onlineManager.handleServerMessage({ type: 'vfx_event', kind: 'dog_bite', x: 720, y: 580, dir: 1, scale: 1.0 });
+  window.onlineManager.handleServerMessage({ type: 'vfx_event', kind: 'taoist_fiend', x: 520, y: 580, facing: 1, life: 4, maxLife: 5, summonKind: 'crow' });
+  assert.ok(window.effectManager.skillProps.length >= prevPropsCount + 3, 'vfx_event spawns Cá Sấu, Mõm Chó Trắng & Quạ Thần Trùng on remote client');
+  assert.ok(window.effectManager.skillProps.some((sp) => sp.kind === 'dog_bite'), 'vfx_event dog_bite creates Dog Jaws Bite effect');
+  assert.ok(window.effectManager.skillProps.some((sp) => sp.kind === 'taoist_fiend' && sp.summonKind === 'crow'), 'vfx_event preserves crow summonKind for Thần Trùng');
 
   sentPackets.length = 0;
   window.onlineManager.applyRemoteVfx({ kind: 'croc_bite', x: 400, y: 580, dir: 1, scale: 1.0 });
@@ -479,7 +482,7 @@ function connectWsClient(port) {
   window.onlineManager._populateSkinOptions();
   const huaSkins = skinSel.children.map((o) => o.value);
   assert.ok(!huaSkins.includes('namcheo'), 'Hứa Vũ Đại không hiển thị skin Ông Năm Chèo của Đình Bích Lâm');
-  assert.ok(huaSkins.includes('default') && huaSkins.includes('vovinam'), 'Hứa Vũ Đại chỉ hiển thị skin hợp lệ của bản thân');
+  assert.ok(huaSkins.includes('default') && huaSkins.includes('vovinam') && huaSkins.includes('chodoinon'), 'Hứa Vũ Đại chỉ hiển thị skin hợp lệ của bản thân (kèm Chó Đội Nón)');
 
   charSel.value = 'bichlam';
   window.onlineManager._populateSkinOptions();

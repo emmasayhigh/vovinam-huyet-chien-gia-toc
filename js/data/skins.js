@@ -404,6 +404,187 @@
     }
   });
 
+  // =========================================================================
+  // TRANG PHỤC CHÍ TÔN PHẨM MỚI: THẦN TRÙNG (THIÊN KHÁNH) & CHÓ ĐỘI NÓN (HỨA VŨ ĐẠI)
+  // =========================================================================
+  registry.register('thienkhanh', {
+    id: 'thantrung',
+    name: 'Thần Trùng — Huyết Y Gọi Quạ',
+    shortName: 'Thần Trùng 🦅',
+    tier: SKIN_TIERS.chiton.tier,
+    tierKey: 'chiton',
+    badgeClass: SKIN_TIERS.chiton.badgeClass,
+    rarity: SKIN_TIERS.chiton.rarity,
+    themeClass: SKIN_TIERS.chiton.themeClass,
+    image: 'assets/images/characters/char_thienkhanh_thantrung.png',
+    styleKey: 'thienkhanh_thantrung',
+    shopSkin: true,
+    shopKey: 'skin_thienkhanh_thantrung',
+    shopCurrency: 'diamond',
+    shopPrice: 150,
+    shopRibbon: '🔥 CHÍ TÔN PHẨM • CHÂU NGỌC THIÊN KHÁNH',
+    shopRoleSub: 'TRANG PHỤC CHÍ TÔN PHẨM (ĐỎ) • TRIỆU HỒI BẦY QUẠ ĐEN',
+    quote: '“Áo trùm đỏ thẫm trong hẻm tối — tiếng quạ réo gọi hồn kẻ bội tín!”',
+    bio: 'Trang phục Chí Tôn Phẩm lấy cảm hứng kinh dị dân gian Thần Trùng cho Châu Ngọc Thiên Khánh: khoác áo trùm đầu đỏ thẫm tương phản quần xanh lam rùng rợn, thay toàn bộ Tiểu Quỷ triệu hồi thành Bầy Quạ Đen Mắt Đỏ bay lao tới mổ xé kẻ thù!',
+    skillsGrid: [
+      { key: 'W+U / Đòn 4', name: 'Triệu Hồi Quạ Thần Trùng' },
+      { key: 'U+J', name: 'Kiếm Xu & Quạ Báo Oán' },
+      { key: 'L / U+K', name: 'Bùa Huyết Trùng Tang' },
+      { key: 'I', name: 'Nghiệp Quạ Luân Hồi Trảm' }
+    ],
+    passiveNote: {
+      icon: '🦅',
+      title: 'Thay Đổi Triệu Hồi Độc Quyền:',
+      desc: 'Toàn bộ Tiểu Quỷ (từ W+U, Đòn thứ 4, Phản Đòn Tay U+J và Tuyệt Kỹ I) đều biến thành Quạ Thần Trùng Mắt Đỏ!'
+    },
+    fx: ['🔥 Chí Tôn Phẩm (Đỏ)', '🦅 Gọi Quạ thay Tiểu Quỷ', '🩸 Áo Trùm Đỏ Quần Lam'],
+    sub: 'Trang phục Chí Tôn Phẩm (Bậc Đỏ tối thượng) trong Cửa Hàng: khoác áo trùm đầu Thần Trùng đỏ thẫm & quần xanh lam ma mị, mọi kỹ năng triệu hồi đều gọi Bầy Quạ Đen Mắt Đỏ thay vì Tiểu Quỷ!',
+    toast: '🦅 Đã trang bị: Thần Trùng — Huyết Y Gọi Quạ!'
+  });
+
+  registry.registerRuntimeStyle('thienkhanh', 'thantrung', {
+    style: {
+      archetype: 'crimson_coin_taoist',
+      thanTrungHood: true,
+      coinVeil: false,
+      taoistQuiver: false,
+      cape: true,
+      hairStyle: 'none',
+      skin: '#09090d',
+      skinL: '#18181b',
+      skinD: '#050508',
+      hair: '#09090d',
+      gi: '#991b1b',
+      giD: '#450a0a',
+      giL: '#dc2626',
+      coatColor: '#991b1b',
+      coatD: '#450a0a',
+      coatTrim: '#ef4444',
+      liningColor: '#1e3a8a',
+      pants: '#1d4ed8',
+      pantsD: '#1e3a8a',
+      belt: '#0f172a',
+      beltD: '#020617',
+      beltTrim: '#dc2626',
+      under: '#1e3a8a',
+      cuffTrim: '#ef4444',
+      cuffRedEmbroidery: true,
+      wideSleeves: true,
+      weapon: 'coin_sword',
+      weaponLen: 46,
+      shoes: 'kungfu',
+      shoeColor: '#0f172a',
+      eyeColor: '#ef4444',
+      glowingEyes: '#ef4444',
+      aura: '#dc2626'
+    },
+    trailProfile: {
+      primary: '#dc2626',
+      secondary: '#2563eb',
+      core: '#fee2e2',
+      width: 14,
+      dual: true,
+      dodgeGhost: 'rgba(185, 28, 28, 0.58)'
+    },
+    cinematic: {
+      title: 'CHÍ TÔN PHẨM • THẦN TRÙNG',
+      ult: 'NGHIỆP QUẠ BÁO OÁN — HUYẾT Y TRÙNG TANG',
+      color: '#dc2626',
+      accent: '#2563eb',
+      style: 'fire',
+      duration: 1.35
+    }
+  });
+
+  registry.register('huavudai', {
+    id: 'chodoinon',
+    name: 'Chó Trắng Mũi Đỏ Đội Nón',
+    shortName: 'Chó Đội Nón 🐶',
+    tier: SKIN_TIERS.chiton.tier,
+    tierKey: 'chiton',
+    badgeClass: SKIN_TIERS.chiton.badgeClass,
+    rarity: SKIN_TIERS.chiton.rarity,
+    themeClass: SKIN_TIERS.chiton.themeClass,
+    image: 'assets/images/characters/char_huavudai_chodoinon.png',
+    styleKey: 'huavudai_chodoinon',
+    shopSkin: true,
+    shopKey: 'skin_huavudai_chodoinon',
+    shopCurrency: 'diamond',
+    shopPrice: 150,
+    shopRibbon: '🔥 CHÍ TÔN PHẨM • HỨA VŨ ĐẠI',
+    shopRoleSub: 'TRANG PHỤC CHÍ TÔN PHẨM (ĐỎ) • MÕM CHÓ TRỒI LÊN CẮN',
+    quote: '“Trăng đỏ mái ngói xưa — nón mê che mặt, gậy gỗ chống thềm, nanh trắng mũi đỏ xé xác kẻ thù!”',
+    bio: 'Trang phục Chí Tôn Phẩm truyền thuyết kinh dị dân gian cho Hứa Vũ Đại: hóa thân Chó Trắng Mũi Đỏ đi hai chân đội nón lá rách cầm gậy gỗ; khi kích hoạt Tuyệt Kỹ (I), 3 mõm Chó Trắng Mũi Đỏ khổng lồ mọc trồi lên từ mặt đất ngoạm cắn mục tiêu!',
+    skillsGrid: [
+      { key: 'J / W+J', name: 'Quất Gậy Gỗ Dân Gian' },
+      { key: 'K / W+K', name: 'Độc Cước Bạch Khuyển' },
+      { key: 'U+J / U+K', name: 'Phản Đòn Nanh Trắng' },
+      { key: 'I', name: 'Mõm Chó Trắng Mọc Lên Cắn' }
+    ],
+    passiveNote: {
+      icon: '🐶',
+      title: 'Thay Đổi Tuyệt Kỹ Độc Quyền:',
+      desc: 'Tạo hình Chó Trắng Mũi Đỏ đội nón lá cầm gậy gỗ; Tuyệt Kỹ (I) triệu hồi 3 mõm chó trắng mũi đỏ trồi từ đất lên cắn nát đội hình địch!'
+    },
+    fx: ['🔥 Chí Tôn Phẩm (Đỏ)', '🐶 Hóa Thân Chó Trắng Mũi Đỏ', '🦷 Ulti: Mõm Chó Mọc Lên Cắn'],
+    sub: 'Trang phục Chí Tôn Phẩm (Bậc Đỏ tối thượng) trong Cửa Hàng: hóa thân Chó Trắng Mũi Đỏ đội nón mê cầm gậy gỗ, Tuyệt Kỹ (I) gọi 3 mõm chó trắng khổng lồ mọc lên từ mặt đất ngoạm cắn mục tiêu!',
+    toast: '🐶 Đã trang bị: Chó Trắng Mũi Đỏ Đội Nón!'
+  });
+
+  registry.registerRuntimeStyle('huavudai', 'chodoinon', {
+    style: {
+      archetype: 'patriarch_draped_suit',
+      dogHead: true,
+      dogFurSkin: true,
+      dogTail: true,
+      conicalHat: true,
+      woodCane: true,
+      cane: true,
+      suit: false,
+      vest: false,
+      drapedOvercoat: false,
+      tieColor: null,
+      pocketSquare: null,
+      beard: false,
+      glasses: false,
+      hairStyle: 'none',
+      skin: '#f1f5f9',
+      skinL: '#ffffff',
+      skinD: '#cbd5e1',
+      hair: '#f8fafc',
+      gi: '#f1f5f9',
+      giD: '#94a3b8',
+      giL: '#ffffff',
+      pants: '#e2e8f0',
+      pantsD: '#94a3b8',
+      belt: '#451a03',
+      beltD: '#271004',
+      beltTrim: '#dc2626',
+      under: '#cbd5e1',
+      cuffTrim: '#94a3b8',
+      shoes: 'barefoot',
+      shoeColor: '#e2e8f0',
+      eyeColor: '#dc2626',
+      aura: '#ef4444'
+    },
+    trailProfile: {
+      primary: '#ef4444',
+      secondary: '#f8fafc',
+      core: '#ffffff',
+      width: 14,
+      dual: true,
+      dodgeGhost: 'rgba(248, 250, 252, 0.55)'
+    },
+    cinematic: {
+      title: 'CHÍ TÔN PHẨM • CHÓ ĐỘI NÓN MÊ',
+      ult: 'BẠCH KHUYỂN MŨI ĐỎ — ĐỊA NGỤC TRỒI NANH',
+      color: '#dc2626',
+      accent: '#f8fafc',
+      style: 'command',
+      duration: 1.35
+    }
+  });
+
   registry.applyToCharacterRegistry();
 
   root.SKIN_TIERS = SKIN_TIERS;

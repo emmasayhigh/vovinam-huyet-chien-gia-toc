@@ -38,6 +38,56 @@ class SkeletalRendererArchetypes extends window.SkeletalRendererWeapon {
     const wind = sw * 0.75 + runBias + flutter * 0.5;
     const P = (orig, x, y) => this._bodyPt(jt, orig, x, y);
 
+    // 0. Tạo hình đặc biệt Skin Chí Tôn Phẩm: Đuôi Chó Trắng (Chó Đội Nón) & Áo Trùm Đỏ Thần Trùng
+    if (st.dogTail) {
+      const tWag = Math.sin(((motion && motion.now) || 0) * 0.012) * 3.8 + sw * 0.35;
+      const tBase = P(H, -8.5, 1.5);
+      const tMid = P(H, -22.5 + wind * 0.45, 9.0 + tWag * 0.4);
+      const tTip = P(H, -30.5 + wind * 0.75, 22.0 + tWag);
+      ctx.fillStyle = this._c(st, '#f1f5f9');
+      ctx.beginPath();
+      ctx.moveTo(tBase[0], tBase[1]);
+      ctx.quadraticCurveTo(tMid[0] - 4, tMid[1] - 4, tTip[0], tTip[1]);
+      ctx.quadraticCurveTo(tMid[0] + 6, tMid[1] + 5, tBase[0], tBase[1] - 7);
+      ctx.closePath();
+      ctx.fill();
+      if (!isSolid) {
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.75)';
+        ctx.lineWidth = 1.25;
+        ctx.stroke();
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(tBase[0] - 3, tBase[1] - 2);
+        ctx.quadraticCurveTo(tMid[0] + 1, tMid[1], tTip[0] + 2, tTip[1] - 2);
+        ctx.stroke();
+      }
+    }
+
+    if (st.thanTrungHood) {
+      const shL = P(sh, -13.5, 2.0), shR = P(sh, 10.5, 2.0);
+      const cBotL = P(H, -28.0 + wind * 1.15, -39.0);
+      const cBotM = P(H, -9.0 + wind * 0.85, -36.5);
+      const cBotR = P(H, 11.5 + wind * 0.55, -38.0);
+      ctx.fillStyle = isSolid ? st._solid : this._materialFill(ctx, st, 'fabric', shL[0], shL[1], cBotL[0], cBotL[1], '#991b1b', false);
+      ctx.beginPath();
+      ctx.moveTo(shL[0], shL[1]);
+      ctx.lineTo(shR[0], shR[1]);
+      ctx.quadraticCurveTo(shR[0] + 4.5, (shR[1] + cBotR[1]) * 0.5, cBotR[0], cBotR[1]);
+      ctx.quadraticCurveTo(cBotM[0], cBotM[1] + 5.0, cBotL[0], cBotL[1]);
+      ctx.quadraticCurveTo(shL[0] - 9.5 + wind * 0.5, (shL[1] + cBotL[1]) * 0.5, shL[0], shL[1]);
+      ctx.closePath();
+      ctx.fill();
+      if (!isSolid) {
+        ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.lineWidth = 1.25; ctx.stroke();
+        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(cBotL[0] + 2, cBotL[1] - 1);
+        ctx.quadraticCurveTo(cBotM[0], cBotM[1] + 4.0, cBotR[0] - 2, cBotR[1] - 1);
+        ctx.stroke();
+      }
+    }
+
     // 1. Nón lá / Nón đan sơn cước đeo chéo sau lưng (Phó Đặng Hoàng Anh — đặt nghiêng sau vai, không che gáy)
     if (st.taoistQuiver) {
       // Bao kiếm đeo chéo sau lưng + ống thẻ tre tà đạo (Châu Ngọc Thiên Khánh)

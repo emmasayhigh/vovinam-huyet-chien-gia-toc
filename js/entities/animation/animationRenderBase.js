@@ -1314,34 +1314,48 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
     // Cổ tay & Bàn tay / Nắm đấm theo tỷ lệ giải phẫu tự nhiên gọn gàng (KHÔNG phồng to)
     this.drawHand(ctx, wr, hand, foreAbs, st, far, motion);
 
-    // Gậy rồng bạc sang trọng của Hứa Vũ Đại (đầu rồng chạm khắc tinh xảo)
+    // Gậy rồng bạc sang trọng của Hứa Vũ Đại (hoặc gậy gỗ dân gian khi trang bị Skin Chó Trắng Mũi Đỏ Đội Nón)
     if (st.cane && !far) {
       ctx.save();
       const attacking = !!(motion && motion.isAttacking);
       const dirC = attacking ? [Math.sin(foreAbs), Math.cos(foreAbs)] : [0.05, 0.998];
       const cTop = [hand[0] - dirC[0] * 3.0, hand[1] - dirC[1] * 3.0];
       const cBot = [hand[0] + dirC[0] * 52, hand[1] + dirC[1] * 52];
-      ctx.strokeStyle = this._c(st, '#271a12'); ctx.lineWidth = 3.1; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(cTop[0], cTop[1]); ctx.lineTo(cBot[0], cBot[1]); ctx.stroke();
-      if (!isSolid) {
-        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.4;
-        ctx.beginPath(); ctx.moveTo(cTop[0] + dirC[0] * 1.5, cTop[1] + dirC[1] * 1.5); ctx.lineTo(cTop[0] + dirC[0] * 8, cTop[1] + dirC[1] * 8); ctx.stroke();
-        // Đầu rồng bạc chạm nổi góc cạnh
-        ctx.fillStyle = this._materialFill(ctx, st, 'steel', cTop[0] - 4, cTop[1] - 3, cTop[0] + 4, cTop[1] + 3, '#cbd5e1', false);
-        ctx.beginPath();
-        ctx.moveTo(cTop[0] - 4.2, cTop[1] - 1.4);
-        ctx.lineTo(cTop[0] + 2.6, cTop[1] - 3.2);
-        ctx.lineTo(cTop[0] + 4.8, cTop[1] - 0.5);
-        ctx.lineTo(cTop[0] + 2.2, cTop[1] + 2.6);
-        ctx.lineTo(cTop[0] - 3.8, cTop[1] + 1.8);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = '#475569'; ctx.lineWidth = 0.85; ctx.stroke();
-        ctx.fillStyle = '#dc2626';
-        ctx.beginPath(); ctx.arc(cTop[0] + 1.6, cTop[1] - 0.7, 0.95, 0, Math.PI * 2); ctx.fill();
+      if (st.woodCane) {
+        ctx.strokeStyle = this._c(st, '#4a2e16'); ctx.lineWidth = 3.6; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(cTop[0], cTop[1]); ctx.lineTo(cBot[0], cBot[1]); ctx.stroke();
+        if (!isSolid) {
+          ctx.strokeStyle = '#7c512c'; ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.moveTo(cTop[0] + 0.6, cTop[1]); ctx.lineTo(cBot[0] + 0.6, cBot[1]); ctx.stroke();
+          // Tay cầm cong mộc mạc bằng gỗ sẫm
+          ctx.strokeStyle = '#3b220e'; ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.arc(cTop[0] - 2.6, cTop[1] + 0.5, 4.4, Math.PI * 0.9, Math.PI * 2.05);
+          ctx.stroke();
+        }
       } else {
-        ctx.fillStyle = st._solid;
-        ctx.beginPath(); ctx.ellipse(cTop[0], cTop[1], 4.2, 3.0, -0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = this._c(st, '#271a12'); ctx.lineWidth = 3.1; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(cTop[0], cTop[1]); ctx.lineTo(cBot[0], cBot[1]); ctx.stroke();
+        if (!isSolid) {
+          ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.moveTo(cTop[0] + dirC[0] * 1.5, cTop[1] + dirC[1] * 1.5); ctx.lineTo(cTop[0] + dirC[0] * 8, cTop[1] + dirC[1] * 8); ctx.stroke();
+          // Đầu rồng bạc chạm nổi góc cạnh
+          ctx.fillStyle = this._materialFill(ctx, st, 'steel', cTop[0] - 4, cTop[1] - 3, cTop[0] + 4, cTop[1] + 3, '#cbd5e1', false);
+          ctx.beginPath();
+          ctx.moveTo(cTop[0] - 4.2, cTop[1] - 1.4);
+          ctx.lineTo(cTop[0] + 2.6, cTop[1] - 3.2);
+          ctx.lineTo(cTop[0] + 4.8, cTop[1] - 0.5);
+          ctx.lineTo(cTop[0] + 2.2, cTop[1] + 2.6);
+          ctx.lineTo(cTop[0] - 3.8, cTop[1] + 1.8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#475569'; ctx.lineWidth = 0.85; ctx.stroke();
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath(); ctx.arc(cTop[0] + 1.6, cTop[1] - 0.7, 0.95, 0, Math.PI * 2); ctx.fill();
+        } else {
+          ctx.fillStyle = st._solid;
+          ctx.beginPath(); ctx.ellipse(cTop[0], cTop[1], 4.2, 3.0, -0.2, 0, Math.PI * 2); ctx.fill();
+        }
       }
       ctx.restore();
     }

@@ -223,5 +223,54 @@ try {
 check(tkRenderOk, 'Render Thiên Khánh Lam Võ Phục Vovinam chạy an toàn không lỗi');
 window.saveManager.setSkinEquipped('thienkhanh', 'default');
 
+// TEST 8: Skin THẦN TRÙNG (Châu Ngọc Thiên Khánh) triệu hồi Quạ thay Tiểu Quỷ
+console.log('\n--- TEST 8: Skin THẦN TRÙNG (Thiên Khánh gọi Quạ) ---');
+window.saveManager.addDiamonds(400);
+const buyTtRes = window.saveManager.buyShopSkin('skin_thienkhanh_thantrung', 'thienkhanh', 'thantrung', 'diamond', 150);
+check(buyTtRes.ok === true && window.saveManager.isSkinUnlocked('thienkhanh', 'thantrung') === true, 'Mua thành công skin Thần Trùng bằng 150 Kim Cương');
+check(!window.saveManager.data.unlockedCharacters.includes('skin_thienkhanh_thantrung') && !window.saveManager.data.unlockedCharacters.includes('thantrung'), 'Không nhầm Thần Trùng thành character');
+player.setCharacter('thienkhanh');
+check(player.equippedSkin === 'thantrung', 'Thiên Khánh trang bị skin thantrung');
+const ttStyle = window.skeletalRenderer.getStyle(player);
+check(ttStyle.thanTrungHood === true && ttStyle.pants === '#1d4ed8' && ttStyle.gi === '#991b1b', 'Skin Thần Trùng có mũ trùm đỏ + quần lam (#991b1b / #1d4ed8)');
+window.effectManager.skillProps = [];
+player._summonedFiends = [];
+player._fiendSummonCd = 0;
+player.stanceSkillCooldown = 0;
+window.CharacterRegistry.tryStanceSpecial(player, []);
+check(player._summonedFiends.length === 1 && player._summonedFiends[0].summonKind === 'crow', 'Chiêu W+U của Thiên Khánh (Thần Trùng) triệu hồi Quạ (summonKind="crow") thay cho Tiểu Quỷ');
+check(window.effectManager.skillProps.some((sp) => sp.kind === 'taoist_fiend' && sp.summonKind === 'crow'), 'EffectManager tạo hiệu ứng Quạ Thần Trùng');
+let ttRenderOk = true;
+try {
+  window.skeletalRenderer.render(dummyCtx, player, { x: 0, y: 0 });
+} catch (err) {
+  ttRenderOk = false;
+  console.error('Render thantrung error:', err);
+}
+check(ttRenderOk, 'Render nhân vật Thiên Khánh skin Thần Trùng không lỗi');
+window.saveManager.setSkinEquipped('thienkhanh', 'default');
+
+// TEST 9: Skin CHÓ TRẮNG MŨI ĐỎ ĐỘI NÓN (Hứa Vũ Đại) & Ult Mõm Chó mọc lên cắn
+console.log('\n--- TEST 9: Skin CHÓ TRẮNG MŨI ĐỎ ĐỘI NÓN (Hứa Vũ Đại Ult Mõm Chó) ---');
+window.saveManager.unlockCharacter('huavudai');
+const buyDogRes = window.saveManager.buyShopSkin('skin_huavudai_chodoinon', 'huavudai', 'chodoinon', 'diamond', 150);
+check(buyDogRes.ok === true && window.saveManager.isSkinUnlocked('huavudai', 'chodoinon') === true, 'Mua thành công skin Chó Trắng Mũi Đỏ Đội Nón bằng 150 Kim Cương');
+player.setCharacter('huavudai');
+check(player.equippedSkin === 'chodoinon', 'Hứa Vũ Đại trang bị skin chodoinon');
+const dogStyle = window.skeletalRenderer.getStyle(player);
+check(dogStyle.dogHead === true && dogStyle.conicalHat === true && dogStyle.woodCane === true, 'Skin Chó Đội Nón có đầu chó trắng mũi đỏ, nón lá và gậy gỗ');
+window.effectManager.skillProps = [];
+window.CharacterRegistry.emitSkillVFX(player, 'ultimate_command', 0.25, 0.30, window.effectManager, []);
+check(window.effectManager.skillProps.some((sp) => sp.kind === 'dog_bite'), 'Tuyệt kỹ (I) Hứa Vũ Đại skin Chó Đội Nón gọi mõm chó trồi lên cắn (dog_bite)');
+let dogRenderOk = true;
+try {
+  window.skeletalRenderer.render(dummyCtx, player, { x: 0, y: 0 });
+} catch (err) {
+  dogRenderOk = false;
+  console.error('Render chodoinon error:', err);
+}
+check(dogRenderOk, 'Render nhân vật Hứa Vũ Đại skin Chó Đội Nón không lỗi');
+window.saveManager.setSkinEquipped('huavudai', 'default');
+
 console.log(`\n🎉 TẤT CẢ ${passed} BÀI TEST VOVINAM COSMETIC & ÔNG NĂM CHÈO ĐỀU THÀNH CÔNG 100%!\n`);
 process.exit(0);

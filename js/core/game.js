@@ -57,6 +57,8 @@ class RemotePlayer extends (window.Player || Object) {
     this.isVovinamSkin = (this.charId === 'nghi' || resolvedSkin === 'vovinam');
     this.vovinamSkin = (resolvedSkin === 'vovinam');
     this.namcheoSkin = (resolvedSkin === 'namcheo');
+    this.thanTrungSkin = (resolvedSkin === 'thantrung');
+    this.choDoiNonSkin = (resolvedSkin === 'chodoinon');
     if (window.CharacterRegistry) {
       const def = window.CharacterRegistry.get(this.charId);
       if (def && def.appearance && def.appearance.skins && def.appearance.skins[resolvedSkin] && def.appearance.skins[resolvedSkin].styleKey) {
@@ -157,6 +159,7 @@ class RemotePlayer extends (window.Player || Object) {
           life: Number(rf.life) || 4.5,
           maxLife: Number(rf.maxLife) || 4.5,
           slashTimer: rf.slash ? 0.28 : 0,
+          summonKind: rf.summonKind || (this.equippedSkin === 'thantrung' ? 'crow' : 'imp'),
           seed: Math.random() * 10,
           _fromRemotePlayer: true
         };
@@ -174,6 +177,7 @@ class RemotePlayer extends (window.Player || Object) {
         if (Number.isFinite(rf.x)) existing._netTargetX = rf.x;
         if (Number.isFinite(rf.y)) existing._netTargetY = rf.y;
         if (rf.facing === 1 || rf.facing === -1) existing.facing = rf.facing;
+        if (rf.summonKind) existing.summonKind = rf.summonKind;
         if (Number.isFinite(rf.life)) existing.life = Math.max(0.05, rf.life);
         if (Number.isFinite(rf.maxLife)) existing.maxLife = rf.maxLife;
         if (rf.slash) existing.slashTimer = Math.max(existing.slashTimer || 0, 0.26);
@@ -632,8 +636,19 @@ class OnlineManager {
       if (charEl) charEl.value = 'nghi';
     }
     if (skinEl && skinEl.value) {
-      this.skinId = (this.charId !== 'bichlam' && skinEl.value === 'namcheo') ? 'default' : skinEl.value;
-      if (this.charId === 'nghi') this.skinId = 'default';
+      let nextSkin = skinEl.value;
+      if (this.charId === 'nghi') {
+        nextSkin = 'default';
+      } else if (window.SkinRegistry && typeof window.SkinRegistry.getSkin === 'function' && nextSkin !== 'default' && nextSkin !== 'vovinam') {
+        if (!window.SkinRegistry.getSkin(this.charId, nextSkin)) nextSkin = 'default';
+      } else if (nextSkin === 'namcheo' && this.charId !== 'bichlam') {
+        nextSkin = 'default';
+      } else if (nextSkin === 'thantrung' && this.charId !== 'thienkhanh') {
+        nextSkin = 'default';
+      } else if (nextSkin === 'chodoinon' && this.charId !== 'huavudai') {
+        nextSkin = 'default';
+      }
+      this.skinId = nextSkin;
     }
     if (allyEl && allyEl.value) {
       this.allyId = (allyEl.value === this.charId) ? 'auto' : allyEl.value;
@@ -2346,10 +2361,11 @@ class OnlineManager {
             facing: f.facing >= 0 ? 1 : -1,
             life: +Math.max(0.05, f.life || 0).toFixed(2),
             maxLife: +(f.maxLife || 6).toFixed(2),
-            slash: (f.slashTimer || 0) > 0
+            slash: (f.slashTimer || 0) > 0,
+            summonKind: f.summonKind || (p.equippedSkin === 'thantrung' ? 'crow' : 'imp')
           }))
       : [];
-    const curFiendsSig = activeFiends.map((f) => `${f.id}:${f.slash ? 1 : 0}`).join('|');
+    const curFiendsSig = activeFiends.map((f) => `${f.id}:${f.slash ? 1 : 0}:${f.summonKind}`).join('|');
 
     if (curState !== this._lastSentState || curFacing !== this._lastSentFacing || curCombo !== this._lastSentCombo || curFiendsSig !== this._lastSentFiendsSig) {
       this._syncAccum = 999;
@@ -2585,8 +2601,12 @@ class OnlineManager {
         case 'croc_bite':
           if (em && em.createCrocodileBite) em.createCrocodileBite(msg.x, msg.y, msg.dir || 1, msg.scale || 1);
           break;
+        case 'dog_bite':
+          if (em && em.createDogJawsBite) em.createDogJawsBite(msg.x, msg.y, msg.dir || 1, msg.scale || 1);
+          break;
         case 'taoist_fiend':
           if (em && em.createTaoistFiend) {
+            const remoteKind = msg.summonKind || (this.remotePlayer && this.remotePlayer.equippedSkin === 'thantrung' ? 'crow' : 'imp');
             if (msg.id && this.remotePlayer) {
               if (!Array.isArray(this.remotePlayer.remoteFiends)) this.remotePlayer.remoteFiends = [];
               let rf = this.remotePlayer.remoteFiends.find((f) => f && f.id === msg.id);
@@ -2594,6 +2614,7 @@ class OnlineManager {
                 rf._netTargetX = msg.x;
                 rf._netTargetY = msg.y;
                 rf.facing = msg.facing || 1;
+                rf.summonKind = remoteKind;
                 rf.slashTimer = Math.max(rf.slashTimer || 0, 0.22);
               } else {
                 rf = {
@@ -2606,6 +2627,7 @@ class OnlineManager {
                   life: msg.life || 4.5,
                   maxLife: msg.maxLife || 4.5,
                   slashTimer: 0.2,
+                  summonKind: remoteKind,
                   seed: Math.random() * 10,
                   _fromRemotePlayer: true
                 };
@@ -2615,7 +2637,7 @@ class OnlineManager {
             } else {
               em.createTaoistFiend({
                 x: msg.x, y: msg.y, facing: msg.facing || 1,
-                life: msg.life || 4.5, maxLife: msg.maxLife || 4.5, slashTimer: 0.2, seed: Math.random() * 10
+                life: msg.life || 4.5, maxLife: msg.maxLife || 4.5, slashTimer: 0.2, summonKind: remoteKind, seed: Math.random() * 10
               });
             }
           }
@@ -2690,7 +2712,8 @@ class OnlineManager {
         };
       };
       wrapEm('createCrocodileBite', (x, y, dir, scale) => ({ kind: 'croc_bite', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
-      wrapEm('createTaoistFiend', (fiend) => fiend ? ({ kind: 'taoist_fiend', id: fiend.id, x: Math.round(fiend.x), y: Math.round(fiend.y), facing: fiend.facing || 1, life: fiend.life || 4.5, maxLife: fiend.maxLife || 4.5 }) : null);
+      wrapEm('createDogJawsBite', (x, y, dir, scale) => ({ kind: 'dog_bite', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
+      wrapEm('createTaoistFiend', (fiend) => fiend ? ({ kind: 'taoist_fiend', id: fiend.id, x: Math.round(fiend.x), y: Math.round(fiend.y), facing: fiend.facing || 1, life: fiend.life || 4.5, maxLife: fiend.maxLife || 4.5, summonKind: fiend.summonKind || 'imp' }) : null);
       wrapEm('createSlashArc', (x, y, dir, radius, color, thickness) => ({ kind: 'slash_arc', x: Math.round(x), y: Math.round(y), dir: dir || 1, radius, color, thickness }));
       wrapEm('createFlameCoinSlash', (x, y, dir, scale) => ({ kind: 'flame_coin', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
       wrapEm('createShockRing', (x, y, color, maxRadius) => ({ kind: 'shock_ring', x: Math.round(x), y: Math.round(y), color, maxRadius }));

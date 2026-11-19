@@ -226,8 +226,26 @@ class SkeletalRendererBody extends _ParentRenderer {
         ctx.beginPath(); ctx.moveTo(colBL[0], colBL[1]); ctx.lineTo(colL[0], colL[1]); ctx.lineTo(colR[0], colR[1]); ctx.lineTo(colBR[0], colBR[1]); ctx.closePath(); ctx.fill();
       }
     } else if (arch === 'patriarch_draped_suit') {
-      // Hứa Vũ Đại: Vest 3 mảnh kẻ sọc xám than sáng hơn để rõ lớp + Cà vạt đỏ + Kẹp vàng + Dây đồng hồ + Khăn túi đỏ
-      if (!isSolid) {
+      if (st.dogFurSkin) {
+        if (!isSolid) {
+          // Lông trắng xù dày quanh cổ & trước ngực (Skin Chó Trắng Mũi Đỏ Đội Nón)
+          ctx.fillStyle = '#f8fafc';
+          ctx.strokeStyle = '#64748b';
+          ctx.lineWidth = 1.1;
+          ctx.beginPath();
+          ctx.moveTo(P(sh, -8.5, 0)[0], P(sh, -8.5, 0)[1]);
+          ctx.lineTo(P(sh, -4.5, -5.5)[0], P(sh, -4.5, -5.5)[1]);
+          ctx.lineTo(P(sh, -1.5, -2.5)[0], P(sh, -1.5, -2.5)[1]);
+          ctx.lineTo(P(sh, 1.5, -7.0)[0], P(sh, 1.5, -7.0)[1]);
+          ctx.lineTo(P(sh, 4.5, -2.5)[0], P(sh, 4.5, -2.5)[1]);
+          ctx.lineTo(P(sh, 8.8, 0)[0], P(sh, 8.8, 0)[1]);
+          ctx.lineTo(P(sh, 6.2, -16)[0], P(sh, 6.2, -16)[1]);
+          ctx.lineTo(P(sh, 0.8, -21)[0], P(sh, 0.8, -21)[1]);
+          ctx.lineTo(P(sh, -6.0, -16)[0], P(sh, -6.0, -16)[1]);
+          ctx.closePath();
+          ctx.fill(); ctx.stroke();
+        }
+      } else if (!isSolid) {
         const suitBox = () => {
           ctx.beginPath();
           ctx.moveTo(P(sh, -shW + 2.5, 0)[0], P(sh, -shW + 2.5, 0)[1]);
@@ -754,6 +772,123 @@ class SkeletalRendererBody extends _ParentRenderer {
     const sw = o.sway || 0;
     const isSolid = !!(st && st._solid);
     const hs = st.hairStyle;
+
+    // 0A. Đầu Chó Trắng Mũi Đỏ Đội Nón Mê (Skin Chí Tôn Phẩm: Hứa Vũ Đại)
+    if (st.dogHead) {
+      // Lông cổ & tai nhọn trắng
+      ctx.fillStyle = this._c(st, '#f1f5f9');
+      ctx.beginPath();
+      ctx.moveTo(-10.5, 4.0);
+      ctx.quadraticCurveTo(-13.5, -5.0, -7.5, -11.8);
+      ctx.lineTo(-9.5, -18.5);
+      ctx.lineTo(-2.5, -12.6);
+      ctx.quadraticCurveTo(4.5, -13.2, 8.8, -7.2);
+      ctx.lineTo(15.2, -3.5);
+      ctx.lineTo(14.8, 2.2);
+      ctx.lineTo(9.8, 4.0);
+      ctx.lineTo(12.2, 7.6);
+      ctx.quadraticCurveTo(4.0, 12.2, -4.5, 10.6);
+      ctx.lineTo(-9.5, 12.2);
+      ctx.closePath();
+      ctx.fill();
+      if (!isSolid) {
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)'; ctx.lineWidth = 1.25; ctx.stroke();
+        // Lòng tai & bờm lông cổ xù
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath(); ctx.moveTo(-7.8, -11.5); ctx.lineTo(-8.4, -16.2); ctx.lineTo(-4.0, -11.8); ctx.closePath(); ctx.fill();
+        // Miệng nanh trắng nhe ra dữ tợn
+        ctx.fillStyle = '#450a0a';
+        ctx.beginPath();
+        ctx.moveTo(4.5, 2.2); ctx.lineTo(13.6, 1.8); ctx.lineTo(11.4, 6.2); ctx.lineTo(4.0, 5.2);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(8.5, 1.8); ctx.lineTo(9.4, 4.4); ctx.lineTo(10.3, 1.8);
+        ctx.moveTo(11.4, 1.8); ctx.lineTo(12.2, 4.6); ctx.lineTo(13.0, 1.8);
+        ctx.moveTo(9.8, 5.8); ctx.lineTo(10.6, 3.2); ctx.lineTo(11.4, 5.8);
+        ctx.fill();
+        // MŨI ĐỎ đặc trưng nổi bật ở chóp mõm
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath(); ctx.ellipse(14.8, -1.6, 2.8, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#450a0a'; ctx.lineWidth = 0.75; ctx.stroke();
+        ctx.fillStyle = '#fca5a5';
+        ctx.beginPath(); ctx.arc(14.2, -2.3, 0.8, 0, Math.PI * 2); ctx.fill();
+        // Mắt sói viền đỏ sắc lẹm
+        ctx.fillStyle = '#7f1d1d';
+        ctx.beginPath(); ctx.ellipse(3.6, -3.8, 3.1, 1.8, -0.18, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath(); ctx.ellipse(3.8, -3.8, 2.2, 1.3, -0.18, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath(); ctx.arc(4.3, -3.8, 1.0, 0, Math.PI * 2); ctx.fill();
+      }
+      // Nón Lá rách sẫm màu kèm quai nón
+      if (st.conicalHat) {
+        ctx.save();
+        ctx.translate(-0.5, -10.5);
+        ctx.rotate(-0.12);
+        ctx.fillStyle = this._c(st, '#443828');
+        ctx.beginPath();
+        ctx.moveTo(-18.5, 3.5);
+        ctx.lineTo(0.2, -13.0);
+        ctx.lineTo(19.0, 3.5);
+        ctx.quadraticCurveTo(0, 6.2, -18.5, 3.5);
+        ctx.closePath();
+        ctx.fill();
+        if (!isSolid) {
+          ctx.strokeStyle = '#1c150e'; ctx.lineWidth = 1.45; ctx.stroke();
+          ctx.strokeStyle = 'rgba(203, 182, 145, 0.35)'; ctx.lineWidth = 0.85;
+          for (const rx of [-11, -5, 1, 7, 12]) {
+            ctx.beginPath(); ctx.moveTo(0.2, -12.2); ctx.lineTo(rx, 4.0); ctx.stroke();
+          }
+          ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 1.45;
+          ctx.beginPath();
+          ctx.moveTo(6.5, 4.0);
+          ctx.quadraticCurveTo(2.0, 14.5, -5.5, 18.0);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      return;
+    }
+
+    // 0B. Mũ Trùm Đỏ Thần Trùng Che Mặt Mắt Đỏ (Skin Chí Tôn Phẩm: Thiên Khánh)
+    if (st.thanTrungHood) {
+      ctx.fillStyle = this._c(st, '#991b1b');
+      ctx.beginPath();
+      ctx.moveTo(-12.5, 10.5);
+      ctx.quadraticCurveTo(-15.5, -4.5, -4.5, -16.5);
+      ctx.lineTo(3.5, -18.2);
+      ctx.quadraticCurveTo(13.2, -9.5, 11.4, 2.5);
+      ctx.lineTo(7.5, 11.0);
+      ctx.lineTo(-10.5, 11.5);
+      ctx.closePath();
+      ctx.fill();
+      if (!isSolid) {
+        ctx.strokeStyle = '#050508'; ctx.lineWidth = 1.3; ctx.stroke();
+        // Khe mũ tối đen che kín khuôn mặt + 2 con mắt đỏ rực kinh dị
+        ctx.fillStyle = '#040407';
+        ctx.beginPath();
+        ctx.moveTo(-4.0, -9.5);
+        ctx.quadraticCurveTo(5.8, -11.5, 9.6, -2.5);
+        ctx.quadraticCurveTo(9.2, 7.5, 4.2, 10.2);
+        ctx.quadraticCurveTo(-3.2, 8.5, -5.5, 0.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.15;
+        ctx.beginPath();
+        ctx.moveTo(-3.2, -15.5); ctx.quadraticCurveTo(6.5, -15.0, 10.6, -4.0);
+        ctx.stroke();
+        // Đôi mắt đỏ lườm trong bóng tối
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.moveTo(0.2, -2.2); ctx.lineTo(3.8, -0.6); ctx.lineTo(1.2, -0.2); ctx.closePath();
+        ctx.moveTo(4.8, -2.0); ctx.lineTo(8.4, -0.8); ctx.lineTo(5.6, -0.2); ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#fecaca';
+        ctx.beginPath(); ctx.arc(2.4, -1.0, 0.7, 0, Math.PI * 2); ctx.arc(6.6, -1.1, 0.7, 0, Math.PI * 2); ctx.fill();
+      }
+      return;
+    }
 
     // 1. Tóc/bím tóc dài phía sau đầu
     if (hs === 'giangmanh_topknot' || hs === 'silver_patriarch' || hs === 'white') {
@@ -1334,7 +1469,9 @@ class SkeletalRendererBody extends _ParentRenderer {
     // Vai + cổ trang phục theo đúng archetype nhân vật
     const arch = st.archetype;
     const sg = c.createLinearGradient(0, h * 0.7, 0, h);
-    if (arch === 'mafia_overcoat' || arch === 'patriarch_draped_suit') {
+    if (st.dogFurSkin) {
+      sg.addColorStop(0, '#f8fafc'); sg.addColorStop(1, '#cbd5e1');
+    } else if (arch === 'mafia_overcoat' || arch === 'patriarch_draped_suit') {
       sg.addColorStop(0, st.coatColor || '#14171f'); sg.addColorStop(1, '#07090f');
     } else if (arch === 'phoenix_general') {
       sg.addColorStop(0, '#facc15'); sg.addColorStop(1, '#92400e');
@@ -1351,7 +1488,10 @@ class SkeletalRendererBody extends _ParentRenderer {
     c.fillStyle = st.bareVChest ? st.skin : (st.under || '#e5e7eb');
     c.beginPath(); c.moveTo(w * 0.36, h * 0.7); c.lineTo(w * 0.66, h * 0.7); c.lineTo(w * 0.51, h * 0.9); c.closePath(); c.fill();
 
-    if (arch === 'mafia_overcoat' || arch === 'patriarch_draped_suit' || st.suit) {
+    if (st.dogFurSkin) {
+      c.strokeStyle = '#94a3b8'; c.lineWidth = w * 0.03;
+      c.beginPath(); c.moveTo(w * 0.34, h * 0.72); c.lineTo(w * 0.51, h * 0.9); c.lineTo(w * 0.68, h * 0.72); c.stroke();
+    } else if (arch === 'mafia_overcoat' || arch === 'patriarch_draped_suit' || st.suit) {
       c.strokeStyle = st.tieColor || '#d9a429'; c.lineWidth = w * 0.05;
       c.beginPath(); c.moveTo(w * 0.51, h * 0.72); c.lineTo(w * 0.51, h * 0.95); c.stroke();
       c.strokeStyle = st.vestColor || '#7f1d1d'; c.lineWidth = w * 0.04;
@@ -1397,6 +1537,8 @@ class SkeletalRendererBody extends _ParentRenderer {
     const w = canvas.width, h = canvas.height;
     const isVovinam = (skinId === 'vovinam');
     const isNamCheo = (skinId === 'namcheo');
+    const isThanTrung = (skinId === 'thantrung');
+    const isChoDoiNon = (skinId === 'chodoinon');
     const styleType = charObj.styleType || 'player';
     const dummy = {
       id: 'skin_card_' + charObj.id + '_' + skinId,
@@ -1423,6 +1565,14 @@ class SkeletalRendererBody extends _ParentRenderer {
       bg.addColorStop(0, '#083344');
       bg.addColorStop(0.55, '#0e7490');
       bg.addColorStop(1, '#051923');
+    } else if (isThanTrung) {
+      bg.addColorStop(0, '#450a0a');
+      bg.addColorStop(0.55, '#1e3a8a');
+      bg.addColorStop(1, '#09090d');
+    } else if (isChoDoiNon) {
+      bg.addColorStop(0, '#7f1d1d');
+      bg.addColorStop(0.55, '#271216');
+      bg.addColorStop(1, '#09090b');
     } else if (isVovinam) {
       bg.addColorStop(0, '#0c2461');
       bg.addColorStop(0.55, '#1e3799');

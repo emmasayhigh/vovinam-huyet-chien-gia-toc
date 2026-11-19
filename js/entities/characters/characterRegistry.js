@@ -871,23 +871,41 @@
         const justSummoned = !!(player && (player._fiendSummonFlashTimer || 0) > 0);
         const pipsFilled = justSummoned ? 4 : seq;
         const stepLabel = justSummoned ? '4/4' : `${seq}/4`;
+        const isCrowSkin = skinId === 'thantrung';
         out = {
-          icon: '🔥',
-          name: 'HỎA XU TÀ CHÚ',
+          icon: isCrowSkin ? '🦅' : '🔥',
+          name: isCrowSkin ? 'THẦN TRÙNG GỌI QUẠ' : 'HỎA XU TÀ CHÚ',
           pipsMax: 4,
           pipsFilled,
           statusText: fiends > 0
-            ? `👹 ${fiends}/3 • TÀ CHÚ ${stepLabel} • +10%`
+            ? `${isCrowSkin ? '🦅' : '👹'} ${fiends}/3 • TÀ CHÚ ${stepLabel} • +10%`
             : `TÀ CHÚ ${stepLabel} • +10% ST NHẬN`,
           isBuffActive: fiends > 0 || justSummoned || hasAura,
           accentColor: '#ef4444'
         };
       }
 
-      out.wuLabel = (charId === 'bichlam' && skinId === 'namcheo') ? 'THỦY TRIỀU' : meta.wu;
-      out.handCounterLabel = (charId === 'bichlam' && skinId === 'namcheo') ? 'MÁI CHÈO' : meta.hand;
-      out.legCounterLabel = (charId === 'bichlam' && skinId === 'namcheo') ? 'ĐẠP SÓNG' : meta.leg;
-      out.dodgeLabel = (charId === 'bichlam' && skinId === 'namcheo') ? 'LƯỚT SÓNG' : meta.dodge;
+      if (charId === 'bichlam' && skinId === 'namcheo') {
+        out.wuLabel = 'THỦY TRIỀU';
+        out.handCounterLabel = 'MÁI CHÈO';
+        out.legCounterLabel = 'ĐẠP SÓNG';
+        out.dodgeLabel = 'LƯỚT SÓNG';
+      } else if (charId === 'thienkhanh' && skinId === 'thantrung') {
+        out.wuLabel = 'GỌI QUẠ';
+        out.handCounterLabel = 'QUẠ BÁO OÁN';
+        out.legCounterLabel = 'TRÙNG TANG';
+        out.dodgeLabel = 'ẢNH HUYẾT';
+      } else if (charId === 'huavudai' && skinId === 'chodoinon') {
+        out.wuLabel = 'GẬY GỖ';
+        out.handCounterLabel = 'NANH TRẮNG';
+        out.legCounterLabel = 'CUỒNG KHUYỂN';
+        out.dodgeLabel = 'NÓN MÊ';
+      } else {
+        out.wuLabel = meta.wu;
+        out.handCounterLabel = meta.hand;
+        out.legCounterLabel = meta.leg;
+        out.dodgeLabel = meta.dodge;
+      }
       out.selfDebuffs = this.getEntityDebuffs(player);
       out.targetDebuffs = target ? this.getEntityDebuffs(target) : [];
       return out;

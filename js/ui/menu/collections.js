@@ -213,7 +213,7 @@ class MenuManagerCollections extends window.MenuManagerCharSelect {
     this.hideAll();
     this._shopReturnTarget = keepReturn;
     this._bindShopTabs();
-    if (focusCharId && (String(focusCharId).startsWith('skin_') || focusCharId === 'namcheo' || focusCharId === 'skins')) {
+    if (focusCharId && (String(focusCharId).startsWith('skin_') || ['namcheo', 'thantrung', 'chodoinon', 'skins'].includes(focusCharId))) {
       this.activeShopTab = 'skins';
     } else if (focusCharId === 'heroes' || focusCharId) {
       this.activeShopTab = 'heroes';

@@ -339,15 +339,16 @@ class MenuManagerCharSelectDemo extends window.MenuManagerCharSelectCore {
               : ((window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default'));
           const isVovinam = eqSkin === 'vovinam';
           const isNamCheo = eqSkin === 'namcheo';
+          const isHorrorChiTon = (eqSkin === 'thantrung' || eqSkin === 'chodoinon');
           const styleType = this.getStyleTypeForChar(slot.id);
-          const accent = isNamCheo ? '#0ea5e9' : (isVovinam ? '#1e88e5' : (slot.color || '#d4a017'));
+          const accent = isNamCheo ? '#0ea5e9' : (isHorrorChiTon ? '#ef4444' : (isVovinam ? '#1e88e5' : (slot.color || '#d4a017')));
 
           // Hào quang pháp trận võ đài dưới chân và sau lưng
           ctx.save();
           const pulse = 1 + Math.sin(frame * 0.05) * 0.04;
           const auraGrad = ctx.createRadialGradient(w * 0.5, h * 0.48, 20, w * 0.5, h * 0.48, w * 0.45 * pulse);
-          auraGrad.addColorStop(0, isNamCheo ? 'rgba(14, 165, 233, 0.42)' : (isVovinam ? 'rgba(30, 136, 229, 0.36)' : `${accent}44`));
-          auraGrad.addColorStop(0.55, isNamCheo ? 'rgba(250, 204, 21, 0.16)' : (isVovinam ? 'rgba(255, 213, 79, 0.14)' : `${accent}18`));
+          auraGrad.addColorStop(0, isNamCheo ? 'rgba(14, 165, 233, 0.42)' : (isHorrorChiTon ? 'rgba(220, 38, 38, 0.44)' : (isVovinam ? 'rgba(30, 136, 229, 0.36)' : `${accent}44`)));
+          auraGrad.addColorStop(0.55, isNamCheo ? 'rgba(250, 204, 21, 0.16)' : (isHorrorChiTon ? 'rgba(37, 99, 235, 0.18)' : (isVovinam ? 'rgba(255, 213, 79, 0.14)' : `${accent}18`)));
           auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
           ctx.fillStyle = auraGrad;
           ctx.fillRect(0, 0, w, h);
@@ -355,7 +356,7 @@ class MenuManagerCharSelectDemo extends window.MenuManagerCharSelectCore {
           // Vòng tròn Bát Quái / Âm Dương Vovinam xoay nhẹ phía sau lưng
           ctx.translate(w * 0.5, h * 0.44);
           ctx.rotate(frame * 0.006);
-          ctx.strokeStyle = isNamCheo ? 'rgba(56, 189, 248, 0.42)' : (isVovinam ? 'rgba(255, 213, 79, 0.32)' : 'rgba(255, 215, 110, 0.22)');
+          ctx.strokeStyle = isNamCheo ? 'rgba(56, 189, 248, 0.42)' : (isHorrorChiTon ? 'rgba(239, 68, 68, 0.46)' : (isVovinam ? 'rgba(255, 213, 79, 0.32)' : 'rgba(255, 215, 110, 0.22)'));
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.arc(0, 0, 148, 0, Math.PI * 2);
@@ -370,14 +371,14 @@ class MenuManagerCharSelectDemo extends window.MenuManagerCharSelectCore {
           // Bệ đá võ đài dưới chân
           ctx.save();
           const pedGrad = ctx.createRadialGradient(w * 0.5, h * 0.84, 10, w * 0.5, h * 0.84, 155);
-          pedGrad.addColorStop(0, isNamCheo ? 'rgba(14, 165, 233, 0.52)' : (isVovinam ? 'rgba(41, 182, 246, 0.45)' : 'rgba(255, 195, 65, 0.35)'));
+          pedGrad.addColorStop(0, isNamCheo ? 'rgba(14, 165, 233, 0.52)' : (isHorrorChiTon ? 'rgba(220, 38, 38, 0.52)' : (isVovinam ? 'rgba(41, 182, 246, 0.45)' : 'rgba(255, 195, 65, 0.35)')));
           pedGrad.addColorStop(0.7, 'rgba(15, 22, 36, 0.65)');
           pedGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
           ctx.fillStyle = pedGrad;
           ctx.beginPath();
           ctx.ellipse(w * 0.5, h * 0.84, 150, 26, 0, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = isNamCheo ? 'rgba(56, 189, 248, 0.65)' : (isVovinam ? 'rgba(255, 213, 79, 0.55)' : 'rgba(255, 200, 80, 0.4)');
+          ctx.strokeStyle = isNamCheo ? 'rgba(56, 189, 248, 0.65)' : (isHorrorChiTon ? 'rgba(248, 113, 113, 0.72)' : (isVovinam ? 'rgba(255, 213, 79, 0.55)' : 'rgba(255, 200, 80, 0.4)'));
           ctx.lineWidth = 1.8;
           ctx.beginPath();
           ctx.ellipse(w * 0.5, h * 0.84, 128, 19, 0, 0, Math.PI * 2);

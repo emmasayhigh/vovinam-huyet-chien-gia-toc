@@ -1,23 +1,57 @@
 {
-  "taskId": "AUDIT-BASELINE",
-  "taskTitle": "General Development Verification",
-  "generatedAt": "2026-11-19T01:26:55.132Z",
+  "taskId": "TASK-020",
+  "taskTitle": "Commercial Redesign of Võ Đường Character Select (Hero/Skin/Support/Loadout) & Online Multiplayer Platform",
+  "generatedAt": "2026-11-19T01:53:37.637Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 0,
-    "filesModifiedCount": 0,
+    "filesAddedCount": 5,
+    "filesModifiedCount": 23,
     "filesDeletedCount": 0,
-    "testsExecuted": 19,
-    "testsPassed": 19,
+    "testsExecuted": 27,
+    "testsPassed": 27,
     "testsFailed": 0
   },
   "scope": {
-    "filesAdded": [],
-    "filesModified": [],
+    "filesAdded": [
+      "assets/images/characters/char_huavudai_chodoinon.png",
+      "assets/images/characters/char_thienkhanh_thantrung.png",
+      "assets/images/effects/dog_jaw_lower.png",
+      "assets/images/effects/dog_jaw_upper.png",
+      "assets/images/effects/than_trung_crow.png"
+    ],
+    "filesModified": [
+      "gitignore",
+      "data/.gitkeep",
+      "harness/reports/latest-test-run.json",
+      "harness/reports/verification-report.json",
+      "harness/reports/verification-report.md",
+      "index.html",
+      "js/core/effects.js",
+      "js/core/game.js",
+      "js/core/save.js",
+      "js/data/skins.js",
+      "js/entities/animation/animationArchetypes.js",
+      "js/entities/animation/animationBody.js",
+      "js/entities/animation/animationRenderBase.js",
+      "js/entities/characters/characterRegistry.js",
+      "js/entities/characters/huavudai.js",
+      "js/entities/characters/thienkhanh.js",
+      "js/ui/menu/charselect/charSelectCore.js",
+      "js/ui/menu/charselect/charSelectDemo.js",
+      "js/ui/menu/collections.js",
+      "tasks/TASK-020.json",
+      "tests/test_online_multiplayer.js",
+      "tests/test_skin_registry_and_cloud_auth.js",
+      "tests/test_vovinam_skin_skills.js"
+    ],
     "filesDeleted": []
   },
   "features": {
-    "affected": [],
+    "affected": [
+      "FEAT-CHR-001",
+      "FEAT-UI-001",
+      "FEAT-ONL-001"
+    ],
     "preserved": [
       "FEAT-CMB-001",
       "FEAT-CMB-002",

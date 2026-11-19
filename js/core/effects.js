@@ -45,8 +45,11 @@ class EffectManager {
     this.initRain(150);
     this._spriteCache = {};
     this._getEffectSprite('tieuquy_imp', 'assets/images/effects/tieuquy_imp.png');
+    this._getEffectSprite('than_trung_crow', 'assets/images/effects/than_trung_crow.png');
     this._getEffectSprite('croc_lower', 'assets/images/effects/croc_body_lower.png');
     this._getEffectSprite('croc_upper', 'assets/images/effects/croc_upper_jaw.png');
+    this._getEffectSprite('dog_lower', 'assets/images/effects/dog_jaw_lower.png');
+    this._getEffectSprite('dog_upper', 'assets/images/effects/dog_jaw_upper.png');
   }
 
   /**
@@ -607,6 +610,7 @@ class EffectManager {
     if (!fiend) return;
     this.skillProps.push({
       kind: 'taoist_fiend',
+      summonKind: fiend.summonKind || 'imp',
       fiend,
       x: fiend.x,
       y: fiend.y,
@@ -616,6 +620,44 @@ class EffectManager {
       maxLife: fiend.maxLife || 6.0,
       alpha: 1.0
     });
+  }
+
+  // 11. Hiệu ứng Mõm Chó Trắng Mũi Đỏ trồi lên từ mặt đất ngoạm cắn (Chó Đội Nón — Hứa Vũ Đại Ult)
+  createDogJawsBite(x, y, dir = 1, scale = 1.0) {
+    this.skillProps.push({
+      kind: 'dog_bite',
+      x,
+      y,
+      dir: dir || 1,
+      scale: scale || 1.0,
+      rot: 0,
+      spin: 0,
+      radius: 108 * (scale || 1.0),
+      color: '#f8fafc',
+      accent: '#dc2626',
+      life: 0.64,
+      maxLife: 0.64,
+      alpha: 1.0
+    });
+    this.createShockRing(x, y, '#dc2626', 112 * (scale || 1.0));
+    this.createShockRing(x, y, '#f8fafc', 78 * (scale || 1.0));
+    this.createGroundCrack(x, y, 96 * (scale || 1.0), '#dc2626');
+    for (let i = 0; i < 18; i++) {
+      const spread = (Math.random() - 0.5) * 6.0;
+      this._pushParticle({
+        x: x + (Math.random() - 0.5) * 38 * scale,
+        y: y - 12 - Math.random() * 44 * scale,
+        vx: spread + (dir || 1) * 1.1,
+        vy: -3.5 - Math.random() * 6.2,
+        size: 3.2 + Math.random() * 3.8,
+        color: i % 3 === 0 ? '#dc2626' : '#f8fafc',
+        alpha: 1.0,
+        life: 0.45 + Math.random() * 0.22,
+        maxLife: 0.67,
+        gravity: 0.16,
+        isStreak: true
+      });
+    }
   }
 
   // Hiệu ứng Sóng Năng Lượng Tuyệt Kỹ (Ultimate Shockwave Blast — dùng delta time, đa bảng màu)
@@ -1811,6 +1853,122 @@ class EffectManager {
           ctx.stroke();
         }
         ctx.restore();
+      } else if (sp.kind === 'dog_bite') {
+        const sc = sp.scale || 1.0;
+        const prog = Math.max(0, Math.min(1, 1 - (sp.life / (sp.maxLife || 0.64))));
+        const rise = prog < 0.42 ? (1 - Math.pow(1 - prog / 0.42, 2)) : 1;
+        const dogLower = this._getEffectSprite('dog_lower', 'assets/images/effects/dog_jaw_lower.png');
+        const dogUpper = this._getEffectSprite('dog_upper', 'assets/images/effects/dog_jaw_upper.png');
+
+        ctx.save();
+        ctx.scale(sp.dir || 1, 1);
+
+        // Vòng nứt huyết nguyệt dưới mặt đất nơi mõm chó trắng mọc trồi lên
+        ctx.strokeStyle = 'rgba(220, 38, 38, 0.88)';
+        ctx.lineWidth = 2.8;
+        ctx.beginPath();
+        ctx.ellipse(0, 14 * sc, 54 * sc, 12 * sc, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(24, 10, 12, 0.72)';
+        ctx.beginPath();
+        ctx.ellipse(0, 14 * sc, 42 * sc, 9 * sc, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (dogLower && dogUpper) {
+          const size = 248 * sc;
+          ctx.beginPath();
+          ctx.rect(-size * 1.4, -330 * sc, size * 2.8, 346 * sc);
+          ctx.clip();
+
+          // Trồi mạnh từ mặt đất lên & hơi chếch ngẩng hướng lên cắn xé mục tiêu
+          const baseY = (44 - rise * 198) * sc;
+          ctx.translate(-8 * sc, baseY);
+          ctx.rotate(-0.42);
+
+          const drawX = -size * 0.48;
+          const drawY = -size * 0.44;
+          const hx = drawX + 0.48 * size;
+          const hy = drawY + 0.36 * size;
+
+          // Mở rộng hàm trên khi mọc lên (0..0.44), sau đó sập mạnh khít răng nanh (0.44..0.64)
+          const jawAngle = prog < 0.44
+            ? (-0.42 + prog * 0.16)
+            : Math.min(0.08, -0.35 + (prog - 0.44) * 3.1);
+
+          ctx.drawImage(dogLower, drawX, drawY, size, size);
+          ctx.save();
+          ctx.translate(hx, hy);
+          ctx.rotate(jawAngle);
+          ctx.drawImage(dogUpper, -0.48 * size, -0.58 * size, size, size);
+          ctx.restore();
+
+          if (prog >= 0.44 && prog <= 0.80) {
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 4.6;
+            ctx.beginPath();
+            ctx.arc(hx + 48 * sc, hy + 12 * sc, 34 * sc, -1.0, 1.0);
+            ctx.stroke();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.6;
+            ctx.beginPath();
+            ctx.arc(hx + 48 * sc, hy + 12 * sc, 21 * sc, -1.25, 1.25);
+            ctx.stroke();
+          }
+          ctx.restore();
+          ctx.restore();
+          continue;
+        }
+
+        // Vector fallback Chó Trắng Mũi Đỏ (dùng cho headless hoặc khi ảnh đang tải)
+        const jawY = (20 - rise * 92) * sc;
+        const jawOpen = prog < 0.44
+          ? (0.68 - prog * 0.32)
+          : Math.max(0.04, 0.54 - (prog - 0.44) * 2.5);
+        ctx.translate(0, jawY);
+        ctx.rotate(-0.44);
+        // Hàm trên lông trắng + Mũi Đỏ rực + nanh nhọn
+        ctx.save();
+        ctx.rotate(-jawOpen);
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        ctx.moveTo(-22 * sc, -26 * sc);
+        ctx.quadraticCurveTo(26 * sc, -30 * sc, 72 * sc, -10 * sc);
+        ctx.lineTo(66 * sc, 0);
+        ctx.lineTo(-12 * sc, 2 * sc);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath(); ctx.arc(69 * sc, -9 * sc, 7 * sc, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(18 * sc, -16 * sc, 4.5 * sc, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        for (let t = 0; t < 5; t++) {
+          const tx = (14 + t * 11) * sc;
+          ctx.beginPath();
+          ctx.moveTo(tx - 3.5 * sc, 0); ctx.lineTo(tx, 12 * sc); ctx.lineTo(tx + 3.5 * sc, 0);
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.restore();
+        // Hàm dưới lông trắng + nanh
+        ctx.save();
+        ctx.rotate(jawOpen * 0.45);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        ctx.moveTo(-18 * sc, 4 * sc); ctx.lineTo(62 * sc, 2 * sc); ctx.lineTo(54 * sc, 18 * sc); ctx.lineTo(-14 * sc, 24 * sc);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        for (let t = 0; t < 5; t++) {
+          const tx = (16 + t * 10) * sc;
+          ctx.beginPath();
+          ctx.moveTo(tx - 3 * sc, 2 * sc); ctx.lineTo(tx, -10 * sc); ctx.lineTo(tx + 3 * sc, 2 * sc);
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.restore();
+        ctx.restore();
       } else if (sp.kind === 'croc_tail_sweep') {
         ctx.globalCompositeOperation = 'lighter';
         ctx.rotate(sp.rot);
@@ -1872,61 +2030,110 @@ class EffectManager {
         }
       } else if (sp.kind === 'taoist_fiend' && sp.fiend) {
         const f = sp.fiend;
+        const isCrow = (f.summonKind || sp.summonKind) === 'crow';
         ctx.restore(); // reset from sp.x/sp.y so we always track live f.x, f.y
         ctx.save();
         ctx.globalAlpha = Math.max(0, Math.min(1, sp.alpha));
         ctx.translate(f.x, f.y);
         const dir = f.facing >= 0 ? 1 : -1;
-        const bob = Math.sin(performance.now() * 0.015 + (f.seed || 0)) * 3.5;
+        const tNow = performance.now();
+        const bob = Math.sin(tNow * (isCrow ? 0.022 : 0.015) + (f.seed || 0)) * (isCrow ? 6.5 : 3.5);
         ctx.scale(dir, 1);
-        // Vòng bùa chú đỏ sáng dưới chân + hào quang lửa giúp Tiểu Quỷ nổi bật rõ trên mọi sàn đấu
+        // Vòng bùa chú đỏ-lam dưới chân giúp Quạ / Tiểu Quỷ nổi bật rõ trên mọi sàn đấu
         ctx.globalCompositeOperation = 'lighter';
-        ctx.strokeStyle = 'rgba(248, 113, 113, 0.9)';
+        ctx.strokeStyle = isCrow ? 'rgba(220, 38, 38, 0.92)' : 'rgba(248, 113, 113, 0.9)';
         ctx.lineWidth = 2.6;
-        ctx.beginPath(); ctx.ellipse(0, 2, 24, 8, 0, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = 'rgba(220, 38, 38, 0.22)';
-        ctx.beginPath(); ctx.ellipse(0, -34 + bob, 28, 36, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 2, isCrow ? 28 : 24, 8, 0, 0, Math.PI * 2); ctx.stroke();
+        if (isCrow) {
+          ctx.strokeStyle = 'rgba(37, 99, 235, 0.65)';
+          ctx.lineWidth = 1.6;
+          ctx.beginPath(); ctx.ellipse(0, 2, 19, 5.5, 0, 0, Math.PI * 2); ctx.stroke();
+        }
+        ctx.fillStyle = isCrow ? 'rgba(185, 28, 28, 0.20)' : 'rgba(220, 38, 38, 0.22)';
+        ctx.beginPath(); ctx.ellipse(0, (isCrow ? -48 : -34) + bob, 30, 36, 0, 0, Math.PI * 2); ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
 
-        const impSprite = this._getEffectSprite('tieuquy_imp', 'assets/images/effects/tieuquy_imp.png');
-        if (impSprite) {
+        if (isCrow) {
+          const crowSprite = this._getEffectSprite('than_trung_crow', 'assets/images/effects/than_trung_crow.png');
           const lunging = f.slashTimer > 0;
-          const size = 98;
-          ctx.save();
-          ctx.translate(lunging ? 8 : 0, bob + (lunging ? -4 : 0));
-          if (lunging) ctx.rotate(0.14);
-          ctx.drawImage(impSprite, -size * 0.5, -size + 8, size, size);
-          if (lunging) {
-            ctx.globalCompositeOperation = 'lighter';
-            ctx.strokeStyle = '#facc15';
-            ctx.lineWidth = 3;
+          const flapScaleY = 0.94 + Math.sin(tNow * 0.026 + (f.seed || 0)) * 0.07;
+          if (crowSprite) {
+            const size = 104;
+            ctx.save();
+            ctx.translate(lunging ? 12 : 0, -48 + bob + (lunging ? -5 : 0));
+            ctx.scale(1, flapScaleY);
+            ctx.rotate(lunging ? 0.26 : -0.05);
+            ctx.drawImage(crowSprite, -size * 0.5, -size * 0.5, size, size);
+            if (lunging) {
+              ctx.globalCompositeOperation = 'lighter';
+              ctx.strokeStyle = '#ef4444';
+              ctx.lineWidth = 3.2;
+              ctx.beginPath();
+              ctx.arc(28, 4, 24, -0.8, 0.8);
+              ctx.stroke();
+            }
+            ctx.restore();
+          } else {
+            // Vector Quạ Đen Mắt Đỏ fallback (chế độ headless)
+            const flap = Math.sin(tNow * 0.028 + (f.seed || 0)) * 12;
+            ctx.save();
+            ctx.translate(lunging ? 10 : 0, -48 + bob);
+            ctx.fillStyle = '#09090b';
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 1.6;
             ctx.beginPath();
-            ctx.arc(22, -32, 24, -0.75, 0.75);
+            ctx.ellipse(0, 0, 18, 9, -0.15, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-6, -2); ctx.lineTo(-28, -24 + flap); ctx.lineTo(-4, -10);
+            ctx.moveTo(2, -4); ctx.lineTo(-14, -28 - flap * 0.7); ctx.lineTo(10, -8);
+            ctx.fill();
+            ctx.beginPath(); ctx.moveTo(14, -6); ctx.lineTo(28, -1); ctx.lineTo(14, 4); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath(); ctx.arc(14, -4, 2.2, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+          }
+        } else {
+          const impSprite = this._getEffectSprite('tieuquy_imp', 'assets/images/effects/tieuquy_imp.png');
+          if (impSprite) {
+            const lunging = f.slashTimer > 0;
+            const size = 98;
+            ctx.save();
+            ctx.translate(lunging ? 8 : 0, bob + (lunging ? -4 : 0));
+            if (lunging) ctx.rotate(0.14);
+            ctx.drawImage(impSprite, -size * 0.5, -size + 8, size, size);
+            if (lunging) {
+              ctx.globalCompositeOperation = 'lighter';
+              ctx.strokeStyle = '#facc15';
+              ctx.lineWidth = 3;
+              ctx.beginPath();
+              ctx.arc(22, -32, 24, -0.75, 0.75);
+              ctx.stroke();
+            }
+            ctx.restore();
+          } else {
+            // Thân hình Âm Binh Lửa Đỏ (fallback khi chạy headless không tải ảnh)
+            ctx.fillStyle = '#18181b';
+            ctx.beginPath();
+            ctx.moveTo(-12, -2 + bob); ctx.lineTo(-9, -36 + bob); ctx.lineTo(10, -34 + bob); ctx.lineTo(14, 0 + bob);
+            ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.6; ctx.stroke();
+            ctx.fillStyle = '#27272a';
+            ctx.beginPath(); ctx.arc(1, -43 + bob, 9.5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#f97316';
+            ctx.beginPath(); ctx.moveTo(-5, -50 + bob); ctx.lineTo(-9, -60 + bob); ctx.lineTo(0, -52 + bob); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(4, -50 + bob); ctx.lineTo(9, -60 + bob); ctx.lineTo(8, -50 + bob); ctx.fill();
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath(); ctx.arc(5, -44 + bob, 2.2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#dc2626'; ctx.fillRect(4, -52 + bob, 4, 9);
+            const lunge = f.slashTimer > 0 ? 10 : 0;
+            ctx.strokeStyle = f.slashTimer > 0 ? '#facc15' : '#ea580c';
+            ctx.lineWidth = f.slashTimer > 0 ? 3.5 : 2.2;
+            ctx.beginPath();
+            ctx.moveTo(8, -28 + bob); ctx.lineTo(22 + lunge, -24 + bob);
+            ctx.moveTo(8, -22 + bob); ctx.lineTo(20 + lunge, -18 + bob);
             ctx.stroke();
           }
-          ctx.restore();
-        } else {
-          // Thân hình Âm Binh Lửa Đỏ (fallback khi chạy headless không tải ảnh)
-          ctx.fillStyle = '#18181b';
-          ctx.beginPath();
-          ctx.moveTo(-12, -2 + bob); ctx.lineTo(-9, -36 + bob); ctx.lineTo(10, -34 + bob); ctx.lineTo(14, 0 + bob);
-          ctx.closePath(); ctx.fill();
-          ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.6; ctx.stroke();
-          ctx.fillStyle = '#27272a';
-          ctx.beginPath(); ctx.arc(1, -43 + bob, 9.5, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#f97316';
-          ctx.beginPath(); ctx.moveTo(-5, -50 + bob); ctx.lineTo(-9, -60 + bob); ctx.lineTo(0, -52 + bob); ctx.fill();
-          ctx.beginPath(); ctx.moveTo(4, -50 + bob); ctx.lineTo(9, -60 + bob); ctx.lineTo(8, -50 + bob); ctx.fill();
-          ctx.fillStyle = '#facc15';
-          ctx.beginPath(); ctx.arc(5, -44 + bob, 2.2, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#dc2626'; ctx.fillRect(4, -52 + bob, 4, 9);
-          const lunge = f.slashTimer > 0 ? 10 : 0;
-          ctx.strokeStyle = f.slashTimer > 0 ? '#facc15' : '#ea580c';
-          ctx.lineWidth = f.slashTimer > 0 ? 3.5 : 2.2;
-          ctx.beginPath();
-          ctx.moveTo(8, -28 + bob); ctx.lineTo(22 + lunge, -24 + bob);
-          ctx.moveTo(8, -22 + bob); ctx.lineTo(20 + lunge, -18 + bob);
-          ctx.stroke();
         }
       }
       ctx.restore();

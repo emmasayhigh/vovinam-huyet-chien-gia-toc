@@ -21,6 +21,13 @@
     return !!(window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'pvp');
   }
 
+  function isThanTrungSkin(entity) {
+    return !!(entity && (
+      entity.equippedSkin === 'thantrung' ||
+      (window.CharacterRegistry && typeof window.CharacterRegistry.getEquippedSkin === 'function' && window.CharacterRegistry.getEquippedSkin(entity) === 'thantrung')
+    ));
+  }
+
   function spawnTaoistFiend(owner, x, y, life = 6.5, dmg = 26) {
     if (!owner) return null;
     if (!Array.isArray(owner._summonedFiends)) owner._summonedFiends = [];
@@ -28,7 +35,8 @@
     const maxFiends = inPvp ? 2 : 3;
     const resolvedLife = inPvp ? Math.min(life, 4.5) : life;
     const resolvedDmg = inPvp ? Math.min(dmg, 12) : Math.min(dmg, 18);
-    // Tối đa 2 Âm Binh Hỏa trong PvP (3 trong PvE): nếu đầy thì thay con cũ nhất
+    const isCrow = isThanTrungSkin(owner);
+    // Tối đa 2 Âm Binh Hỏa / Quạ trong PvP (3 trong PvE): nếu đầy thì thay con cũ nhất
     while (owner._summonedFiends.length >= maxFiends) {
       const oldest = owner._summonedFiends.shift();
       if (oldest) oldest.life = 0;
@@ -43,6 +51,7 @@
       dmg: resolvedDmg,
       attackCd: 0.12,
       slashTimer: 0,
+      summonKind: isCrow ? 'crow' : 'imp',
       seed: Math.random() * 10
     };
     owner._summonedFiends.push(fiend);
@@ -52,7 +61,9 @@
       if (typeof fx.createTaoistFiend === 'function') fx.createTaoistFiend(fiend);
       if (typeof fx.createShockRing === 'function') fx.createShockRing(fiend.x, fiend.y, '#dc2626');
       if (typeof fx.createHitSparks === 'function') fx.createHitSparks(fiend.x, fiend.y - 45, 10, true);
-      if (typeof fx.addFloatingText === 'function') fx.addFloatingText('👹 TRIỆU HỒI HỎA ÂM BINH!', fiend.x, fiend.y - 120, 'crit');
+      if (typeof fx.addFloatingText === 'function') {
+        fx.addFloatingText(isCrow ? '🦅 TRIỆU HỒI QUẠ THẦN TRÙNG!' : '👹 TRIỆU HỒI HỎA ÂM BINH!', fiend.x, fiend.y - 120, 'crit');
+      }
     }
     return fiend;
   }
@@ -183,7 +194,14 @@
             if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(f.x + f.facing * 24, f.y - 44, f.facing, (Math.random() - 0.5) * 0.6, 52);
             if (!targetEvading) {
               if (typeof fx.createHitSparks === 'function') fx.createHitSparks(tx, ty - 64, 7, true);
-              if (typeof fx.addFloatingText === 'function') fx.addFloatingText(`🔥 ÂM BINH TRẢM (-${dmg})`, tx, ty - 110, 'crit');
+              if (typeof fx.addFloatingText === 'function') {
+                fx.addFloatingText(
+                  f.summonKind === 'crow' ? `🦅 QUẠ MỔ (-${dmg})` : `🔥 ÂM BINH TRẢM (-${dmg})`,
+                  tx,
+                  ty - 110,
+                  'crit'
+                );
+              }
             }
           }
         }
