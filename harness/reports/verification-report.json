@@ -1,45 +1,37 @@
 {
-  "taskId": "TASK-025",
-  "taskTitle": "Fix PvP Rematch Visual/State Desync, Co-op Stage Unlock & Save Isolation, and Training Mode Prop Leak",
-  "generatedAt": "2026-11-19T08:39:42.163Z",
+  "taskId": "TASK-026",
+  "taskTitle": "Integrate Main Theme MP3 Soundtrack Across Menu and Combat with Full Mute/Volume Sync",
+  "generatedAt": "2026-11-19T08:48:10.536Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 1,
-    "filesModifiedCount": 15,
+    "filesAddedCount": 3,
+    "filesModifiedCount": 8,
     "filesDeletedCount": 0,
-    "testsExecuted": 27,
-    "testsPassed": 27,
+    "testsExecuted": 28,
+    "testsPassed": 28,
     "testsFailed": 0
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-025.json"
+      "assets/audio/",
+      "tasks/TASK-026.json",
+      "tests/test_audio_bgm.js"
     ],
     "filesModified": [
       "arness/reports/latest-test-run.json",
       "harness/reports/verification-report.json",
       "harness/reports/verification-report.md",
       "index.html",
-      "js/core/game.js",
-      "js/core/gameBase.js",
+      "js/core/audio.js",
       "js/core/gameFlow.js",
-      "js/core/gameRender.js",
-      "js/core/gameStory.js",
-      "js/core/save.js",
-      "js/entities/animation/animationRenderBase.js",
-      "js/ui/ranking.js",
-      "js/ui/training/trainingManagerBase.js",
-      "server.js",
-      "tests/test_online_multiplayer.js"
+      "js/core/main.js",
+      "js/ui/menu/menuBase.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
-      "FEAT-NET-001",
       "FEAT-SAV-001",
-      "FEAT-TRN-001",
-      "FEAT-CMB-001",
       "FEAT-UI-001"
     ],
     "preserved": [

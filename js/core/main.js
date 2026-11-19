@@ -379,7 +379,10 @@ window.addEventListener('DOMContentLoaded', () => {
         window.uiManager.hidePause();
         window.uiManager.showTitleScreen();
         window.game.state = 'MENU';
-        if (window.audioManager) window.audioManager.stopBGM();
+        if (window.audioManager) {
+          if (typeof window.audioManager.startMenuBGM === 'function') window.audioManager.startMenuBGM();
+          else window.audioManager.stopBGM();
+        }
       }
     });
   }

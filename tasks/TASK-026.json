@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-026",
+  "title": "Integrate Main Theme MP3 Soundtrack Across Menu and Combat with Full Mute/Volume Sync",
+  "author": "Antigravity Senior Game Audio & Systems Engineer",
+  "date": "2026-11-19",
+  "objective": "Tích hợp file nhạc nền MP3 chính thức (assets/audio/main_theme.mp3) vào hệ thống âm thanh SoundEngine để phát xuyên suốt từ Menu chính đến các màn chơi chiến đấu (PvP, Co-op, Chiến dịch, Boss Rush, Võ Đường), thay cho nhạc nền tổng hợp và đồng bộ hoàn toàn nút Mute + thanh kéo Âm lượng.",
+  "requestedBehavior": "1. Lưu bản nhạc nền tại assets/audio/main_theme.mp3. 2. Nâng cấp SoundEngine (js/core/audio.js) hỗ trợ phát lặp liên tục nhạc nền MP3 qua HTML5 Audio (startMenuBGM / startStageBGM / duckBGM / stopBGM), tự đồng bộ volume khi kéo thanh Cài đặt hoặc bấm Tắt tiếng (M / btn-top-audio), giữ fallback Web Audio thuần cho môi trường không có Audio DOM. 3. Cập nhật gameFlow.js, main.js và menuBase.js để nhạc nền phát xuyên suốt không bị ngắt khi về Menu hoặc chuyển màn, giảm nhẹ âm lượng tạm thời khi vang fanfare thắng/thua. 4. Thêm kiểm thử tự động tests/test_audio_bgm.js.",
+  "allowedFiles": [
+    "assets/audio/",
+    "assets/audio/main_theme.mp3",
+    "js/core/audio.js",
+    "js/core/gameFlow.js",
+    "js/core/main.js",
+    "js/ui/menu/menuBase.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_audio_bgm.js",
+    "tasks/TASK-026.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-SAV-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "SoundEngine",
+    "GameFlow",
+    "MenuManagerBase",
+    "SaveManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 30,
+    "authorizedRemovals": [
+      "Updating stopBGM calls on menu return / stage victory / game over to continuous main_theme BGM duck/resume behavior"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-026.json"
+  ]
+}

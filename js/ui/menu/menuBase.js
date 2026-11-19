@@ -540,9 +540,13 @@ class MenuManagerBase {
         syncSliderBadge('setting-music-val', music.value);
         if (window.uiCore) window.uiCore.syncRangeFill(music);
         if (window.audioManager) {
-          window.audioManager.musicVolume = vol;
-          if (window.audioManager.musicGain && window.audioManager.ctx) {
-            window.audioManager.musicGain.gain.setValueAtTime(vol, window.audioManager.ctx.currentTime);
+          if (typeof window.audioManager.setMusicVolume === 'function') {
+            window.audioManager.setMusicVolume(vol, false);
+          } else {
+            window.audioManager.musicVolume = vol;
+            if (window.audioManager.musicGain && window.audioManager.ctx) {
+              window.audioManager.musicGain.gain.setValueAtTime(vol, window.audioManager.ctx.currentTime);
+            }
           }
         }
         if (window.saveManager && window.saveManager.data && window.saveManager.data.settings) {

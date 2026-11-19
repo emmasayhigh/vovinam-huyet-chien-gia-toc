@@ -26,7 +26,11 @@ class GameFlow extends window.GameCamera {
       window.allyManager.reset();
     }
     if (window.audioManager) {
-      window.audioManager.stopBGM();
+      if (typeof window.audioManager.duckBGM === 'function' && window.audioManager.bgmAudio) {
+        window.audioManager.duckBGM(0.25, 2400);
+      } else {
+        window.audioManager.stopBGM();
+      }
       window.audioManager.playVictory();
       window.audioManager.setBGMIntensity(1);
     }
@@ -278,7 +282,13 @@ class GameFlow extends window.GameCamera {
         om.send({ type: 'coop_stage_ended', epoch: om._matchEpoch || 1, result: 'defeat' });
       }
     }
-    if (window.audioManager) window.audioManager.stopBGM();
+    if (window.audioManager) {
+      if (typeof window.audioManager.duckBGM === 'function' && window.audioManager.bgmAudio) {
+        window.audioManager.duckBGM(0.35, 1600);
+      } else {
+        window.audioManager.stopBGM();
+      }
+    }
     if (window.uiManager) window.uiManager.showGameOver();
   }
 
@@ -338,7 +348,10 @@ class GameFlow extends window.GameCamera {
       window.uiManager.showTitleScreen();
     }
     if (window.menuManager) window.menuManager.hideAll();
-    if (window.audioManager) window.audioManager.stopBGM();
+    if (window.audioManager) {
+      if (typeof window.audioManager.startMenuBGM === 'function') window.audioManager.startMenuBGM();
+      else window.audioManager.stopBGM();
+    }
   }
 
   // Vẽ vật bay (ném môi trường) — không cần ảnh, vẽ bằng canvas thuần

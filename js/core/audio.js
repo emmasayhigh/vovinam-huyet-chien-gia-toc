@@ -12,6 +12,8 @@
  *  - vovinam : trống nhanh, đòn võ thuật mạnh (nhân vật chính)
  */
 
+const MAIN_THEME_BGM_SRC = 'assets/audio/main_theme.mp3';
+
 const BGM_THEMES = {
   hua:     { bpm: 128, bass: [55, 55, 65.41, 55, 58.27, 55, 49, 55],      wave: 'sawtooth', industrial: true,  hats: 'double', gong: false, lead: false },
   doclap:  { bpm: 136, bass: [65.41, 65.41, 73.42, 87.31, 65.41, 58.27, 65.41, 98], wave: 'triangle', industrial: false, hats: 'double', gong: false, lead: false },
@@ -45,6 +47,74 @@ class SoundEngine {
     this.theme = BGM_THEMES.vovinam;
     // Kho track âm thanh ngoài (Howler.js / Audio HTML5 nếu nạp thêm .mp3/.ogg)
     this.externalTracks = {};
+
+    // Nhạc nền chính thức MP3 phát xuyên suốt Menu & Chiến đấu
+    this.mainThemeSrc = MAIN_THEME_BGM_SRC;
+    this.bgmAudio = null;
+    this.bgmWanted = true;
+    this._bgmDuckMul = 1.0;
+    this._bgmDuckTimer = null;
+  }
+
+  _ensureMainThemeAudio() {
+    if (this.bgmAudio) return this.bgmAudio;
+    if (typeof Audio === 'undefined' || typeof window === 'undefined') return null;
+    try {
+      const a = new Audio(this.mainThemeSrc);
+      a.loop = true;
+      a.preload = 'auto';
+      a.volume = this._getEffectiveBgmVolume();
+      this.bgmAudio = a;
+      return a;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  _getEffectiveBgmVolume() {
+    if (this.isMuted) return 0;
+    const mv = (typeof this.musicVolume === 'number' && isFinite(this.musicVolume)) ? this.musicVolume : 0.45;
+    const master = (typeof this.masterVolume === 'number' && isFinite(this.masterVolume)) ? this.masterVolume : 0.75;
+    const duck = (typeof this._bgmDuckMul === 'number' && isFinite(this._bgmDuckMul)) ? this._bgmDuckMul : 1.0;
+    return Math.max(0, Math.min(1, mv * master * duck));
+  }
+
+  _syncBgmAudioState() {
+    const a = this.bgmAudio;
+    if (!a) return false;
+    a.volume = this._getEffectiveBgmVolume();
+    if (!this.bgmWanted || this.isMuted || !this.musicPlaying) {
+      try {
+        if (!a.paused && typeof a.pause === 'function') a.pause();
+      } catch (_) {}
+      return false;
+    }
+    try {
+      if (a.paused && typeof a.play === 'function') {
+        const res = a.play();
+        if (res && typeof res.catch === 'function') {
+          res.catch(() => {
+            this._scheduleBgmUnlockRetry();
+          });
+        }
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  _scheduleBgmUnlockRetry() {
+    if (this._bgmRetryBound || typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
+    this._bgmRetryBound = true;
+    const retry = () => {
+      this._bgmRetryBound = false;
+      if (this.bgmWanted && !this.isMuted && this.musicPlaying) {
+        this._syncBgmAudioState();
+      }
+    };
+    document.addEventListener('pointerdown', retry, { once: true, passive: true });
+    document.addEventListener('keydown', retry, { once: true });
   }
 
   /**
@@ -118,18 +188,23 @@ class SoundEngine {
       } catch (err) {}
     }
     // Đồng bộ âm lượng với cài đặt đã lưu (chỉ làm lần đầu sau khi init)
-    if (this._settingsApplied) return;
-    if (window.saveManager && window.saveManager.data && window.saveManager.data.settings) {
-      this.applySettings(window.saveManager.data.settings);
+    if (!this._settingsApplied) {
+      if (window.saveManager && window.saveManager.data && window.saveManager.data.settings) {
+        this.applySettings(window.saveManager.data.settings);
+      }
+      this._settingsApplied = true;
     }
-    this._settingsApplied = true;
+    if (this.bgmWanted !== false) {
+      this.startMenuBGM();
+    }
   }
 
   toggleMute() {
     this.isMuted = !this.isMuted;
-    if (this.masterGain) {
+    if (this.masterGain && this.ctx) {
       this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : this.baseMaster, this.ctx.currentTime);
     }
+    this._syncBgmAudioState();
     if (window.saveManager) window.saveManager.setSetting('muted', this.isMuted);
     return !this.isMuted;
   }
@@ -141,18 +216,20 @@ class SoundEngine {
     if (typeof settings.sfxVolume === 'number') this.setSfxVolume(settings.sfxVolume);
     if (typeof settings.muted === 'boolean') {
       this.isMuted = settings.muted;
-      if (this.masterGain) {
+      if (this.masterGain && this.ctx) {
         this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : this.baseMaster, this.ctx.currentTime);
       }
+      this._syncBgmAudioState();
     }
   }
 
-  setMusicVolume(v) {
+  setMusicVolume(v, persist = true) {
     this.musicVolume = Math.max(0, Math.min(1, v));
     if (this.musicGain && this.ctx) {
       this.musicGain.gain.setValueAtTime(this.musicVolume, this.ctx.currentTime);
     }
-    if (window.saveManager) window.saveManager.setSetting('musicVolume', this.musicVolume);
+    this._syncBgmAudioState();
+    if (persist && window.saveManager) window.saveManager.setSetting('musicVolume', this.musicVolume);
   }
 
   setSfxVolume(v) {
@@ -949,28 +1026,70 @@ class SoundEngine {
   }
 
   // ==========================================================================
-  // DYNAMIC PROCEDURAL BGM ENGINE (NHẠC NỀN CHIẾN ĐẤU ĐIỆN ẢNH)
+  // BGM ENGINE (NHẠC NỀN MP3 CHÍNH THỨC + FALLBACK WEB AUDIO)
   // ==========================================================================
-  startStageBGM(stageNumber = 1, factionId = null) {
-    this.unlock();
-    this.currentStage = stageNumber;
-    if (this.bgmTimer) clearInterval(this.bgmTimer);
+  startMenuBGM() {
+    this.bgmWanted = true;
+    this.musicPlaying = true;
+    if (this.bgmTimer) {
+      clearInterval(this.bgmTimer);
+      this.bgmTimer = null;
+    }
+    const a = this._ensureMainThemeAudio();
+    if (a) {
+      this._syncBgmAudioState();
+      return true;
+    }
+    return false;
+  }
 
-    // Chọn chủ đề nhạc theo PHE PHÁI của màn chơi
+  duckBGM(factor = 0.28, durationMs = 2200) {
+    this._bgmDuckMul = Math.max(0.05, Math.min(1, Number(factor) || 0.28));
+    this._syncBgmAudioState();
+    if (this._bgmDuckTimer) {
+      clearTimeout(this._bgmDuckTimer);
+      this._bgmDuckTimer = null;
+    }
+    if (durationMs > 0) {
+      this._bgmDuckTimer = setTimeout(() => {
+        this._bgmDuckTimer = null;
+        this._bgmDuckMul = 1.0;
+        this._syncBgmAudioState();
+      }, durationMs);
+    }
+  }
+
+  startStageBGM(stageNumber = 1, factionId = null) {
+    if (!this.initialized) this.init();
+    this.currentStage = stageNumber;
+    if (this.bgmTimer) {
+      clearInterval(this.bgmTimer);
+      this.bgmTimer = null;
+    }
+
+    // Chọn chủ đề nhạc theo PHE PHÁI của màn chơi (giữ metadata cho UI / fallback)
     const meta = window.STORY_META && window.STORY_META.stages ? window.STORY_META.stages[stageNumber] : null;
     const fid = factionId || (meta && meta.faction) || (stageNumber >= 2 ? 'hua' : 'hua');
     this.theme = BGM_THEMES[fid] || BGM_THEMES.hua;
 
+    this.bgmWanted = true;
     this.musicPlaying = true;
     this.bgmStep = 0;
     this.bgmIntensity = 1;
     this.bossPhase = 1;
     this.baseBpm = this.theme.bpm || 120;
     this.bpm = this.baseBpm;
+
+    const a = !this.useProceduralBGM ? this._ensureMainThemeAudio() : null;
+    if (a) {
+      this._syncBgmAudioState();
+      return;
+    }
     this.restartBGMLoop();
   }
 
   restartBGMLoop() {
+    if (this.bgmAudio && !this.useProceduralBGM) return;
     if (this.bgmTimer) {
       clearInterval(this.bgmTimer);
       this.bgmTimer = null;
@@ -1008,11 +1127,15 @@ class SoundEngine {
     this.bgmIntensity = Math.max(1, Math.min(1.4, v));
   }
 
-  stopBGM() {
+  stopBGM(pauseTrack = true) {
     this.musicPlaying = false;
     if (this.bgmTimer) {
       clearInterval(this.bgmTimer);
       this.bgmTimer = null;
+    }
+    if (pauseTrack) {
+      this.bgmWanted = false;
+      this._syncBgmAudioState();
     }
   }
 
