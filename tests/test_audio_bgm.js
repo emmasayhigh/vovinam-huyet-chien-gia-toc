@@ -22,7 +22,12 @@ const dojoMp3Path = path.resolve(__dirname, '../assets/audio/dojo_theme.mp3');
 assert.ok(fs.existsSync(dojoMp3Path), 'assets/audio/dojo_theme.mp3 must exist');
 const dojoMp3Size = fs.statSync(dojoMp3Path).size;
 assert.ok(dojoMp3Size > 1000000, `assets/audio/dojo_theme.mp3 size (${dojoMp3Size}) must be > 1MB`);
-console.log(`✓ Asset check passed: main_theme.mp3 (${mp3Size}), pvp_theme.mp3 (${pvpMp3Size}), dojo_theme.mp3 (${dojoMp3Size})`);
+
+const bossMp3Path = path.resolve(__dirname, '../assets/audio/boss_theme.mp3');
+assert.ok(fs.existsSync(bossMp3Path), 'assets/audio/boss_theme.mp3 must exist');
+const bossMp3Size = fs.statSync(bossMp3Path).size;
+assert.ok(bossMp3Size > 1000000, `assets/audio/boss_theme.mp3 size (${bossMp3Size}) must be > 1MB`);
+console.log(`✓ Asset check passed: main (${mp3Size}), pvp (${pvpMp3Size}), dojo (${dojoMp3Size}), boss (${bossMp3Size})`);
 
 // 2. Mock DOM / Audio / WebAudio environment
 const createdAudios = [];
@@ -149,18 +154,36 @@ assert.ok(Math.abs(dojo.volume - 0.5 * 0.75) < 0.001, 'Dojo track inherits music
 am.unlock();
 assert.strictEqual(am.activeBgmKey, 'dojo', 'unlock() preserves active Dojo track in Võ Đường');
 
-// 10. Returning to Menu / Stage switches back cleanly to main_theme
+// 10. Boss Battle Mode switches to boss_theme.mp3, pauses others, and preserves across boss phases
+am.startBossBGM();
+const boss = am.bossAudio;
+assert.ok(boss, 'bossAudio created on startBossBGM');
+assert.strictEqual(am.activeBgmKey, 'boss', 'startBossBGM sets activeBgmKey to boss');
+assert.strictEqual(boss.src, 'assets/audio/boss_theme.mp3', 'Uses boss_theme.mp3 source');
+assert.strictEqual(boss.loop, true, 'Boss BGM loops continuously');
+assert.strictEqual(boss.paused, false, 'startBossBGM plays Boss track');
+assert.strictEqual(bgm.paused, true, 'startBossBGM pauses main_theme');
+assert.strictEqual(dojo.paused, true, 'startBossBGM pauses dojoAudio');
+assert.strictEqual(pvp.paused, true, 'startBossBGM pauses pvpAudio');
+am.setBossPhase(3, 0.2);
+assert.strictEqual(am.bgmTimer, null, 'Boss phase escalation keeps MP3 track without procedural timer');
+assert.strictEqual(am.activeBgmKey, 'boss', 'Boss phase keeps boss track active');
+am.unlock();
+assert.strictEqual(am.activeBgmKey, 'boss', 'unlock() preserves active Boss track');
+
+// 11. Returning to Menu / Stage switches back cleanly to main_theme
 am.startMenuBGM();
 assert.strictEqual(am.activeBgmKey, 'main', 'startMenuBGM restores main track key');
-assert.strictEqual(dojo.paused, true, 'dojoAudio pauses when returning to Menu');
+assert.strictEqual(boss.paused, true, 'bossAudio pauses when returning to Menu');
+assert.strictEqual(dojo.paused, true, 'dojoAudio stays paused when returning to Menu');
 assert.strictEqual(pvp.paused, true, 'pvpAudio stays paused when returning to Menu');
 assert.strictEqual(bgm.paused, false, 'main_theme resumes when returning to Menu');
 
-// 11. Explicit stopBGM pauses track, startMenuBGM resumes
+// 12. Explicit stopBGM pauses track, startMenuBGM resumes
 am.stopBGM();
 assert.strictEqual(bgm.paused, true, 'stopBGM pauses track');
 am.startMenuBGM();
 assert.strictEqual(bgm.paused, false, 'startMenuBGM resumes track');
-assert.strictEqual(createdAudios.length, 3, 'Never leaks duplicate Audio objects (main + pvp + dojo)');
+assert.strictEqual(createdAudios.length, 4, 'Never leaks duplicate Audio objects (main + pvp + dojo + boss)');
 
-console.log('✓ ALL MAIN, PVP & DOJO BGM TESTS PASSED!');
+console.log('✓ ALL MAIN, PVP, DOJO & BOSS BGM TESTS PASSED!');

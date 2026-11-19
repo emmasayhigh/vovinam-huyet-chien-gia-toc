@@ -2977,6 +2977,9 @@ class OnlineManager {
             enemy.title = stData.bossTitle;
             g.currentBoss = enemy;
             if (window.uiManager) window.uiManager.showBossHUD(enemy);
+            if (window.audioManager && typeof window.audioManager.startBossBGM === 'function') {
+              window.audioManager.startBossBGM();
+            }
           }
         }
         if (!enemy && typeof g.createEnemyInstance === 'function') {

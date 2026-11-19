@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-029",
+  "title": "Integrate Dedicated Boss Battle MP3 Soundtrack Across Campaign, Co-op, and Boss Rush",
+  "author": "Antigravity Senior Game Audio & Systems Engineer",
+  "date": "2026-11-19",
+  "objective": "Tích hợp bản nhạc MP3 đánh Boss hoành tráng tại assets/audio/boss_theme.mp3, tự động phát khi giao tranh với Boss trong Chiến dịch, Co-op và Tái Đấu Boss (Boss Rush), và tự chuyển về main_theme.mp3 khi về Menu hoặc sang màn mới.",
+  "requestedBehavior": "1. Lưu assets/audio/boss_theme.mp3 từ file lúc 15:38:47. 2. Thêm track 'boss' vào BGM_TRACK_MAP và startBossBGM() trong js/core/audio.js. 3. Kích hoạt startBossBGM() khi Boss xuất hiện ở js/core/gameWave.js, js/features/bossRush.js và Co-op Guest (js/core/game.js). 4. Cập nhật tests/test_audio_bgm.js.",
+  "allowedFiles": [
+    "assets/audio/boss_theme.mp3",
+    "ssets/audio/boss_theme.mp3",
+    "js/core/audio.js",
+    "js/core/gameWave.js",
+    "js/core/game.js",
+    "js/features/bossRush.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_audio_bgm.js",
+    "tasks/TASK-029.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-BOS-001",
+    "FEAT-BOS-002",
+    "FEAT-NET-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "SoundEngine",
+    "GameWave",
+    "BossRushManager",
+    "OnlineManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 25,
+    "authorizedRemovals": [
+      "Updating Boss Rush launch BGM call from startStageBGM to startBossBGM and expanding BGM_TRACK_MAP/tests"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-029.json"
+  ]
+}

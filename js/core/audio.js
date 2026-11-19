@@ -15,11 +15,13 @@
 const MAIN_THEME_BGM_SRC = 'assets/audio/main_theme.mp3';
 const PVP_THEME_BGM_SRC = 'assets/audio/pvp_theme.mp3';
 const DOJO_THEME_BGM_SRC = 'assets/audio/dojo_theme.mp3';
+const BOSS_THEME_BGM_SRC = 'assets/audio/boss_theme.mp3';
 
 const BGM_TRACK_MAP = {
   main: { prop: 'bgmAudio', src: MAIN_THEME_BGM_SRC },
   pvp: { prop: 'pvpAudio', src: PVP_THEME_BGM_SRC },
-  dojo: { prop: 'dojoAudio', src: DOJO_THEME_BGM_SRC }
+  dojo: { prop: 'dojoAudio', src: DOJO_THEME_BGM_SRC },
+  boss: { prop: 'bossAudio', src: BOSS_THEME_BGM_SRC }
 };
 
 const BGM_THEMES = {
@@ -56,14 +58,16 @@ class SoundEngine {
     // Kho track âm thanh ngoài (Howler.js / Audio HTML5 nếu nạp thêm .mp3/.ogg)
     this.externalTracks = {};
 
-    // Nhạc nền chính thức MP3 phát xuyên suốt Menu & Chiến đấu (kèm nhạc riêng cho 1v1 PvP & Võ Đường)
+    // Nhạc nền chính thức MP3 phát xuyên suốt Menu & Chiến đấu (kèm nhạc riêng cho 1v1 PvP, Võ Đường & Đánh Boss)
     this.mainThemeSrc = MAIN_THEME_BGM_SRC;
     this.pvpThemeSrc = PVP_THEME_BGM_SRC;
     this.dojoThemeSrc = DOJO_THEME_BGM_SRC;
+    this.bossThemeSrc = BOSS_THEME_BGM_SRC;
     this.bgmAudio = null;
     this.pvpAudio = null;
     this.dojoAudio = null;
-    this.activeBgmKey = 'main'; // 'main' | 'pvp' | 'dojo'
+    this.bossAudio = null;
+    this.activeBgmKey = 'main'; // 'main' | 'pvp' | 'dojo' | 'boss'
     this.bgmWanted = true;
     this._bgmDuckMul = 1.0;
     this._bgmDuckTimer = null;
@@ -1062,13 +1066,13 @@ class SoundEngine {
   }
 
   // ==========================================================================
-  // BGM ENGINE (NHẠC NỀN MP3 CHÍNH THỨC + NHẠC PVP + NHẠC VÕ ĐƯỜNG + WEB AUDIO FALLBACK)
+  // BGM ENGINE (NHẠC NỀN MP3 CHÍNH THỨC + PVP + VÕ ĐƯỜNG + BOSS + WEB AUDIO FALLBACK)
   // ==========================================================================
   _switchToTrack(targetKey = 'main', fallbackMain = false) {
     const key = BGM_TRACK_MAP[targetKey] ? targetKey : 'main';
     const prevKey = this.activeBgmKey;
     const switched = prevKey !== key;
-    if (switched && (prevKey === 'pvp' || prevKey === 'dojo')) {
+    if (switched && prevKey && prevKey !== 'main' && BGM_TRACK_MAP[prevKey]) {
       const prevEl = this[BGM_TRACK_MAP[prevKey].prop];
       if (prevEl) {
         try { prevEl.currentTime = 0; } catch (_) {}
@@ -1105,6 +1109,10 @@ class SoundEngine {
 
   startDojoBGM() {
     return this._switchToTrack('dojo', true);
+  }
+
+  startBossBGM() {
+    return this._switchToTrack('boss', true);
   }
 
   duckBGM(factor = 0.28, durationMs = 2200) {

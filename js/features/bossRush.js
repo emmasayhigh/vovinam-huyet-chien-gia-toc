@@ -450,7 +450,8 @@ class BossRushManager {
     }
 
     if (window.audioManager) {
-      window.audioManager.startStageBGM(stageNum);
+      if (typeof window.audioManager.startBossBGM === 'function') window.audioManager.startBossBGM();
+      else window.audioManager.startStageBGM(stageNum);
       window.audioManager.setBGMIntensity(1.3);
       window.audioManager.playGong(0.6);
     }

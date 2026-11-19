@@ -314,6 +314,9 @@ class GameWave extends window.GameBase {
       window.uiManager.showBossIntro(boss);
     }
     if (window.audioManager) {
+      if (typeof window.audioManager.startBossBGM === 'function') {
+        window.audioManager.startBossBGM();
+      }
       window.audioManager.playGong(0.4);
       window.audioManager.setBGMIntensity(1.3);
     }

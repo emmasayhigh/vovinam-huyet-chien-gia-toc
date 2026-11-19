@@ -1,27 +1,36 @@
 {
-  "taskId": "TASK-028",
-  "taskTitle": "Integrate Dedicated Dojo (Vo Duong / Training) MP3 Soundtrack",
-  "generatedAt": "2026-11-19T09:01:00.541Z",
+  "taskId": "TASK-029",
+  "taskTitle": "Integrate Dedicated Boss Battle MP3 Soundtrack Across Campaign, Co-op, and Boss Rush",
+  "generatedAt": "2026-11-19T09:05:40.785Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 0,
-    "filesModifiedCount": 1,
+    "filesAddedCount": 2,
+    "filesModifiedCount": 6,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
     "testsFailed": 0
   },
   "scope": {
-    "filesAdded": [],
+    "filesAdded": [
+      "assets/audio/boss_theme.mp3",
+      "tasks/TASK-029.json"
+    ],
     "filesModified": [
-      "ndex.html"
+      "ndex.html",
+      "js/core/audio.js",
+      "js/core/game.js",
+      "js/core/gameWave.js",
+      "js/features/bossRush.js",
+      "tests/test_audio_bgm.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
-      "FEAT-TRN-001",
-      "FEAT-SAV-001",
+      "FEAT-BOS-001",
+      "FEAT-BOS-002",
+      "FEAT-NET-001",
       "FEAT-UI-001"
     ],
     "preserved": [
