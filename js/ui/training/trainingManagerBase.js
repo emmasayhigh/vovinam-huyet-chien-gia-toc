@@ -155,6 +155,10 @@ class TrainingManagerBase {
     game.arenaMinX = 50;
     game.arenaMaxX = 1400;
 
+    if (window.audioManager && typeof window.audioManager.startDojoBGM === 'function') {
+      window.audioManager.startDojoBGM();
+    }
+
     // Sinh Mộc Nhân ở cự ly vàng đối luyện (cách người chơi 140px)
     this.dummy = new TrainingDummy(500, 580);
     this.dummy.facing = -1;

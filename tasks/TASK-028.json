@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-028",
+  "title": "Integrate Dedicated Dojo (Vo Duong / Training) MP3 Soundtrack",
+  "author": "Antigravity Senior Game Audio & Systems Engineer",
+  "date": "2026-11-19",
+  "objective": "Tích hợp bản nhạc MP3 thư thái riêng cho Võ Đường (Training Mode) tại assets/audio/dojo_theme.mp3, tự động phát khi vào Võ Đường và chuyển về main_theme.mp3 khi rời Võ Đường.",
+  "requestedBehavior": "1. Lưu assets/audio/dojo_theme.mp3 từ file lúc 15:37:48. 2. Nâng SoundEngine (js/core/audio.js) hỗ trợ track 'dojo' qua startDojoBGM() bên cạnh 'main' và 'pvp'. 3. Gọi startDojoBGM() trong TrainingManagerBase.startTraining (js/ui/training/trainingManagerBase.js). 4. Cập nhật tests/test_audio_bgm.js kiểm chứng đủ 3 track.",
+  "allowedFiles": [
+    "assets/audio/dojo_theme.mp3",
+    "ssets/audio/dojo_theme.mp3",
+    "js/core/audio.js",
+    "js/ui/training/trainingManagerBase.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_audio_bgm.js",
+    "tasks/TASK-028.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-TRN-001",
+    "FEAT-SAV-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "SoundEngine",
+    "TrainingManagerBase",
+    "GameFlow"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 65,
+    "authorizedRemovals": [
+      "Generalizing _syncBgmAudioState and _ensureTrackAudio in js/core/audio.js for 'main' | 'pvp' | 'dojo' BGM tracks"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-028.json"
+  ]
+}

@@ -17,7 +17,12 @@ const pvpMp3Path = path.resolve(__dirname, '../assets/audio/pvp_theme.mp3');
 assert.ok(fs.existsSync(pvpMp3Path), 'assets/audio/pvp_theme.mp3 must exist');
 const pvpMp3Size = fs.statSync(pvpMp3Path).size;
 assert.ok(pvpMp3Size > 1000000, `assets/audio/pvp_theme.mp3 size (${pvpMp3Size}) must be > 1MB`);
-console.log(`✓ Asset check passed: main_theme.mp3 (${mp3Size} bytes), pvp_theme.mp3 (${pvpMp3Size} bytes)`);
+
+const dojoMp3Path = path.resolve(__dirname, '../assets/audio/dojo_theme.mp3');
+assert.ok(fs.existsSync(dojoMp3Path), 'assets/audio/dojo_theme.mp3 must exist');
+const dojoMp3Size = fs.statSync(dojoMp3Path).size;
+assert.ok(dojoMp3Size > 1000000, `assets/audio/dojo_theme.mp3 size (${dojoMp3Size}) must be > 1MB`);
+console.log(`✓ Asset check passed: main_theme.mp3 (${mp3Size}), pvp_theme.mp3 (${pvpMp3Size}), dojo_theme.mp3 (${dojoMp3Size})`);
 
 // 2. Mock DOM / Audio / WebAudio environment
 const createdAudios = [];
@@ -130,17 +135,32 @@ assert.strictEqual(am.activeBgmKey, 'pvp', 'unlock() preserves active PvP track 
 am.setMusicVolume(0.5, true);
 assert.ok(Math.abs(pvp.volume - 0.5 * 0.75) < 0.001, 'setMusicVolume updates active PvP track volume live');
 
-// 9. Returning to Menu / Stage switches back from PvP to main_theme cleanly
+// 9. Dojo (Võ Đường) Mode switches to dojo_theme.mp3, pauses other tracks, and returns to main_theme.mp3 on Menu
+am.startDojoBGM();
+const dojo = am.dojoAudio;
+assert.ok(dojo, 'dojoAudio created on startDojoBGM');
+assert.strictEqual(am.activeBgmKey, 'dojo', 'startDojoBGM sets activeBgmKey to dojo');
+assert.strictEqual(dojo.src, 'assets/audio/dojo_theme.mp3', 'Uses dojo_theme.mp3 source');
+assert.strictEqual(dojo.loop, true, 'Dojo BGM loops continuously');
+assert.strictEqual(dojo.paused, false, 'startDojoBGM plays Dojo track');
+assert.strictEqual(bgm.paused, true, 'startDojoBGM pauses main_theme');
+assert.strictEqual(pvp.paused, true, 'startDojoBGM pauses pvpAudio');
+assert.ok(Math.abs(dojo.volume - 0.5 * 0.75) < 0.001, 'Dojo track inherits musicVolume * masterVolume');
+am.unlock();
+assert.strictEqual(am.activeBgmKey, 'dojo', 'unlock() preserves active Dojo track in Võ Đường');
+
+// 10. Returning to Menu / Stage switches back cleanly to main_theme
 am.startMenuBGM();
 assert.strictEqual(am.activeBgmKey, 'main', 'startMenuBGM restores main track key');
-assert.strictEqual(pvp.paused, true, 'pvpAudio pauses when returning to Menu');
+assert.strictEqual(dojo.paused, true, 'dojoAudio pauses when returning to Menu');
+assert.strictEqual(pvp.paused, true, 'pvpAudio stays paused when returning to Menu');
 assert.strictEqual(bgm.paused, false, 'main_theme resumes when returning to Menu');
 
-// 10. Explicit stopBGM pauses track, startMenuBGM resumes
+// 11. Explicit stopBGM pauses track, startMenuBGM resumes
 am.stopBGM();
 assert.strictEqual(bgm.paused, true, 'stopBGM pauses track');
 am.startMenuBGM();
 assert.strictEqual(bgm.paused, false, 'startMenuBGM resumes track');
-assert.strictEqual(createdAudios.length, 2, 'Never leaks duplicate Audio objects (1 main + 1 pvp)');
+assert.strictEqual(createdAudios.length, 3, 'Never leaks duplicate Audio objects (main + pvp + dojo)');
 
-console.log('✓ ALL MAIN & PVP BGM TESTS PASSED!');
+console.log('✓ ALL MAIN, PVP & DOJO BGM TESTS PASSED!');
