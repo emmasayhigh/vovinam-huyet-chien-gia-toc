@@ -711,6 +711,9 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       case 'match_result': {
         const room = client.roomCode ? rooms.get(client.roomCode) : null;
         if (!room) return;
+        if (Number.isFinite(Number(msg.epoch)) && room.matchEpoch && Number(msg.epoch) !== Number(room.matchEpoch)) {
+          return;
+        }
         const winnerSlot = Number(msg.winnerSlot) === 2 ? 2 : 1;
         if (room.status === 'playing') {
           if (winnerSlot === 1) room.scores.p1 += 1;
@@ -763,6 +766,9 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       case 'pvp_hit': {
         const room = client.roomCode ? rooms.get(client.roomCode) : null;
         if (!room) return;
+        if (Number.isFinite(Number(msg.epoch)) && room.matchEpoch && Number(msg.epoch) !== Number(room.matchEpoch)) {
+          return;
+        }
         const now = Date.now();
         if (!client._hitWindowStart || (now - client._hitWindowStart) > 1000) {
           client._hitWindowStart = now;
@@ -796,6 +802,9 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       case 'vfx_event': {
         const room = client.roomCode ? rooms.get(client.roomCode) : null;
         if (!room) return;
+        if (Number.isFinite(Number(msg.epoch)) && room.matchEpoch && Number(msg.epoch) !== Number(room.matchEpoch)) {
+          return;
+        }
         msg.fromSlot = client.slot;
         broadcastRoom(room, msg, client.id);
         break;

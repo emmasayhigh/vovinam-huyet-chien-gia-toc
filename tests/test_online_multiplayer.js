@@ -1494,8 +1494,106 @@ function connectWsClient(port) {
     assert.strictEqual(rpKd.state, 'idle', 'RemotePlayer finishes getup -> idle cleanly instead of staying knocked down forever');
     window.onlineManager.leaveMatch(false);
     window.input = savedInput15d;
+
+    // 15e. TASK-031 Phantom 0-HP / Invisible RemotePlayer Desync Guards
+    pkts15.length = 0;
+    window.onlineManager.slot = 1;
+    window.onlineManager._sentStateSeq = 0;
+    window.onlineManager.handleServerMessage({
+      type: 'match_started',
+      room: {
+        code: 'FIX31',
+        mode: 'pvp',
+        status: 'playing',
+        matchEpoch: 2,
+        scores: { p1: 0, p2: 0 },
+        players: [
+          { slot: 1, name: 'Dai', charId: 'huavudai', skinId: 'chodoinon' },
+          { slot: 2, name: 'Vua', charId: 'giangmanh', skinId: 'default' }
+        ]
+      }
+    });
+    window.onlineManager._introLockTimer = 0;
+    window.onlineManager._syncAccum = 999;
+    window.onlineManager.update(0.05);
+    const seqR1 = window.onlineManager._sentStateSeq;
+    assert.ok(seqR1 >= 1, 'Round 1 increments _sentStateSeq');
+
+    window.onlineManager.handleServerMessage({
+      type: 'rematch_start',
+      room: {
+        code: 'FIX31',
+        mode: 'pvp',
+        status: 'playing',
+        matchEpoch: 3,
+        scores: { p1: 1, p2: 0 },
+        players: [
+          { slot: 1, name: 'Dai', charId: 'huavudai', skinId: 'chodoinon' },
+          { slot: 2, name: 'Vua', charId: 'giangmanh', skinId: 'default' }
+        ]
+      }
+    });
+    window.onlineManager._introLockTimer = 0;
+    window.onlineManager._syncAccum = 999;
+    window.onlineManager.update(0.05);
+    assert.ok(window.onlineManager._sentStateSeq > seqR1, '_sentStateSeq stays strictly monotonic across rematch');
+
+    const rpFix = window.onlineManager.remotePlayer;
+    // Simulate a poisoned high seq from a legacy cached peer before rematch, then 5 consecutive restarted Round-2 packets
+    rpFix.applyRemoteState({ seq: 900, hp: 0, maxHp: 1040, isDead: true, state: 'knockdown', x: 160 });
+    assert.strictEqual(rpFix.hp, 0);
+    rpFix.applyRemoteState({ seq: 1, hp: 1040, maxHp: 1040, isDead: false, state: 'idle', x: 920 });
+    assert.strictEqual(rpFix.hp, 0, 'Single out-of-order packet is still dropped');
+    for (let s = 2; s <= 5; s++) {
+      rpFix.applyRemoteState({ seq: s, hp: 1040, maxHp: 1040, isDead: false, state: 'idle', x: 920 });
+    }
+    assert.strictEqual(rpFix.hp, 1040, 'Consecutive restarted-seq stream (>=5 packets) recovers RemotePlayer HP cleanly');
+    assert.strictEqual(rpFix.isDead, false, 'Recovered RemotePlayer clears phantom isDead flag');
+
+    // Optimistic lethal takeDamage & passive resolveHit clamp at >=1 HP until authoritative pvp_hit_ack
+    rpFix.invincibleTimer = 0;
+    rpFix.state = 'idle';
+    rpFix.hp = 40;
+    pkts15.length = 0;
+    rpFix.takeDamage(200, 8, true);
+    assert.strictEqual(rpFix.hp, 1, 'RemotePlayer.takeDamage clamps optimistic prediction at >=1 HP before ACK');
+    assert.strictEqual(rpFix.isDead, false, 'RemotePlayer is NOT marked isDead=true prematurely before ACK');
+
+    rpFix.invincibleTimer = 0;
+    rpFix.state = 'idle';
+    rpFix.hp = 10;
+    window.game.player.setCharacter('huavudai');
+    pkts15.length = 0;
+    window.combatSystem.resolveHit(window.game.player, rpFix, { damage: 45, knockback: 24, knockdown: true, weight: 'heavy' });
+    assert.strictEqual(rpFix.hp, 1, 'Combat passive bonus damage on RemotePlayer also clamps at >=1 HP before ACK');
+    assert.strictEqual(rpFix.isDead, false, 'Passive bonus does NOT lock RemotePlayer as dead before ACK');
+    const passivePkt = pkts15.find((p) => p.type === 'pvp_hit' && p.bypassInvincible === true);
+    assert.ok(passivePkt && passivePkt.epoch === 3 && Number.isFinite(passivePkt.hitSeq), 'Passive pvp_hit carries epoch & hitSeq for ACK');
+
+    // Confirm RemotePlayer never fades invisible even if isDead && stateTimer > 2.5
+    rpFix.isDead = true;
+    rpFix.state = 'knockdown';
+    rpFix.stateTimer = 4.0;
+    const alphaLog = [];
+    const mockBaseCtx = {
+      _alpha: 1,
+      get globalAlpha() { return this._alpha; },
+      set globalAlpha(v) { this._alpha = v; alphaLog.push(v); },
+      createLinearGradient() { return { addColorStop() {} }; },
+      createRadialGradient() { return { addColorStop() {} }; },
+      measureText() { return { width: 40 }; }
+    };
+    const mockAlphaCtx = new Proxy(mockBaseCtx, {
+      get(target, prop) {
+        if (prop in target) return target[prop];
+        return () => {};
+      }
+    });
+    window.skeletalRenderer.render(mockAlphaCtx, rpFix, { x: 0, y: 0 });
+    assert.ok(!alphaLog.some((a) => a === 0), 'SkeletalRenderer never fades RemotePlayer to 0 alpha');
+    window.onlineManager.leaveMatch(false);
   }
-  console.log('✓ TEST 15: TASK-025 & TASK-030 (Rematch, Co-op Stage Lock, Training Prop Clean, Knockdown Background Recovery) passed');
+  console.log('✓ TEST 15: TASK-025, TASK-030 & TASK-031 (Rematch, Background Knockdown Recovery, Phantom 0-HP Fix) passed');
 
   console.log('\n================================================');
   console.log('ALL ONLINE MULTIPLAYER TESTS PASSED 100%!');

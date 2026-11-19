@@ -35,8 +35,8 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
 
     ctx.save();
 
-    // Mờ dần xác lính thường
-    if (!ghost && e.isDead && !isBoss && !isPlayer && (e.stateTimer || 0) > 1.6) {
+    // Mờ dần xác lính thường (không bao giờ làm tàng hình RemotePlayer trong PvP/Co-op)
+    if (!ghost && e.isDead && !isBoss && !isPlayer && !e.isRemotePlayer && (e.stateTimer || 0) > 1.6) {
       ctx.globalAlpha *= U.clamp(1 - ((e.stateTimer || 0) - 1.6) / 0.9);
     }
 

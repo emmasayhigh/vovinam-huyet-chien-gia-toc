@@ -871,10 +871,21 @@ class CombatSystem {
         window.CharacterRegistry.onAttackHit(attacker, defender, attackData, this);
         if (defender.isRemotePlayer && hpBeforePassive !== null && defender.hp < hpBeforePassive &&
             window.onlineManager && window.onlineManager.isActive) {
-          defender._optimisticHpLockTimer = 0.6;
-          window.onlineManager.send({
+          const mgr = window.onlineManager;
+          const hitSeq = ++mgr._lastSentHitSeq;
+          const passiveDmg = Math.max(1, Math.round(hpBeforePassive - defender.hp));
+          // Giữ tối thiểu 1 HP dự đoán cục bộ tới khi peer xác nhận pvp_hit_ack
+          if (defender.hp <= 0) {
+            defender.hp = 1;
+            defender.isDead = false;
+          }
+          defender._optimisticHpLockTimer = Math.max(defender._optimisticHpLockTimer || 0, 0.8);
+          defender._optimisticTargetHitSeq = hitSeq;
+          mgr.send({
             type: 'pvp_hit',
-            damage: Math.round(hpBeforePassive - defender.hp),
+            epoch: mgr._matchEpoch || 1,
+            hitSeq,
+            damage: passiveDmg,
             bypassInvincible: true
           });
         }

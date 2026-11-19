@@ -30,6 +30,7 @@ class RemotePlayer extends (window.Player || Object) {
     this.netVz = 0;
     this.comboStep = 0;
     this._lastStateSeq = 0;
+    this._seqRegressionCount = 0;
     this._optimisticHpLockTimer = 0;
     this._optimisticTargetHitSeq = 0;
     this._netRxAge = 0;
@@ -87,6 +88,7 @@ class RemotePlayer extends (window.Player || Object) {
     this.netVz = 0;
     this.comboStep = 0;
     this._lastStateSeq = 0;
+    this._seqRegressionCount = 0;
     this._optimisticHpLockTimer = 0;
     this._optimisticTargetHitSeq = 0;
     this._netRxAge = 0;
@@ -199,7 +201,11 @@ class RemotePlayer extends (window.Player || Object) {
   applyRemoteState(s) {
     if (!s || typeof s !== 'object') return;
     if (Number.isFinite(s.seq)) {
-      if (this._lastStateSeq && s.seq < this._lastStateSeq) return;
+      if (this._lastStateSeq && s.seq < this._lastStateSeq) {
+        this._seqRegressionCount = (this._seqRegressionCount || 0) + 1;
+        if (this._seqRegressionCount < 5) return;
+      }
+      this._seqRegressionCount = 0;
       this._lastStateSeq = s.seq;
     }
     this._netRxAge = 0;
@@ -364,7 +370,9 @@ class RemotePlayer extends (window.Player || Object) {
     const bounds = this.getWorldBounds();
     const rttLock = Math.max(1.1, Math.min(2.2, ((mgr.pingMs || 220) * 3.0) / 1000));
     const hitSeq = ++mgr._lastSentHitSeq;
-    this.hp = Math.max(0, (this.hp || 0) - predictedDmg);
+    const curHp = Math.max(0, this.hp || 0);
+    // Chỉ dự đoán tối đa xuống 1 HP: chỉ đóng dấu chết (0 HP / isDead) khi nhận pvp_hit_ack hoặc player_state từ máy đối thủ
+    this.hp = curHp > 1 ? Math.max(1, curHp - predictedDmg) : curHp;
     this._optimisticHpLockTimer = rttLock;
     this._optimisticTargetHitSeq = hitSeq;
     if (!bypassInv) {
@@ -378,7 +386,6 @@ class RemotePlayer extends (window.Player || Object) {
         this.stateTimer = 0;
       }
     }
-    if (this.hp <= 0) this.isDead = true;
 
     if (window.audioManager && window.audioManager.playPunchHit && !bypassInv) {
       window.audioManager.playPunchHit();
@@ -491,7 +498,7 @@ class OnlineManager {
     this._coopHitSeq = 0;
     this._lastCoopHitAck = 0;
     this._lastCoopWaveIndex = 0;
-    this._sentStateSeq = 0;
+    this._sentStateSeq = this._sentStateSeq || 0;
     this._lastPeerPacketAt = Date.now();
     this._peerLostWarned = false;
     if (this._pendingHits) this._pendingHits.clear();
@@ -2450,7 +2457,7 @@ class OnlineManager {
     this._lastSentFiendsSig = '';
     this._lastSentHitSeq = 0;
     this._lastRecvHitSeq = 0;
-    this._sentStateSeq = 0;
+    this._sentStateSeq = this._sentStateSeq || 0;
     this._lastPeerPacketAt = Date.now();
     this._peerLostWarned = false;
     if (this._pendingHits) this._pendingHits.clear();
@@ -2520,7 +2527,7 @@ class OnlineManager {
     this._coopHitSeq = 0;
     this._lastCoopHitAck = 0;
     this._lastCoopWaveIndex = 0;
-    this._sentStateSeq = 0;
+    this._sentStateSeq = this._sentStateSeq || 0;
     this._lastPeerPacketAt = Date.now();
     this._peerLostWarned = false;
     if (this._pendingHits) this._pendingHits.clear();

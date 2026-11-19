@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-030",
-  "taskTitle": "Fix Permanent Knockdown Freeze When Switching Browser Tabs / Window Blur / Online ESC",
-  "generatedAt": "2026-11-19T09:13:38.831Z",
+  "taskId": "TASK-031",
+  "taskTitle": "Fix Phantom 0-HP / Invisible RemotePlayer Desync Across PvP Rematch & Optimistic Hits",
+  "generatedAt": "2026-11-19T09:31:41.700Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 7,
+    "filesModifiedCount": 9,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,15 +13,17 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-030.json"
+      "tasks/TASK-031.json"
     ],
     "filesModified": [
       "arness/reports/latest-test-run.json",
       "harness/reports/verification-report.json",
       "harness/reports/verification-report.md",
       "index.html",
+      "js/combat/combat.js",
       "js/core/game.js",
-      "js/core/gameBase.js",
+      "js/entities/animation/animationRenderBase.js",
+      "server.js",
       "tests/test_online_multiplayer.js"
     ],
     "filesDeleted": []

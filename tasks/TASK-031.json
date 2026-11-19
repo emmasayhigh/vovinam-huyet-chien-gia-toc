@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-031",
+  "title": "Fix Phantom 0-HP / Invisible RemotePlayer Desync Across PvP Rematch & Optimistic Hits",
+  "author": "Antigravity Senior Game Engine & Netcode Engineer",
+  "date": "2026-11-19",
+  "objective": "Ngăn triệt để lỗi RemotePlayer bị kẹt 0 HP, tàng hình và không đồng bộ vị trí/máu dù máy đối thủ vẫn chơi bình thường trong PvP Online (do sequence regression qua rematch / cache lệch epoch, dự đoán chết ảo chưa qua ACK, và fade-out xác lính áp nhầm lên RemotePlayer).",
+  "requestedBehavior": "1. Giữ _sentStateSeq tăng đơn điệu xuyên suốt phiên Online (không reset về 0 khi rematch) và thêm cơ chế tự phục hồi _seqRegressionCount trong RemotePlayer.applyRemoteState khi peer gửi chuỗi seq mới liên tiếp (>=5 gói) trong khi vẫn chặn gói đơn lẻ đi ngược thứ tự. 2. Không đánh dấu RemotePlayer chết ảo (hp=0 / isDead=true) từ dự đoán cục bộ trong RemotePlayer.takeDamage hay passive onAttackHit trước khi nhận pvp_hit_ack hoặc player_state xác nhận; đồng thời bổ sung epoch & hitSeq cho pvp_hit từ nội tại trong combat.js. 3. Ngăn animationRenderBase làm mờ tàng hình e.isRemotePlayer khi e.isDead === true. 4. Chặn gói player_state/pvp_hit/pvp_hit_ack/vfx_event sai matchEpoch ngay trên server.js nếu client có gửi epoch. 5. Bổ sung test hồi quy 15e kiểm chứng đầy đủ.",
+  "allowedFiles": [
+    "js/core/game.js",
+    "js/combat/combat.js",
+    "js/entities/animation/animationRenderBase.js",
+    "server.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_online_multiplayer.js",
+    "tasks/TASK-031.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-NET-001",
+    "FEAT-CMB-001"
+  ],
+  "dependencies": [
+    "OnlineManager",
+    "RemotePlayer",
+    "CombatSystem",
+    "SkeletalRendererRenderBase"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 15,
+    "authorizedRemovals": [
+      "Removing premature optimistic isDead=true assignment in RemotePlayer.takeDamage before ACK",
+      "Removing _sentStateSeq reset on rematch in OnlineManager so sequence stays monotonic across rounds"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-031.json"
+  ]
+}
