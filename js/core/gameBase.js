@@ -429,8 +429,21 @@ class GameBase {
     this.player.update(dt, this.enemies);
 
     // 3. Cập nhật Đối Thủ & Boss (truyền danh sách địch để xử lý giãn cách không dồn cục)
+    const isCoopGuest = !!(window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'coop' && window.onlineManager.slot !== 1);
     for (let i = this.enemies.length - 1; i >= 0; i--) {
       const enemy = this.enemies[i];
+      if (isCoopGuest) {
+        enemy.animTime = (enemy.animTime || 0) + dt;
+        enemy.stateTimer = (enemy.stateTimer || 0) + dt;
+        if (enemy.hitJitterTimer > 0) enemy.hitJitterTimer = Math.max(0, enemy.hitJitterTimer - dt);
+        if (enemy.invincibleTimer > 0) enemy.invincibleTimer = Math.max(0, enemy.invincibleTimer - dt);
+        if (enemy.burnTimer > 0) enemy.burnTimer = Math.max(0, enemy.burnTimer - dt);
+        if (enemy.bleedTimer > 0) enemy.bleedTimer = Math.max(0, enemy.bleedTimer - dt);
+        if (enemy.chillTimer > 0) enemy.chillTimer = Math.max(0, enemy.chillTimer - dt);
+        if (enemy.stunTimer > 0) enemy.stunTimer = Math.max(0, enemy.stunTimer - dt);
+        if (enemy.armorBreakTimer > 0) enemy.armorBreakTimer = Math.max(0, enemy.armorBreakTimer - dt);
+        continue;
+      }
       enemy.update(dt, this.player, this.enemies);
 
       // Đồng bộ trạng thái tử vong nếu HP đã về 0 bởi sát thương cộng thêm/nội tại
@@ -468,7 +481,7 @@ class GameBase {
           const pushX = (32 - Math.abs(dx)) * 0.45;
           const sign = dx >= 0 ? 1 : -1;
           this.player.x += sign * pushX;
-          enemy.x -= sign * pushX;
+          if (!isCoopGuest) enemy.x -= sign * pushX;
         }
       }
     }

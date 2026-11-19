@@ -1047,7 +1047,17 @@ class EffectManager {
     // Cập nhật Vật thể VFX kỹ năng chuyên biệt (Mandala, Cột sáng, Mảnh băng/đá, Đạn, Lốc gió)
     for (let i = this.skillProps.length - 1; i >= 0; i--) {
       const sp = this.skillProps[i];
-      sp.life -= dt;
+      if (sp.kind === 'taoist_fiend' && sp.fiend) {
+        if ((sp.fiend.life || 0) <= 0) {
+          this.skillProps.splice(i, 1);
+          continue;
+        }
+        sp.x = sp.fiend.x;
+        sp.y = sp.fiend.y;
+        sp.life = sp.fiend.life;
+      } else {
+        sp.life -= dt;
+      }
       if (sp.life <= 0) {
         this.skillProps.splice(i, 1);
         continue;

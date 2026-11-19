@@ -30,6 +30,9 @@ class RemotePlayer extends (window.Player || Object) {
     this.netVz = 0;
     this.comboStep = 0;
     this._optimisticHpLockTimer = 0;
+    this._optimisticTargetHitSeq = 0;
+    this._netRxAge = 0;
+    this.remoteFiends = [];
     this.width = this.width || 50;
     this.height = this.height || 100;
     this._lastSyncDebuffs = { bleed: 0, burn: 0, chill: 0, stun: 0, armorBreak: 0 };
@@ -80,6 +83,9 @@ class RemotePlayer extends (window.Player || Object) {
     this.netVz = 0;
     this.comboStep = 0;
     this._optimisticHpLockTimer = 0;
+    this._optimisticTargetHitSeq = 0;
+    this._netRxAge = 0;
+    this.remoteFiends = [];
     this.hp = this.maxHp;
     this.energy = 0;
     this.stamina = this.maxStamina || 100;
@@ -117,8 +123,75 @@ class RemotePlayer extends (window.Player || Object) {
        'counter_hand_strike', 'counter_leg_strike'].includes(state);
   }
 
+  getWorldBounds() {
+    const mgr = window.onlineManager;
+    const g = window.game;
+    if (mgr && mgr.mode === 'coop') {
+      const stageW = (window.stageManager && window.stageManager.stageWidth) || 2600;
+      const minX = (g && g.arenaLocked && Number.isFinite(g.arenaMinX)) ? (g.arenaMinX + 24) : 24;
+      const maxX = (g && g.arenaLocked && Number.isFinite(g.arenaMaxX)) ? (g.arenaMaxX - 24) : (stageW - 24);
+      return { minX, maxX: Math.max(minX + 100, maxX) };
+    }
+    return { minX: 78, maxX: 1202 };
+  }
+
+  _syncRemoteFiends(incomingFiends) {
+    if (!Array.isArray(this.remoteFiends)) this.remoteFiends = [];
+    const list = Array.isArray(incomingFiends) ? incomingFiends : [];
+    const seenIds = new Set();
+    const mgr = window.onlineManager;
+    const em = window.effectManager;
+
+    for (const rf of list) {
+      if (!rf || !rf.id) continue;
+      seenIds.add(rf.id);
+      let existing = this.remoteFiends.find((f) => f && f.id === rf.id);
+      if (!existing) {
+        existing = {
+          id: rf.id,
+          x: Number(rf.x) || this.x || 0,
+          y: Number(rf.y) || this.y || 580,
+          _netTargetX: Number(rf.x) || this.x || 0,
+          _netTargetY: Number(rf.y) || this.y || 580,
+          facing: rf.facing >= 0 ? 1 : -1,
+          life: Number(rf.life) || 4.5,
+          maxLife: Number(rf.maxLife) || 4.5,
+          slashTimer: rf.slash ? 0.28 : 0,
+          seed: Math.random() * 10,
+          _fromRemotePlayer: true
+        };
+        this.remoteFiends.push(existing);
+        if (em && typeof em.createTaoistFiend === 'function') {
+          const prevFlag = mgr ? mgr._applyingRemoteVfx : false;
+          if (mgr) mgr._applyingRemoteVfx = true;
+          try {
+            em.createTaoistFiend(existing);
+          } finally {
+            if (mgr) mgr._applyingRemoteVfx = prevFlag;
+          }
+        }
+      } else {
+        if (Number.isFinite(rf.x)) existing._netTargetX = rf.x;
+        if (Number.isFinite(rf.y)) existing._netTargetY = rf.y;
+        if (rf.facing === 1 || rf.facing === -1) existing.facing = rf.facing;
+        if (Number.isFinite(rf.life)) existing.life = Math.max(0.05, rf.life);
+        if (Number.isFinite(rf.maxLife)) existing.maxLife = rf.maxLife;
+        if (rf.slash) existing.slashTimer = Math.max(existing.slashTimer || 0, 0.26);
+      }
+    }
+
+    for (let i = this.remoteFiends.length - 1; i >= 0; i--) {
+      const f = this.remoteFiends[i];
+      if (!f || (f.id && !seenIds.has(f.id))) {
+        if (f) f.life = 0;
+        this.remoteFiends.splice(i, 1);
+      }
+    }
+  }
+
   applyRemoteState(s) {
     if (!s || typeof s !== 'object') return;
+    this._netRxAge = 0;
     if (s.charId && (s.charId !== this.charId || (s.skinId || 'default') !== this.equippedSkin)) {
       this.setCharacter(s.charId, s.skinId || 'default');
     }
@@ -129,7 +202,7 @@ class RemotePlayer extends (window.Player || Object) {
     if (Number.isFinite(s.vx)) this.netVx = s.vx;
     if (Number.isFinite(s.vy)) this.netVy = s.vy;
     this.netVz = Number.isFinite(s.vz) ? s.vz : 0;
-    if (Math.hypot((this.x || 0) - this.netTargetX, (this.y || 0) - this.netTargetY) > 220) {
+    if (Math.hypot((this.x || 0) - this.netTargetX, (this.y || 0) - this.netTargetY) > 460) {
       this.x = this.netTargetX;
       this.y = this.netTargetY;
       this.z = this.netTargetZ;
@@ -152,7 +225,14 @@ class RemotePlayer extends (window.Player || Object) {
     if (Number.isFinite(s.maxHp) && s.maxHp > 0) this.maxHp = s.maxHp;
     if (Number.isFinite(s.hp)) {
       const incomingHp = Math.max(0, Math.min(this.maxHp, s.hp));
-      if (!(this._optimisticHpLockTimer > 0 && incomingHp > this.hp)) {
+      const hasAck = Number.isFinite(s.ackHitSeq);
+      const ackCoversPending = hasAck && s.ackHitSeq >= (this._optimisticTargetHitSeq || 0);
+      if (ackCoversPending) {
+        this._optimisticHpLockTimer = 0;
+      }
+      const waitingAck = hasAck && s.ackHitSeq < (this._optimisticTargetHitSeq || 0) && this._optimisticHpLockTimer > 0;
+      const lockedHigher = this._optimisticHpLockTimer > 0 && incomingHp > this.hp;
+      if (!waitingAck && !lockedHigher) {
         this.hp = incomingHp;
       }
     }
@@ -171,20 +251,26 @@ class RemotePlayer extends (window.Player || Object) {
     if (Number.isFinite(s.stunTimer)) this.stunTimer = s.stunTimer;
     if (Number.isFinite(s.armorBreakTimer)) this.armorBreakTimer = s.armorBreakTimer;
     if (Number.isFinite(s.invincibleTimer)) this.invincibleTimer = s.invincibleTimer;
+    if (Array.isArray(s.fiends)) {
+      this._syncRemoteFiends(s.fiends);
+    }
   }
 
   updateRemote(dt) {
     const step = Math.min(0.1, Math.max(0, dt || 0.016));
+    this._netRxAge = (this._netRxAge || 0) + step;
     if (this._optimisticHpLockTimer > 0) {
       this._optimisticHpLockTimer = Math.max(0, this._optimisticHpLockTimer - step);
     }
+    const bounds = this.getWorldBounds();
     const isMovingState = ['walk', 'run', 'dodge', 'flying_kick', 'air_punch'].includes(this.state);
-    if (isMovingState && !this.isDead) {
+    if (isMovingState && !this.isDead && this._netRxAge < 0.16) {
+      const drWeight = Math.max(0, 1 - this._netRxAge / 0.16) * 0.55;
       if (this.netVx) {
-        this.netTargetX = Math.max(78, Math.min(1202, (this.netTargetX || 0) + Math.max(-28, Math.min(28, this.netVx * step * 0.65))));
+        this.netTargetX = Math.max(bounds.minX, Math.min(bounds.maxX, (this.netTargetX || 0) + Math.max(-24, Math.min(24, this.netVx * step * drWeight))));
       }
       if (this.netVy) {
-        this.netTargetY = Math.max(515, Math.min(640, (this.netTargetY || 580) + Math.max(-18, Math.min(18, this.netVy * step * 0.65))));
+        this.netTargetY = Math.max(515, Math.min(640, (this.netTargetY || 580) + Math.max(-16, Math.min(16, this.netVy * step * drWeight))));
       }
     }
     if ((this.netTargetZ || 0) < 0 || this.netVz !== 0) {
@@ -196,10 +282,20 @@ class RemotePlayer extends (window.Player || Object) {
       }
     }
     const dist = Math.hypot((this.netTargetX || 0) - (this.x || 0), (this.netTargetY || 0) - (this.y || 0));
-    const lerp = 1 - Math.exp(-(dist > 60 ? 28 : 22) * step);
+    const lerp = 1 - Math.exp(-(dist > 140 ? 18 : 14) * step);
     if (Number.isFinite(this.netTargetX)) this.x += (this.netTargetX - this.x) * lerp;
     if (Number.isFinite(this.netTargetY)) this.y += (this.netTargetY - this.y) * lerp;
     if (Number.isFinite(this.netTargetZ)) this.z += (this.netTargetZ - (this.z || 0)) * lerp;
+    if (Array.isArray(this.remoteFiends) && this.remoteFiends.length > 0) {
+      const fLerp = 1 - Math.exp(-16 * step);
+      for (const rf of this.remoteFiends) {
+        if (!rf) continue;
+        if (Number.isFinite(rf._netTargetX)) rf.x += (rf._netTargetX - rf.x) * fLerp;
+        if (Number.isFinite(rf._netTargetY)) rf.y += (rf._netTargetY - rf.y) * fLerp;
+        if (rf.slashTimer > 0) rf.slashTimer = Math.max(0, rf.slashTimer - step);
+        if (rf.life > 0) rf.life = Math.max(0.05, rf.life - step);
+      }
+    }
     this.animTime = (this.animTime || 0) + step;
     this.stateTimer = (this.stateTimer || 0) + step;
     if (this.hitJitterTimer > 0) this.hitJitterTimer = Math.max(0, this.hitJitterTimer - step);
@@ -227,13 +323,17 @@ class RemotePlayer extends (window.Player || Object) {
     const mitigation = (this.incomingDamageMul || 1) * (1 - Math.max(0, Math.min(0.85, this.damageReduction || 0))) * (isBlocked ? 0.2 : 1);
     const predictedDmg = Math.max(1, Math.round(rawDmg * mitigation));
 
+    const bounds = this.getWorldBounds();
+    const rttLock = Math.max(1.1, Math.min(2.2, ((mgr.pingMs || 220) * 3.0) / 1000));
+    const hitSeq = ++mgr._lastSentHitSeq;
     this.hp = Math.max(0, (this.hp || 0) - predictedDmg);
-    this._optimisticHpLockTimer = 0.6;
+    this._optimisticHpLockTimer = rttLock;
+    this._optimisticTargetHitSeq = hitSeq;
     if (!bypassInv) {
       this.invincibleTimer = isBlocked ? 0.04 : 0.45;
       this.hitJitterTimer = 0.14;
       if (knockbackX) {
-        this.netTargetX = Math.max(78, Math.min(1202, (this.netTargetX || this.x || 0) + Math.sign(knockbackX) * (isKnockdown ? 20 : 8)));
+        this.netTargetX = Math.max(bounds.minX, Math.min(bounds.maxX, (this.netTargetX || this.x || 0) + Math.sign(knockbackX) * (isKnockdown ? 20 : 8)));
       }
       if (!isBlocked && !this.superArmor && !this.auraArmor) {
         this.state = isKnockdown ? 'knockdown' : 'hurt';
@@ -252,6 +352,7 @@ class RemotePlayer extends (window.Player || Object) {
 
     mgr.send({
       type: 'pvp_hit',
+      hitSeq,
       damage: rawDmg,
       knockbackX: Number(knockbackX) || 0,
       isKnockdown: !!isKnockdown,
@@ -342,6 +443,12 @@ class OnlineManager {
     this._lastSentY = null;
     this._lastSentZ = null;
     this._lastSentHp = null;
+    this._lastSentFiendsSig = '';
+    this._lastSentHitSeq = 0;
+    this._lastRecvHitSeq = 0;
+    this._coopHitSeq = 0;
+    this._lastCoopHitAck = 0;
+    this._lastCoopWaveIndex = 0;
     this._roundOver = false;
     this._rematchRequested = false;
     this._hooked = false;
@@ -1618,6 +1725,10 @@ class OnlineManager {
       case 'pvp_hit': {
         const g = window.game;
         if (!this.isActive || this.mode !== 'pvp' || this._roundOver || (this._introLockTimer || 0) > 0 || !g || !g.player) break;
+        if (Number.isFinite(msg.hitSeq)) {
+          this._lastRecvHitSeq = Math.max(this._lastRecvHitSeq || 0, Number(msg.hitSeq));
+        }
+        this._syncAccum = 999;
         const p = g.player;
         if (msg.debuffs) {
           const nowMs = Date.now();
@@ -1658,15 +1769,20 @@ class OnlineManager {
       case 'coop_hit_enemy': {
         const g = window.game;
         if (!this.isActive || this.mode !== 'coop' || !g || !Array.isArray(g.enemies)) break;
+        if (Number.isFinite(msg.hitSeq)) {
+          this._lastCoopHitAck = Math.max(this._lastCoopHitAck || 0, Number(msg.hitSeq));
+        }
         const target = g.enemies.find((e) => e && e._netId === msg.netId);
         if (target && !target.isDead && typeof target.takeDamage === 'function') {
           target._applyingRemoteHit = true;
-          if ((target.invincibleTimer || 0) <= 0.08) target.invincibleTimer = 0;
+          // Guest đã kiểm tra i-frame cục bộ trước khi gửi đòn: không để i-frame của Host nuốt mất đòn đánh hợp lệ từ Guest
+          if ((target.invincibleTimer || 0) < 1.2) target.invincibleTimer = 0;
           try {
             target.takeDamage(msg.damage || 0, msg.knockbackX || 0, !!msg.isKnockdown);
           } finally {
             target._applyingRemoteHit = false;
           }
+          this._enemySyncAccum = 999;
         }
         break;
       }
@@ -1895,6 +2011,9 @@ class OnlineManager {
     this._lastSentY = null;
     this._lastSentZ = null;
     this._lastSentHp = null;
+    this._lastSentFiendsSig = '';
+    this._lastSentHitSeq = 0;
+    this._lastRecvHitSeq = 0;
 
     this._startStageClean(1);
     g._onlinePauseOpen = false;
@@ -1945,6 +2064,10 @@ class OnlineManager {
     this._lastSentY = null;
     this._lastSentZ = null;
     this._lastSentHp = null;
+    this._lastSentFiendsSig = '';
+    this._coopHitSeq = 0;
+    this._lastCoopHitAck = 0;
+    this._lastCoopWaveIndex = 0;
 
     const targetStage = Math.max(1, Math.min(20, Number((room && room.stageId) || this.stageId) || 1));
     this.stageId = targetStage;
@@ -2213,17 +2336,33 @@ class OnlineManager {
     const curZ = Math.round(p.z || 0);
     const curHp = Math.round(p.hp || 0);
 
-    if (curState !== this._lastSentState || curFacing !== this._lastSentFacing || curCombo !== this._lastSentCombo) {
+    const activeFiends = Array.isArray(p._summonedFiends)
+      ? p._summonedFiends
+          .filter((f) => f && f.life > 0)
+          .map((f) => ({
+            id: f.id,
+            x: Math.round(f.x || 0),
+            y: Math.round(f.y || 580),
+            facing: f.facing >= 0 ? 1 : -1,
+            life: +Math.max(0.05, f.life || 0).toFixed(2),
+            maxLife: +(f.maxLife || 6).toFixed(2),
+            slash: (f.slashTimer || 0) > 0
+          }))
+      : [];
+    const curFiendsSig = activeFiends.map((f) => `${f.id}:${f.slash ? 1 : 0}`).join('|');
+
+    if (curState !== this._lastSentState || curFacing !== this._lastSentFacing || curCombo !== this._lastSentCombo || curFiendsSig !== this._lastSentFiendsSig) {
       this._syncAccum = 999;
     }
 
     const isStationaryIdle = curState === 'idle'
+      && activeFiends.length === 0
       && curX === this._lastSentX
       && curY === this._lastSentY
       && curZ === this._lastSentZ
       && curHp === this._lastSentHp
       && !p.vx && !p.vy && !p.vz;
-    const syncInterval = isStationaryIdle ? 0.12 : 0.028;
+    const syncInterval = isStationaryIdle ? 0.12 : (activeFiends.length > 0 ? 0.036 : 0.028);
 
     this._syncAccum += dt;
     if (this._syncAccum >= syncInterval) {
@@ -2236,6 +2375,7 @@ class OnlineManager {
         this._lastSentY = curY;
         this._lastSentZ = curZ;
         this._lastSentHp = curHp;
+        this._lastSentFiendsSig = curFiendsSig;
         this.send({
           type: 'player_state',
           state: {
@@ -2259,6 +2399,8 @@ class OnlineManager {
             stamina: Math.round(p.stamina || 100),
             shieldHp: Math.round(p.shieldHp || 0),
             isDead: !!p.isDead,
+            ackHitSeq: this._lastRecvHitSeq || 0,
+            fiends: activeFiends,
             weaponType: p.weapon ? p.weapon.type : null,
             weaponDur: p.weapon ? p.weapon.dur : 0,
             bleedTimer: +(p.bleedTimer || 0).toFixed(2),
@@ -2309,6 +2451,8 @@ class OnlineManager {
             arenaLocked: !!g.arenaLocked,
             arenaMinX: g.arenaMinX,
             arenaMaxX: g.arenaMaxX,
+            waveIndex: g.currentWaveIndex || 0,
+            ackCoopHitSeq: this._lastCoopHitAck || 0,
             cleared: !!(g.stageCompletedPending || g.state === 'STAGE_CLEAR')
           });
         }
@@ -2375,7 +2519,7 @@ class OnlineManager {
       enemy._netTargetX = info.x;
       enemy._netTargetY = info.y;
       enemy._netTargetZ = info.z || 0;
-      if (isNewEnemy || Math.hypot((enemy.x || 0) - info.x, (enemy.y || 0) - info.y) > 160) {
+      if (isNewEnemy || Math.hypot((enemy.x || 0) - info.x, (enemy.y || 0) - info.y) > 360) {
         enemy.x = info.x;
         enemy.y = info.y;
         enemy.z = info.z || 0;
@@ -2383,7 +2527,14 @@ class OnlineManager {
       enemy.facing = info.facing || 1;
       enemy.state = info.state || 'idle';
       enemy.maxHp = info.maxHp;
-      if (!(enemy._optimisticHpLockTimer > 0 && info.hp > enemy.hp)) {
+      const hasCoopAck = Number.isFinite(msg.ackCoopHitSeq);
+      const coopAckCovers = hasCoopAck && msg.ackCoopHitSeq >= (enemy._optimisticTargetHitSeq || 0);
+      if (coopAckCovers) {
+        enemy._optimisticHpLockTimer = 0;
+      }
+      const waitingCoopAck = hasCoopAck && msg.ackCoopHitSeq < (enemy._optimisticTargetHitSeq || 0) && enemy._optimisticHpLockTimer > 0;
+      const lockedHigherEnemy = enemy._optimisticHpLockTimer > 0 && info.hp > enemy.hp;
+      if (!waitingCoopAck && !lockedHigherEnemy) {
         enemy.hp = info.hp;
         enemy.isDead = !!info.isDead;
       }
@@ -2405,6 +2556,21 @@ class OnlineManager {
     }
     g.enemies = nextList;
 
+    if (Number.isFinite(msg.waveIndex) && msg.waveIndex > (this._lastCoopWaveIndex || 0)) {
+      this._lastCoopWaveIndex = msg.waveIndex;
+      g.currentWaveIndex = msg.waveIndex;
+      if (g.player && !g.player.isDead && g.player.maxHp > 0) {
+        const newHp = Math.min(g.player.maxHp, (g.player.hp || 0) + g.player.maxHp * 0.25);
+        g.player.hp = Math.round(newHp);
+        if (window.uiManager && window.uiManager.updatePlayerHp) {
+          window.uiManager.updatePlayerHp(g.player.hp, g.player.maxHp);
+        }
+        if (window.uiManager && window.uiManager.showAlertBanner) {
+          window.uiManager.showAlertBanner('WAVE CLEARED — +25% HP');
+        }
+      }
+    }
+
     if (msg.cleared && typeof g.triggerStageVictory === 'function' && !g.stageCompletedPending) {
       g.triggerStageVictory();
     }
@@ -2421,10 +2587,37 @@ class OnlineManager {
           break;
         case 'taoist_fiend':
           if (em && em.createTaoistFiend) {
-            em.createTaoistFiend({
-              x: msg.x, y: msg.y, facing: msg.facing || 1,
-              life: msg.life || 5.0, maxLife: msg.maxLife || 5.0, slashTimer: 0.2, seed: Math.random() * 10
-            });
+            if (msg.id && this.remotePlayer) {
+              if (!Array.isArray(this.remotePlayer.remoteFiends)) this.remotePlayer.remoteFiends = [];
+              let rf = this.remotePlayer.remoteFiends.find((f) => f && f.id === msg.id);
+              if (rf) {
+                rf._netTargetX = msg.x;
+                rf._netTargetY = msg.y;
+                rf.facing = msg.facing || 1;
+                rf.slashTimer = Math.max(rf.slashTimer || 0, 0.22);
+              } else {
+                rf = {
+                  id: msg.id,
+                  x: msg.x,
+                  y: msg.y,
+                  _netTargetX: msg.x,
+                  _netTargetY: msg.y,
+                  facing: msg.facing || 1,
+                  life: msg.life || 4.5,
+                  maxLife: msg.maxLife || 4.5,
+                  slashTimer: 0.2,
+                  seed: Math.random() * 10,
+                  _fromRemotePlayer: true
+                };
+                this.remotePlayer.remoteFiends.push(rf);
+                em.createTaoistFiend(rf);
+              }
+            } else {
+              em.createTaoistFiend({
+                x: msg.x, y: msg.y, facing: msg.facing || 1,
+                life: msg.life || 4.5, maxLife: msg.maxLife || 4.5, slashTimer: 0.2, seed: Math.random() * 10
+              });
+            }
           }
           break;
         case 'slash_arc':
@@ -2462,9 +2655,12 @@ class OnlineManager {
         const res = origTakeDamage.apply(this, arguments);
         const mgr = window.onlineManager;
         if (mgr && mgr.isActive && mgr.mode === 'coop' && !this._applyingRemoteHit && this._netId) {
-          this._optimisticHpLockTimer = 0.55;
+          const hitSeq = ++mgr._coopHitSeq;
+          this._optimisticHpLockTimer = Math.max(1.1, Math.min(2.2, ((mgr.pingMs || 220) * 3.0) / 1000));
+          this._optimisticTargetHitSeq = hitSeq;
           mgr.send({
             type: 'coop_hit_enemy',
+            hitSeq,
             netId: this._netId,
             damage: Number(amount) || 0,
             knockbackX: Number(knockbackX) || 0,
@@ -2494,7 +2690,7 @@ class OnlineManager {
         };
       };
       wrapEm('createCrocodileBite', (x, y, dir, scale) => ({ kind: 'croc_bite', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
-      wrapEm('createTaoistFiend', (fiend) => fiend ? ({ kind: 'taoist_fiend', x: Math.round(fiend.x), y: Math.round(fiend.y), facing: fiend.facing || 1, life: fiend.life || 5, maxLife: fiend.maxLife || 5 }) : null);
+      wrapEm('createTaoistFiend', (fiend) => fiend ? ({ kind: 'taoist_fiend', id: fiend.id, x: Math.round(fiend.x), y: Math.round(fiend.y), facing: fiend.facing || 1, life: fiend.life || 4.5, maxLife: fiend.maxLife || 4.5 }) : null);
       wrapEm('createSlashArc', (x, y, dir, radius, color, thickness) => ({ kind: 'slash_arc', x: Math.round(x), y: Math.round(y), dir: dir || 1, radius, color, thickness }));
       wrapEm('createFlameCoinSlash', (x, y, dir, scale) => ({ kind: 'flame_coin', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
       wrapEm('createShockRing', (x, y, color, maxRadius) => ({ kind: 'shock_ring', x: Math.round(x), y: Math.round(y), color, maxRadius }));

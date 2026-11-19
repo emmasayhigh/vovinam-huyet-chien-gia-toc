@@ -17,11 +17,19 @@
     }
   }
 
+  function isPvpOnlineMatch() {
+    return !!(window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'pvp');
+  }
+
   function spawnTaoistFiend(owner, x, y, life = 6.5, dmg = 26) {
     if (!owner) return null;
     if (!Array.isArray(owner._summonedFiends)) owner._summonedFiends = [];
-    // Tối đa 3 Âm Binh Hỏa cùng lúc: nếu đầy thì thay con cũ nhất
-    while (owner._summonedFiends.length >= 3) {
+    const inPvp = isPvpOnlineMatch();
+    const maxFiends = inPvp ? 2 : 3;
+    const resolvedLife = inPvp ? Math.min(life, 4.5) : life;
+    const resolvedDmg = inPvp ? Math.min(dmg, 12) : Math.min(dmg, 18);
+    // Tối đa 2 Âm Binh Hỏa trong PvP (3 trong PvE): nếu đầy thì thay con cũ nhất
+    while (owner._summonedFiends.length >= maxFiends) {
       const oldest = owner._summonedFiends.shift();
       if (oldest) oldest.life = 0;
     }
@@ -30,10 +38,10 @@
       x: x + (owner.facing || 1) * 44,
       y: y || 580,
       facing: owner.facing || 1,
-      life,
-      maxLife: life,
-      dmg,
-      attackCd: 0.05,
+      life: resolvedLife,
+      maxLife: resolvedLife,
+      dmg: resolvedDmg,
+      attackCd: 0.12,
       slashTimer: 0,
       seed: Math.random() * 10
     };
@@ -49,12 +57,15 @@
     return fiend;
   }
 
-  function triggerHapTinhSiphon(player, target, hpGain = 14, energyGain = 4, bonusBurnDmg = 0) {
+  function triggerHapTinhSiphon(player, target, hpGain = 10, energyGain = 4, bonusBurnDmg = 0) {
     if (!player || player.isDead || !player.passive_huyetAnHapTinh) return;
-    if ((player._hapTinhHealCd || 0) <= 0) {
-      player._hapTinhHealCd = 0.55;
-      const healed = Math.min(Math.max(0, (player.maxHp || 960) - (player.hp || 0)), hpGain);
-      player.hp = Math.min(player.maxHp || 960, (player.hp || 0) + hpGain);
+    const inPvp = isPvpOnlineMatch();
+    const finalHpGain = inPvp ? Math.min(4, hpGain) : Math.min(10, hpGain);
+    const healCd = inPvp ? 1.8 : 0.85;
+    if ((player._hapTinhHealCd || 0) <= 0 && finalHpGain > 0) {
+      player._hapTinhHealCd = healCd;
+      const healed = Math.min(Math.max(0, (player.maxHp || 920) - (player.hp || 0)), finalHpGain);
+      player.hp = Math.min(player.maxHp || 920, (player.hp || 0) + finalHpGain);
       if (typeof player.addEnergy === 'function') player.addEnergy(energyGain);
       else player.energy = Math.min(player.maxEnergy || 100, (player.energy || 0) + energyGain);
       if (window.uiManager && typeof window.uiManager.updatePlayerHp === 'function') {
@@ -64,13 +75,14 @@
         window.effectManager.addFloatingText(`🩸 +${healed} HP`, player.x, (player.y || 580) - 135, 'heal');
       }
     }
-    if (bonusBurnDmg > 0 && target && !target.isDead && typeof target.takeDamage === 'function') {
+    const finalBonusDmg = inPvp ? Math.min(3, bonusBurnDmg) : bonusBurnDmg;
+    if (finalBonusDmg > 0 && target && !target.isDead && typeof target.takeDamage === 'function') {
       target._skipPassiveTrigger = true;
       try {
         if (target.isRemotePlayer) {
-          target.takeDamage(bonusBurnDmg, 0, false, { bypassInvincible: true });
+          target.takeDamage(finalBonusDmg, 0, false, { bypassInvincible: true });
         } else {
-          target.takeDamage(bonusBurnDmg, 0, false);
+          target.takeDamage(finalBonusDmg, 0, false);
         }
       } finally {
         target._skipPassiveTrigger = false;
@@ -140,33 +152,39 @@
           f.y += (dy / dist) * (speed * 0.85) * dt;
           f.y = Math.max(500, Math.min(650, f.y));
         } else if (f.attackCd <= 0) {
-          f.attackCd = 0.72;
+          const inPvp = isPvpOnlineMatch();
+          f.attackCd = inPvp ? 1.05 : 0.78;
           f.slashTimer = 0.28;
-          const dmg = f.dmg || 26;
+          const dmg = inPvp ? Math.min(12, f.dmg || 12) : (f.dmg || 18);
           const wasBurning = (nearest.burnTimer || 0) > 0;
-          if (typeof nearest.takeDamage === 'function') {
-            if (nearest.isRemotePlayer) {
-              nearest.takeDamage(dmg, f.facing * 5, false, { bypassInvincible: true });
+          const targetEvading = nearest.isRemotePlayer && (nearest.state === 'dodge' || nearest.state === 'knockdown' || nearest.state === 'getup' || (nearest.invincibleTimer || 0) > 0);
+          if (!targetEvading) {
+            if (typeof nearest.takeDamage === 'function') {
+              if (nearest.isRemotePlayer) {
+                nearest.takeDamage(dmg, f.facing * 4, false);
+              } else {
+                nearest.takeDamage(dmg, f.facing * 5, false);
+              }
             } else {
-              nearest.takeDamage(dmg, f.facing * 5, false);
+              nearest.hp = Math.max(0, (nearest.hp || 0) - dmg);
+              if ((nearest.hp || 0) <= 0 && !nearest.isDead) {
+                nearest.hp = 0;
+                nearest.isDead = true;
+                nearest.isAttacking = false;
+                if (typeof nearest.setState === 'function') nearest.setState('knockdown', 1.0);
+              }
             }
-          } else {
-            nearest.hp = Math.max(0, (nearest.hp || 0) - dmg);
-            if ((nearest.hp || 0) <= 0 && !nearest.isDead) {
-              nearest.hp = 0;
-              nearest.isDead = true;
-              nearest.isAttacking = false;
-              if (typeof nearest.setState === 'function') nearest.setState('knockdown', 1.0);
+            igniteTarget(player, nearest, inPvp ? 8 : 12, inPvp ? 2.6 : 3.2);
+            if (wasBurning) {
+              triggerHapTinhSiphon(player, nearest, inPvp ? 4 : 8, 2, 0);
             }
-          }
-          igniteTarget(player, nearest, 14, 3.4);
-          if (wasBurning) {
-            triggerHapTinhSiphon(player, nearest, 12, 3, 0);
           }
           if (fx) {
             if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(f.x + f.facing * 24, f.y - 44, f.facing, (Math.random() - 0.5) * 0.6, 52);
-            if (typeof fx.createHitSparks === 'function') fx.createHitSparks(tx, ty - 64, 7, true);
-            if (typeof fx.addFloatingText === 'function') fx.addFloatingText(`🔥 ÂM BINH TRẢM (-${dmg})`, tx, ty - 110, 'crit');
+            if (!targetEvading) {
+              if (typeof fx.createHitSparks === 'function') fx.createHitSparks(tx, ty - 64, 7, true);
+              if (typeof fx.addFloatingText === 'function') fx.addFloatingText(`🔥 ÂM BINH TRẢM (-${dmg})`, tx, ty - 110, 'crit');
+            }
           }
         }
       } else {
@@ -297,29 +315,29 @@
     // 4. CHỈ SỐ CHIẾN ĐẤU & SÁT THƯƠNG ĐÒN ĐÁNH
     // =========================================================================
     combat: {
-      hp: 960,
-      speed: 245,
-      runSpeed: 392,
+      hp: 920,
+      speed: 242,
+      runSpeed: 386,
       jumpForce: 530,
-      damage: 1.08,
-      reach: 1.12,
-      knockback: 1.10,
-      energyGain: 1.12,
+      damage: 1.00,
+      reach: 1.08,
+      knockback: 1.05,
+      energyGain: 1.04,
       finisher: 'counter',
       ultimateState: 'ultimate_precision',
       ultimateType: 'precision',
       comboMax: 4,
-      counterBonus: 1.95,
-      mechanic: 'Công Cao, Hấp Tinh Hồi Phục & Hỏa Âm Binh (tối đa 3) — Nhận +10% Sát Thương Phải Chịu'
+      counterBonus: 1.65,
+      mechanic: 'Kiếm Xu, Hấp Tinh Tiết Chế & Hỏa Âm Binh — Nhận +10% Sát Thương Phải Chịu'
     },
 
     moveOverrides: {
-      punch_straight: { damage: 46, width: 98, knockback: 150, energyGain: 10 },
-      punch_hook: { damage: 64, width: 112, knockback: 220, energyGain: 13 },
-      kick_push: { damage: 66, width: 102, knockback: 260, isKick: true, counterType: 'leg', energyGain: 14 },
-      kick_roundhouse: { damage: 94, width: 118, knockback: 420, knockdown: true, isKick: true, counterType: 'leg', energyGain: 18 },
-      uppercut: { damage: 78, width: 105, knockback: 310, launch: true, energyGain: 16 },
-      wk: { damage: 82, width: 110, knockback: 340, isKick: true, counterType: 'leg', energyGain: 16 }
+      punch_straight: { damage: 38, width: 96, knockback: 145, energyGain: 9 },
+      punch_hook: { damage: 52, width: 108, knockback: 210, energyGain: 12 },
+      kick_push: { damage: 54, width: 100, knockback: 245, isKick: true, counterType: 'leg', energyGain: 12 },
+      kick_roundhouse: { damage: 76, width: 114, knockback: 380, knockdown: true, isKick: true, counterType: 'leg', energyGain: 16 },
+      uppercut: { damage: 64, width: 102, knockback: 290, launch: true, energyGain: 14 },
+      wk: { damage: 66, width: 106, knockback: 315, isKick: true, counterType: 'leg', energyGain: 14 }
     },
 
     // =========================================================================
@@ -543,16 +561,17 @@
       },
       onAttackHit(attacker, defender) {
         if (!defender || defender.isDead || defender._skipPassiveTrigger) return;
+        const inPvp = isPvpOnlineMatch();
         const alreadyBurning = (defender.burnTimer || 0) > 0;
-        igniteTarget(attacker, defender, 12, 3.0);
+        igniteTarget(attacker, defender, inPvp ? 8 : 12, inPvp ? 2.5 : 3.0);
         if (alreadyBurning) {
-          triggerHapTinhSiphon(attacker, defender, 16, 5, 8);
+          triggerHapTinhSiphon(attacker, defender, inPvp ? 4 : 10, inPvp ? 3 : 4, inPvp ? 3 : 5);
         }
         const nextSeq = ((attacker._thienKhanhHitSeq || 0) + 1);
         if (nextSeq >= 4) {
           attacker._thienKhanhHitSeq = 0;
           attacker._fiendSummonFlashTimer = 0.55;
-          spawnTaoistFiend(attacker, attacker.x, attacker.y, 6.0, 20);
+          spawnTaoistFiend(attacker, attacker.x, attacker.y, inPvp ? 4.5 : 6.0, inPvp ? 12 : 18);
         } else {
           attacker._thienKhanhHitSeq = nextSeq;
           attacker._fiendSummonFlashTimer = 0;
@@ -599,8 +618,8 @@
             const maxW = window.stageManager ? window.stageManager.stageWidth - 30 : 2570;
             player.x = Math.max(30, Math.min(maxW, target.x - (player.facing || 1) * 62));
             player.y = target.y;
-            hitEnemy(target, 92, 10, false);
-            igniteTarget(player, target, 14, 3.8);
+            hitEnemy(target, isPvpOnlineMatch() ? 58 : 74, 10, false);
+            igniteTarget(player, target, isPvpOnlineMatch() ? 8 : 13, 3.2);
           }
         }
         if (p >= 1) {
@@ -614,8 +633,8 @@
           }
           for (const e of enemies) {
             if (e && !e.isDead && Math.hypot(e.x - player.x, (e.y - player.y) * 1.4) <= 280) {
-              hitEnemy(e, 120, 16, true);
-              igniteTarget(player, e, 16, 4.0);
+              hitEnemy(e, isPvpOnlineMatch() ? 82 : 98, 16, true);
+              igniteTarget(player, e, isPvpOnlineMatch() ? 9 : 14, 3.5);
             }
           }
           player.setState('idle');

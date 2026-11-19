@@ -130,6 +130,7 @@ class GameWave extends window.GameBase {
   // ==========================================================================
   checkWaveProgress(dt = 0.016) {
     if (this.isBossRush || this.state === 'TUTORIAL' || this.state === 'TRAINING') return;
+    if (window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'coop' && window.onlineManager.slot !== 1) return;
     const stageData = window.stageManager ? window.stageManager.getCurrentStage() : null;
     if (!stageData || !Array.isArray(stageData.waves)) return;
     const waves = stageData.waves;

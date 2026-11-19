@@ -917,6 +917,104 @@ function connectWsClient(port) {
   }
   console.log('✓ TEST 12: Production Cloud Default Server URL Resolution passed');
 
+  // -------------------------------------------------------------------------
+  // TEST 13: Thien Khanh Balance + Live Fiends Sync + High-Ping ACK & Co-op Wave Bounds
+  // -------------------------------------------------------------------------
+  {
+    const tkDef = window.CharacterRegistry.get('thienkhanh');
+    assert.ok(tkDef.combat.damage <= 1.0 && tkDef.combat.hp <= 920, 'Thiên Khánh được cân bằng chỉ số gốc & HP công bằng hơn');
+
+    const syncPkts = [];
+    window.onlineManager._testTransport = (pkt) => syncPkts.push(pkt);
+    window.onlineManager.slot = 1;
+    window.onlineManager.startPvPMatch({
+      code: 'TK13',
+      mode: 'pvp',
+      players: [
+        { slot: 1, name: 'Host', charId: 'thienkhanh', skinId: 'default' },
+        { slot: 2, name: 'Guest', charId: 'bichlam', skinId: 'default' }
+      ]
+    });
+    window.onlineManager._introLockTimer = 0;
+    window.onlineManager._roundOver = false;
+
+    const tkLocal = window.game.player;
+    tkLocal.setCharacter('thienkhanh');
+    tkLocal.hp = 600;
+    tkLocal._hapTinhHealCd = 0;
+    const opp = window.onlineManager.remotePlayer;
+    opp.state = 'idle';
+    opp.invincibleTimer = 0;
+    opp.burnTimer = 2.0;
+    const oppHp0 = opp.hp;
+    tkDef.passives.onAttackHit(tkLocal, opp);
+    assert.ok(tkLocal.hp - 600 <= 5, `Huyết Ấn Hấp Tinh trong PvP bị tiết chế (+4 HP, thực tế +${tkLocal.hp - 600})`);
+
+    // Triệu hồi Hỏa Âm Binh & kiểm tra đồng bộ fiends sang đối thủ + cập nhật vị trí đuổi theo
+    tkDef.passives.onStanceSpecial(tkLocal);
+    assert.strictEqual(tkLocal._summonedFiends.length, 1, 'Triệu hồi 1 Hỏa Âm Binh');
+    syncPkts.length = 0;
+    window.onlineManager.update(0.05);
+    const fiendStatePkt = syncPkts.find((p) => p.type === 'player_state' && p.state && Array.isArray(p.state.fiends) && p.state.fiends.length === 1);
+    assert.ok(fiendStatePkt, 'player_state đồng bộ danh sách Tiểu Quỷ đang hoạt động sang đối thủ PvP');
+
+    // Trên màn hình đối thủ: RemotePlayer nhận fiends và nội suy di chuyển đuổi theo
+    opp.applyRemoteState({
+      x: 400, y: 580,
+      fiends: [{ id: 'f_track_1', x: 520, y: 580, facing: -1, life: 4.0, maxLife: 4.5, slash: true }]
+    });
+    assert.strictEqual(opp.remoteFiends.length, 1, 'RemotePlayer tạo Tiểu Quỷ theo gói player_state');
+    opp.applyRemoteState({
+      x: 400, y: 580,
+      fiends: [{ id: 'f_track_1', x: 440, y: 585, facing: -1, life: 3.8, maxLife: 4.5, slash: true }]
+    });
+    opp.updateRemote(0.05);
+    assert.ok(opp.remoteFiends[0].x < 520 && opp.remoteFiends[0].x >= 440, 'Tiểu Quỷ trên màn đối thủ di chuyển đuổi theo mượt mà');
+
+    // High-ping hitSeq ACK blocks stale HP until victim acknowledges hitSeq
+    window.onlineManager.pingMs = 320;
+    opp.invincibleTimer = 0;
+    opp.state = 'idle';
+    opp.hp = 200;
+    opp.takeDamage(80, 5, false);
+    const hitSeqSent = opp._optimisticTargetHitSeq;
+    assert.ok(opp._optimisticHpLockTimer >= 1.1 && opp.hp < 200, 'Ping cao bật khóa HP đủ dài (>1.1s)');
+    opp.applyRemoteState({ hp: 500, maxHp: opp.maxHp, ackHitSeq: hitSeqSent - 1 });
+    assert.ok(opp.hp < 200, 'Gói player_state mang ackHitSeq cũ không thể hồi máu ngược lại');
+    opp.applyRemoteState({ hp: 120, maxHp: opp.maxHp, ackHitSeq: hitSeqSent });
+    assert.strictEqual(opp.hp, 120, 'Khi ackHitSeq khớp, HP đồng bộ chính xác về mức thực tế');
+
+    // Co-op mode: RemotePlayer does NOT clamp x back to 1202 across wave 2/3 (> 1202px) & Host does NOT drop Guest hit due to i-frame
+    window.onlineManager.slot = 1;
+    window.onlineManager.startCoopMatch({
+      code: 'CP13',
+      mode: 'coop',
+      stageId: 1,
+      players: [
+        { slot: 1, name: 'Host', charId: 'nghi', skinId: 'default' },
+        { slot: 2, name: 'Guest', charId: 'bichlam', skinId: 'default' }
+      ]
+    });
+    window.game.arenaLocked = false;
+    window.stageManager.stageWidth = 2600;
+    const rpCoop = window.onlineManager.remotePlayer;
+    rpCoop.applyRemoteState({ x: 1850, y: 580, vx: 200, state: 'run' });
+    rpCoop.x = 1840;
+    rpCoop.updateRemote(0.03);
+    assert.ok(rpCoop.x > 1800 && rpCoop.netTargetX > 1800, `Co-op RemotePlayer không bị ép giật về 1202px khi sang wave sau (x=${rpCoop.x})`);
+
+    const hostEnemy = window.game.createEnemyInstance('brawler', 600, 580, 'general');
+    hostEnemy._netId = 'e_coop_iframe';
+    hostEnemy.hp = 300;
+    hostEnemy.invincibleTimer = 0.42; // vừa trúng đòn Host trước đó 30ms
+    window.game.enemies = [hostEnemy];
+    window.onlineManager.handleServerMessage({ type: 'coop_hit_enemy', hitSeq: 9, netId: 'e_coop_iframe', damage: 75, knockbackX: 4, isKnockdown: false });
+    assert.ok(hostEnemy.hp < 300, 'Host nhận đòn hợp lệ từ Guest kể cả khi quái vừa dính i-frame của Host');
+    assert.strictEqual(window.onlineManager._lastCoopHitAck, 9, 'Host ghi nhận ackCoopHitSeq để Guest không bị giật máu về 0 -> đầy lại');
+    window.onlineManager.leaveMatch(false);
+  }
+  console.log('✓ TEST 13: Thien Khanh PvP Balance, Fiends Chase Sync, High-Ping ACK & Co-op Wave Stability passed');
+
   console.log('\n================================================');
   console.log('ALL ONLINE MULTIPLAYER TESTS PASSED 100%!');
   console.log('================================================');

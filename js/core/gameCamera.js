@@ -47,8 +47,17 @@ class GameCamera extends window.GameWave {
     if (this.arenaLocked) {
       const maxCamX = Math.max(this.arenaMinX, this.arenaMaxX - this.width);
       this.camera.x = Math.max(this.arenaMinX, Math.min(maxCamX, this.camera.x));
-      // Không cho nhân vật chạy ra ngoài ranh giới sàn đấu (đến được cả 2 đầu sân)
-      this.player.x = Math.max(this.arenaMinX + 30, Math.min(this.arenaMaxX - 30, this.player.x));
+      // Trong 2P Co-op: kéo nhân vật vào khung đấu trường mượt mà theo tốc độ khi Host vừa khóa Wave mới, tránh giật cục
+      const minPx = this.arenaMinX + 30;
+      const maxPx = this.arenaMaxX - 30;
+      const isCoopOnline = !!(window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'coop');
+      if (this.player.x < minPx) {
+        const diff = minPx - this.player.x;
+        this.player.x += (isCoopOnline && diff > 24) ? Math.min(diff, Math.max(300, diff * 6) * dt) : diff;
+      } else if (this.player.x > maxPx) {
+        const diff = this.player.x - maxPx;
+        this.player.x -= (isCoopOnline && diff > 24) ? Math.min(diff, Math.max(300, diff * 6) * dt) : diff;
+      }
     } else {
       this.camera.x = Math.max(0, Math.min(this.camera.maxX, this.camera.x));
       this.player.x = Math.max(30, Math.min(window.stageManager.stageWidth - 30, this.player.x));
