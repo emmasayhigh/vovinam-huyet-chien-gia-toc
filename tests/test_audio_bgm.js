@@ -12,7 +12,12 @@ const mp3Path = path.resolve(__dirname, '../assets/audio/main_theme.mp3');
 assert.ok(fs.existsSync(mp3Path), 'assets/audio/main_theme.mp3 must exist');
 const mp3Size = fs.statSync(mp3Path).size;
 assert.ok(mp3Size > 1000000, `assets/audio/main_theme.mp3 size (${mp3Size}) must be > 1MB`);
-console.log(`✓ Asset check passed: main_theme.mp3 (${mp3Size} bytes)`);
+
+const pvpMp3Path = path.resolve(__dirname, '../assets/audio/pvp_theme.mp3');
+assert.ok(fs.existsSync(pvpMp3Path), 'assets/audio/pvp_theme.mp3 must exist');
+const pvpMp3Size = fs.statSync(pvpMp3Path).size;
+assert.ok(pvpMp3Size > 1000000, `assets/audio/pvp_theme.mp3 size (${pvpMp3Size}) must be > 1MB`);
+console.log(`✓ Asset check passed: main_theme.mp3 (${mp3Size} bytes), pvp_theme.mp3 (${pvpMp3Size} bytes)`);
 
 // 2. Mock DOM / Audio / WebAudio environment
 const createdAudios = [];
@@ -109,11 +114,33 @@ assert.strictEqual(unmutedAfterSecondToggle, true, 'Second toggleMute unmutes au
 assert.strictEqual(bgm.paused, false, 'Unmute resumes MP3 BGM');
 assert.ok(Math.abs(bgm.volume - 0.8 * 0.75) < 0.001, 'Unmute restores MP3 BGM volume');
 
-// 8. Explicit stopBGM pauses track, startMenuBGM resumes
+// 8. PvP Mode switches to pvp_theme.mp3, pauses main_theme.mp3, and returns cleanly to main_theme.mp3 on Menu/Stage
+am.startPvPBGM();
+const pvp = am.pvpAudio;
+assert.ok(pvp, 'pvpAudio created on startPvPBGM');
+assert.strictEqual(pvp.src, 'assets/audio/pvp_theme.mp3', 'Uses pvp_theme.mp3 source');
+assert.strictEqual(pvp.loop, true, 'PvP BGM loops continuously');
+assert.strictEqual(pvp.paused, false, 'startPvPBGM plays PvP track');
+assert.strictEqual(bgm.paused, true, 'startPvPBGM pauses main_theme while in PvP');
+assert.ok(Math.abs(pvp.volume - 0.8 * 0.75) < 0.001, 'PvP track inherits musicVolume * masterVolume');
+am.startPvPBGM();
+assert.strictEqual(pvp.playCount, 1, 'Calling startPvPBGM again (e.g. Rematch) keeps track seamless without restarting');
+am.unlock();
+assert.strictEqual(am.activeBgmKey, 'pvp', 'unlock() preserves active PvP track during PvP match');
+am.setMusicVolume(0.5, true);
+assert.ok(Math.abs(pvp.volume - 0.5 * 0.75) < 0.001, 'setMusicVolume updates active PvP track volume live');
+
+// 9. Returning to Menu / Stage switches back from PvP to main_theme cleanly
+am.startMenuBGM();
+assert.strictEqual(am.activeBgmKey, 'main', 'startMenuBGM restores main track key');
+assert.strictEqual(pvp.paused, true, 'pvpAudio pauses when returning to Menu');
+assert.strictEqual(bgm.paused, false, 'main_theme resumes when returning to Menu');
+
+// 10. Explicit stopBGM pauses track, startMenuBGM resumes
 am.stopBGM();
 assert.strictEqual(bgm.paused, true, 'stopBGM pauses track');
 am.startMenuBGM();
 assert.strictEqual(bgm.paused, false, 'startMenuBGM resumes track');
-assert.strictEqual(createdAudios.length, 1, 'Never leaks duplicate Audio objects');
+assert.strictEqual(createdAudios.length, 2, 'Never leaks duplicate Audio objects (1 main + 1 pvp)');
 
-console.log('✓ ALL MAIN THEME BGM TESTS PASSED!');
+console.log('✓ ALL MAIN & PVP BGM TESTS PASSED!');

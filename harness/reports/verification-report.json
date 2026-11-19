@@ -1,10 +1,10 @@
 {
-  "taskId": "TASK-026",
-  "taskTitle": "Integrate Main Theme MP3 Soundtrack Across Menu and Combat with Full Mute/Volume Sync",
-  "generatedAt": "2026-11-19T08:48:10.536Z",
+  "taskId": "TASK-027",
+  "taskTitle": "Fix Main Theme MP3 Source & Integrate Dedicated PvP Arena MP3 Soundtrack",
+  "generatedAt": "2026-11-19T08:53:28.596Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 3,
+    "filesAddedCount": 2,
     "filesModifiedCount": 8,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
@@ -13,24 +13,24 @@
   },
   "scope": {
     "filesAdded": [
-      "assets/audio/",
-      "tasks/TASK-026.json",
-      "tests/test_audio_bgm.js"
+      "assets/audio/pvp_theme.mp3",
+      "tasks/TASK-027.json"
     ],
     "filesModified": [
-      "arness/reports/latest-test-run.json",
+      "ssets/audio/main_theme.mp3",
+      "harness/reports/latest-test-run.json",
       "harness/reports/verification-report.json",
       "harness/reports/verification-report.md",
       "index.html",
       "js/core/audio.js",
-      "js/core/gameFlow.js",
-      "js/core/main.js",
-      "js/ui/menu/menuBase.js"
+      "js/core/game.js",
+      "tests/test_audio_bgm.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
+      "FEAT-NET-001",
       "FEAT-SAV-001",
       "FEAT-UI-001"
     ],

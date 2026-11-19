@@ -2431,6 +2431,9 @@ class OnlineManager {
     if (this._pendingHits) this._pendingHits.clear();
 
     this._startStageClean(1);
+    if (window.audioManager && typeof window.audioManager.startPvPBGM === 'function') {
+      window.audioManager.startPvPBGM();
+    }
     g._onlinePauseOpen = false;
     g.stageCompletedPending = false;
     g.stageElapsedTime = 0;

@@ -13,6 +13,7 @@
  */
 
 const MAIN_THEME_BGM_SRC = 'assets/audio/main_theme.mp3';
+const PVP_THEME_BGM_SRC = 'assets/audio/pvp_theme.mp3';
 
 const BGM_THEMES = {
   hua:     { bpm: 128, bass: [55, 55, 65.41, 55, 58.27, 55, 49, 55],      wave: 'sawtooth', industrial: true,  hats: 'double', gong: false, lead: false },
@@ -48,27 +49,41 @@ class SoundEngine {
     // Kho track âm thanh ngoài (Howler.js / Audio HTML5 nếu nạp thêm .mp3/.ogg)
     this.externalTracks = {};
 
-    // Nhạc nền chính thức MP3 phát xuyên suốt Menu & Chiến đấu
+    // Nhạc nền chính thức MP3 phát xuyên suốt Menu & Chiến đấu (kèm nhạc riêng cho 1v1 PvP)
     this.mainThemeSrc = MAIN_THEME_BGM_SRC;
+    this.pvpThemeSrc = PVP_THEME_BGM_SRC;
     this.bgmAudio = null;
+    this.pvpAudio = null;
+    this.activeBgmKey = 'main'; // 'main' | 'pvp'
     this.bgmWanted = true;
     this._bgmDuckMul = 1.0;
     this._bgmDuckTimer = null;
   }
 
-  _ensureMainThemeAudio() {
-    if (this.bgmAudio) return this.bgmAudio;
+  _ensureTrackAudio(key = 'main') {
+    const isPvp = key === 'pvp';
+    if (isPvp && this.pvpAudio) return this.pvpAudio;
+    if (!isPvp && this.bgmAudio) return this.bgmAudio;
     if (typeof Audio === 'undefined' || typeof window === 'undefined') return null;
     try {
-      const a = new Audio(this.mainThemeSrc);
+      const a = new Audio(isPvp ? this.pvpThemeSrc : this.mainThemeSrc);
       a.loop = true;
       a.preload = 'auto';
       a.volume = this._getEffectiveBgmVolume();
-      this.bgmAudio = a;
+      if (isPvp) this.pvpAudio = a;
+      else this.bgmAudio = a;
       return a;
     } catch (_) {
       return null;
     }
+  }
+
+  _ensureMainThemeAudio() {
+    return this._ensureTrackAudio('main');
+  }
+
+  _getActiveBgmAudio() {
+    return this.activeBgmKey === 'pvp' ? this.pvpAudio : this.bgmAudio;
   }
 
   _getEffectiveBgmVolume() {
@@ -80,18 +95,27 @@ class SoundEngine {
   }
 
   _syncBgmAudioState() {
-    const a = this.bgmAudio;
-    if (!a) return false;
-    a.volume = this._getEffectiveBgmVolume();
+    const activeKey = this.activeBgmKey === 'pvp' ? 'pvp' : 'main';
+    const active = activeKey === 'pvp' ? this.pvpAudio : this.bgmAudio;
+    const inactive = activeKey === 'pvp' ? this.bgmAudio : this.pvpAudio;
+
+    if (inactive) {
+      try {
+        if (!inactive.paused && typeof inactive.pause === 'function') inactive.pause();
+      } catch (_) {}
+    }
+
+    if (!active) return false;
+    active.volume = this._getEffectiveBgmVolume();
     if (!this.bgmWanted || this.isMuted || !this.musicPlaying) {
       try {
-        if (!a.paused && typeof a.pause === 'function') a.pause();
+        if (!active.paused && typeof active.pause === 'function') active.pause();
       } catch (_) {}
       return false;
     }
     try {
-      if (a.paused && typeof a.play === 'function') {
-        const res = a.play();
+      if (active.paused && typeof active.play === 'function') {
+        const res = active.play();
         if (res && typeof res.catch === 'function') {
           res.catch(() => {
             this._scheduleBgmUnlockRetry();
@@ -195,7 +219,8 @@ class SoundEngine {
       this._settingsApplied = true;
     }
     if (this.bgmWanted !== false) {
-      this.startMenuBGM();
+      if (this.activeBgmKey === 'pvp') this.startPvPBGM();
+      else this.startMenuBGM();
     }
   }
 
@@ -1026,21 +1051,46 @@ class SoundEngine {
   }
 
   // ==========================================================================
-  // BGM ENGINE (NHẠC NỀN MP3 CHÍNH THỨC + FALLBACK WEB AUDIO)
+  // BGM ENGINE (NHẠC NỀN MP3 CHÍNH THỨC + NHẠC PVP RIÊNG + FALLBACK WEB AUDIO)
   // ==========================================================================
   startMenuBGM() {
+    const switchedFromPvp = this.activeBgmKey === 'pvp';
+    this.activeBgmKey = 'main';
     this.bgmWanted = true;
     this.musicPlaying = true;
     if (this.bgmTimer) {
       clearInterval(this.bgmTimer);
       this.bgmTimer = null;
     }
-    const a = this._ensureMainThemeAudio();
+    if (switchedFromPvp && this.pvpAudio) {
+      try { this.pvpAudio.currentTime = 0; } catch (_) {}
+    }
+    const a = this._ensureTrackAudio('main');
     if (a) {
       this._syncBgmAudioState();
       return true;
     }
     return false;
+  }
+
+  startPvPBGM() {
+    const switchedToPvp = this.activeBgmKey !== 'pvp';
+    this.activeBgmKey = 'pvp';
+    this.bgmWanted = true;
+    this.musicPlaying = true;
+    if (this.bgmTimer) {
+      clearInterval(this.bgmTimer);
+      this.bgmTimer = null;
+    }
+    const a = this._ensureTrackAudio('pvp');
+    if (a) {
+      if (switchedToPvp && a.paused) {
+        try { a.currentTime = 0; } catch (_) {}
+      }
+      this._syncBgmAudioState();
+      return true;
+    }
+    return this.startMenuBGM();
   }
 
   duckBGM(factor = 0.28, durationMs = 2200) {
@@ -1072,6 +1122,7 @@ class SoundEngine {
     const fid = factionId || (meta && meta.faction) || (stageNumber >= 2 ? 'hua' : 'hua');
     this.theme = BGM_THEMES[fid] || BGM_THEMES.hua;
 
+    this.activeBgmKey = 'main';
     this.bgmWanted = true;
     this.musicPlaying = true;
     this.bgmStep = 0;
@@ -1080,7 +1131,7 @@ class SoundEngine {
     this.baseBpm = this.theme.bpm || 120;
     this.bpm = this.baseBpm;
 
-    const a = !this.useProceduralBGM ? this._ensureMainThemeAudio() : null;
+    const a = !this.useProceduralBGM ? this._ensureTrackAudio('main') : null;
     if (a) {
       this._syncBgmAudioState();
       return;
@@ -1089,7 +1140,7 @@ class SoundEngine {
   }
 
   restartBGMLoop() {
-    if (this.bgmAudio && !this.useProceduralBGM) return;
+    if (this._getActiveBgmAudio() && !this.useProceduralBGM) return;
     if (this.bgmTimer) {
       clearInterval(this.bgmTimer);
       this.bgmTimer = null;

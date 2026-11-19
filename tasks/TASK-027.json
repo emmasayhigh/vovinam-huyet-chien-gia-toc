@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-027",
+  "title": "Fix Main Theme MP3 Source & Integrate Dedicated PvP Arena MP3 Soundtrack",
+  "author": "Antigravity Senior Game Audio & Systems Engineer",
+  "date": "2026-11-19",
+  "objective": "Cập nhật đúng file nhạc nền chính (15:35:17 -> assets/audio/main_theme.mp3) và tích hợp bản nhạc riêng cho chế độ Đấu Đài 1v1 PvP (15:35:55 -> assets/audio/pvp_theme.mp3), tự động chuyển qua lại mượt mà khi vào/rời PvP và giữ đồng bộ Mute/Volume.",
+  "requestedBehavior": "1. Lưu assets/audio/main_theme.mp3 (từ file lúc 15:35:17) và assets/audio/pvp_theme.mp3 (từ file lúc 15:35:55). 2. Bổ sung startPvPBGM() và chuyển đổi track 'main'/'pvp' trong js/core/audio.js. 3. Gọi startPvPBGM() trong OnlineManager.startPvPMatch (js/core/game.js), tự chuyển về main_theme khi rời PvP về Menu/Co-op/Chiến dịch. 4. Cập nhật tests/test_audio_bgm.js.",
+  "allowedFiles": [
+    "assets/audio/main_theme.mp3",
+    "ssets/audio/main_theme.mp3",
+    "assets/audio/pvp_theme.mp3",
+    "js/core/audio.js",
+    "js/core/game.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_audio_bgm.js",
+    "tasks/TASK-027.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-NET-001",
+    "FEAT-SAV-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "SoundEngine",
+    "OnlineManager",
+    "GameFlow"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 45,
+    "authorizedRemovals": [
+      "Updating single-track _syncBgmAudioState to multi-track activeBgmKey ('main' | 'pvp') selector in js/core/audio.js"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-027.json"
+  ]
+}
