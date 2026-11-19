@@ -1591,9 +1591,77 @@ function connectWsClient(port) {
     });
     window.skeletalRenderer.render(mockAlphaCtx, rpFix, { x: 0, y: 0 });
     assert.ok(!alphaLog.some((a) => a === 0), 'SkeletalRenderer never fades RemotePlayer to 0 alpha');
+
+    // 15f. TASK-032 PvP Guard/Block Gauge Consumption, Guard Break & Sync
+    window.onlineManager.handleServerMessage({
+      type: 'match_started',
+      room: {
+        code: 'BLK32',
+        mode: 'pvp',
+        status: 'playing',
+        matchEpoch: 4,
+        scores: { p1: 0, p2: 0 },
+        players: [
+          { slot: 1, name: 'Def', charId: 'nghi', skinId: 'default' },
+          { slot: 2, name: 'Atk', charId: 'dinhan', skinId: 'default' }
+        ]
+      }
+    });
+    window.onlineManager._introLockTimer = 0;
+    const pDef = window.game.player;
+    pDef.isDead = false;
+    pDef.invincibleTimer = 0;
+    pDef.guardGauge = 100;
+    pDef.guardBreakTimer = 0;
+    pDef.setState('guard', 0.8);
+    pkts15.length = 0;
+
+    // Normal/blockable knockdown pvp_hit must consume 1 block (16) and reply reason:'blocked' with updated guardGauge
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit', epoch: 4, hitSeq: 301, damage: 50, knockbackX: 4, isKnockdown: true, weight: 'light', unblockable: false });
+    assert.strictEqual(pDef.guardGauge, 84, 'PvP block consumes guardGauge (100 -> 84)');
+    assert.strictEqual(pDef.state, 'guard', 'Defender stays in guard until gauge hits 0');
+    const blkAck1 = pkts15.find((p) => p.type === 'pvp_hit_ack' && p.hitSeq === 301);
+    assert.ok(blkAck1 && blkAck1.reason === 'blocked' && blkAck1.guardGauge === 84, 'pvp_hit_ack reports blocked and synced guardGauge=84');
+
+    // Heavy pvp_hit (28) while guardGauge=20 breaks guard cleanly
+    pDef.guardGauge = 20;
+    pDef.invincibleTimer = 0;
+    const hpBeforeBreak = pDef.hp;
+    pkts15.length = 0;
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit', epoch: 4, hitSeq: 302, damage: 50, knockbackX: 4, isKnockdown: false, weight: 'heavy', unblockable: false });
+    assert.strictEqual(pDef.guardGauge, 0, 'Depleting guardGauge triggers 0 guard');
+    assert.strictEqual(pDef.state, 'guard_break', 'Guard depletion transitions player into guard_break');
+    assert.strictEqual(pDef.hp, hpBeforeBreak - 65, 'Guard break applies 1.3x punish damage');
+    const brkAck = pkts15.find((p) => p.type === 'pvp_hit_ack' && p.hitSeq === 302);
+    assert.ok(brkAck && brkAck.reason === 'guard_break' && brkAck.guardGauge === 0, 'pvp_hit_ack reports guard_break');
+
+    // Unblockable pvp_hit pierces fresh guard immediately
+    pDef.guardGauge = 100;
+    pDef.guardBreakTimer = 0;
+    pDef.invincibleTimer = 0;
+    pDef.setState('guard', 0.8);
+    pkts15.length = 0;
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit', epoch: 4, hitSeq: 303, damage: 50, knockbackX: 4, isKnockdown: true, weight: 'ultimate', unblockable: true });
+    assert.strictEqual(pDef.state, 'guard_break', 'Unblockable pvp_hit breaks guard immediately');
+    assert.ok(pkts15.some((p) => p.type === 'pvp_hit_ack' && p.hitSeq === 303 && p.reason === 'guard_break'));
+
+    // Attacker side: hitting guarding RemotePlayer decrements RemotePlayer.guardGauge and forwards weight/unblockable
+    const rpBlk = window.onlineManager.remotePlayer;
+    rpBlk.isDead = false;
+    rpBlk.invincibleTimer = 0;
+    rpBlk.state = 'guard';
+    rpBlk.guardGauge = 100;
+    pkts15.length = 0;
+    window.combatSystem.resolveHit(pDef, rpBlk, { damage: 45, weight: 'light', knockback: 4 });
+    assert.strictEqual(rpBlk.guardGauge, 84, 'Attacker side decrements guarding RemotePlayer guardGauge');
+    const sentHitBlk = pkts15.find((p) => p.type === 'pvp_hit');
+    assert.ok(sentHitBlk && sentHitBlk.weight === 'light' && sentHitBlk.unblockable === false, 'RemotePlayer pvp_hit carries weight & unblockable metadata');
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit_ack', epoch: 4, hitSeq: sentHitBlk.hitSeq, accepted: true, newHp: rpBlk.maxHp - 9, guardGauge: 68, isDead: false, reason: 'blocked' });
+    assert.strictEqual(rpBlk.guardGauge, 68, 'pvp_hit_ack syncs authoritative opponent guardGauge');
+
     window.onlineManager.leaveMatch(false);
   }
-  console.log('✓ TEST 15: TASK-025, TASK-030 & TASK-031 (Rematch, Background Knockdown Recovery, Phantom 0-HP Fix) passed');
+  console.log('✓ TEST 15: TASK-025, TASK-030, TASK-031 & TASK-032 (Rematch, Background Knockdown Recovery, Phantom 0-HP Fix, PvP Block) passed');
 
   console.log('\n================================================');
   console.log('ALL ONLINE MULTIPLAYER TESTS PASSED 100%!');

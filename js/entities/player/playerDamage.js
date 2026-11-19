@@ -206,11 +206,56 @@ class PlayerDamage extends window.PlayerBase {
 
     // Đang thủ (Guard) và đỡ được đòn: giữ nguyên thế thủ, không bị ngắt vào hurt
     const fromBlockedHint = !!(this.pendingHit && this.pendingHit.blocked);
-    const isBlocked = (this.state === 'guard') || fromBlockedHint;
-    if (isBlocked && !isKnockdown) {
+    const pvpMeta = this._pvpHitMeta || null;
+    const hitUnblockable = !!(pvpMeta && pvpMeta.unblockable) || !!(this.pendingHit && this.pendingHit.unblockable);
+    const isBlocked = ((this.state === 'guard') || fromBlockedHint) && !hitUnblockable;
+    if (isPvpActive && !fromBlockedHint && this.state === 'guard' && hitUnblockable) {
+      const pierceDmg = Math.max(1, Math.round(amount * 1.2));
+      this.guardBroken = true;
+      if (typeof this.triggerGuardBreak === 'function') this.triggerGuardBreak();
+      this.hp = Math.max(0, this.hp - pierceDmg);
+      this.invincibleTimer = 0.05;
+      this.comboStep = 0;
+      this.grabbedTarget = null;
+      this._lastDamageRejectReason = 'guard_break';
+      if (window.uiManager) window.uiManager.updatePlayerHp(this.hp, this.maxHp);
+      this._grantPvpRevengeEnergy(pierceDmg);
+      if (this.hp <= 0) this.die(knockbackX);
+      return;
+    }
+    if (isBlocked && (!isKnockdown || (isPvpActive && !fromBlockedHint))) {
       if (isPvpActive && !fromBlockedHint) {
+        const hitWeight = (pvpMeta && pvpMeta.weight) || (isKnockdown ? 'heavy' : 'light');
+        const guardCost = (hitWeight === 'heavy') ? 28 : (hitWeight === 'ultimate' ? 42 : 16);
+        const isBroken = (typeof this.consumeGuard === 'function') ? this.consumeGuard(guardCost) : false;
+        if (isBroken) {
+          const breakDmg = Math.max(1, Math.round(amount * 1.3));
+          this.hp = Math.max(0, this.hp - breakDmg);
+          this.invincibleTimer = 0.05;
+          this.comboStep = 0;
+          this.grabbedTarget = null;
+          this._lastDamageRejectReason = 'guard_break';
+          if (window.audioManager) window.audioManager.playHurt();
+          if (window.uiManager) window.uiManager.updatePlayerHp(this.hp, this.maxHp);
+          this._grantPvpRevengeEnergy(breakDmg);
+          if (this.hp <= 0) this.die(knockbackX);
+          return;
+        }
         amount = Math.max(1, Math.round(amount * 0.2));
         if (typeof this.addEnergy === 'function') this.addEnergy(6);
+        const blocksLeft = Math.max(0, Math.ceil((this.guardGauge || 0) / 16));
+        if (!(this.weapon && this.weapon.type === 'shield' && this.weapon.dur > 0)) {
+          if (window.audioManager && typeof window.audioManager.playBlock === 'function') {
+            window.audioManager.playBlock();
+          }
+          if (window.effectManager && typeof window.effectManager.addFloatingText === 'function') {
+            window.effectManager.addFloatingText(`ĐỠ ĐÒN [${blocksLeft}/6]`, this.x, (this.y || 580) - 100, 'block');
+          }
+        }
+        if (window.CharacterRegistry && typeof window.CharacterRegistry.onGuardReflect === 'function') {
+          window.CharacterRegistry.onGuardReflect(this, window.onlineManager && window.onlineManager.remotePlayer, amount);
+        }
+        this._lastDamageRejectReason = 'blocked';
       }
       if (this.weapon && this.weapon.type === 'shield' && this.weapon.dur > 0) {
         const heavyChip = amount >= 5;

@@ -266,10 +266,11 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
       this.drawStaminaBar(ctx, sx, sy + z - 128 * S / 1.3 - 16, e, now);
     }
 
-    // Thanh Độ Bền Khiên (Guard Gauge / Block Limit)
-    const showGuardBar = isPlayer && (e.state === 'guard' || e.state === 'guard_break' || (typeof e.guardGauge === 'number' && e.guardGauge < (e.maxGuardGauge || 100) - 0.5));
-    if (!ghost && !isSil && isPlayer && showGuardBar && !e.isDead) {
-      const offsetAbove = (showStamBar || showKickBar) ? -36 : -18;
+    // Thanh Độ Bền Khiên (Guard Gauge / Block Limit) cho người chơi & đối thủ Online PvP
+    const canShowGuardBar = isPlayer || !!e.isRemotePlayer;
+    const showGuardBar = canShowGuardBar && (e.state === 'guard' || e.state === 'guard_break' || (typeof e.guardGauge === 'number' && e.guardGauge < (e.maxGuardGauge || 100) - 0.5));
+    if (!ghost && !isSil && canShowGuardBar && showGuardBar && !e.isDead) {
+      const offsetAbove = isPlayer ? ((showStamBar || showKickBar) ? -36 : -18) : -16;
       this.drawGuardGaugeBar(ctx, sx, sy + z - 128 * S / 1.3 + offsetAbove, e, now);
     }
 

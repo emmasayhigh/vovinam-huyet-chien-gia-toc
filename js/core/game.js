@@ -34,6 +34,8 @@ class RemotePlayer extends (window.Player || Object) {
     this._optimisticHpLockTimer = 0;
     this._optimisticTargetHitSeq = 0;
     this._netRxAge = 0;
+    this.maxGuardGauge = 100;
+    this.guardGauge = 100;
     this.remoteFiends = [];
     this.width = this.width || 50;
     this.height = this.height || 100;
@@ -92,6 +94,8 @@ class RemotePlayer extends (window.Player || Object) {
     this._optimisticHpLockTimer = 0;
     this._optimisticTargetHitSeq = 0;
     this._netRxAge = 0;
+    this.maxGuardGauge = 100;
+    this.guardGauge = 100;
     this.remoteFiends = [];
     this.hp = this.maxHp;
     this.energy = 0;
@@ -256,6 +260,9 @@ class RemotePlayer extends (window.Player || Object) {
     if (Number.isFinite(s.energy)) this.energy = s.energy;
     if (Number.isFinite(s.stamina)) this.stamina = s.stamina;
     if (Number.isFinite(s.shieldHp)) this.shieldHp = s.shieldHp;
+    if (Number.isFinite(s.guardGauge)) {
+      this.guardGauge = Math.max(0, Math.min(this.maxGuardGauge || 100, s.guardGauge));
+    }
     this.isDead = (this._optimisticHpLockTimer > 0 && this.hp <= 0) ? true : (!!s.isDead || this.hp <= 0);
     if (s.weaponType) {
       this.weapon = { type: s.weaponType, dur: s.weaponDur || 1 };
@@ -354,7 +361,10 @@ class RemotePlayer extends (window.Player || Object) {
     if (!mgr || !mgr.isActive || mgr.mode !== 'pvp') return;
     if (mgr._roundOver || (mgr._introLockTimer || 0) > 0) return;
     const bypassInv = !!(opts && opts.bypassInvincible);
-    const blockedHint = !!(this.pendingHit && this.pendingHit.blocked);
+    const pending = this.pendingHit;
+    const blockedHint = !!(pending && pending.blocked);
+    const hitWeight = (pending && pending.weight) || (opts && opts.weight) || (isKnockdown ? 'heavy' : 'light');
+    const hitUnblockable = !!(pending && (pending.unblockable || pending.isCrit)) || !!(opts && opts.unblockable);
     this.pendingHit = null;
     if (!bypassInv) {
       if (this.isDead || this.state === 'dodge' || this.state === 'knockdown' || this.state === 'getup' || (this.invincibleTimer || 0) > 0) return;
@@ -363,7 +373,7 @@ class RemotePlayer extends (window.Player || Object) {
     }
 
     const rawDmg = Math.max(1, Math.round(amount || 0));
-    const isBlocked = !bypassInv && !isKnockdown && (this.state === 'guard' || blockedHint);
+    const isBlocked = !bypassInv && !hitUnblockable && (this.state === 'guard' || blockedHint);
     const mitigation = (this.incomingDamageMul || 1) * (1 - Math.max(0, Math.min(0.85, this.damageReduction || 0))) * (isBlocked ? 0.2 : 1);
     const predictedDmg = Math.max(1, Math.round(rawDmg * mitigation));
 
@@ -402,6 +412,8 @@ class RemotePlayer extends (window.Player || Object) {
       damage: rawDmg,
       knockbackX: Number(knockbackX) || 0,
       isKnockdown: !!isKnockdown,
+      weight: hitWeight,
+      unblockable: hitUnblockable,
       bypassInvincible: bypassInv,
       attackerState: (window.game && window.game.player && window.game.player.state) || 'punch_straight'
     };
@@ -2106,13 +2118,26 @@ class OnlineManager {
               p.die(msg.knockbackX || 0);
             }
           } else if (typeof p.takeDamage === 'function') {
-            p.takeDamage(msg.damage, msg.knockbackX || 0, !!msg.isKnockdown);
+            p._pvpHitMeta = {
+              weight: msg.weight || (msg.isKnockdown ? 'heavy' : 'light'),
+              unblockable: !!msg.unblockable
+            };
+            try {
+              p.takeDamage(msg.damage, msg.knockbackX || 0, !!msg.isKnockdown);
+            } finally {
+              p._pvpHitMeta = null;
+            }
           }
         }
         const hpAfter = Math.round(p.hp || 0);
         const rejectReason = p._lastDamageRejectReason || null;
         if (this.mode === 'pvp' && Number.isFinite(msg.hitSeq)) {
-          const accepted = (hpAfter < hpBefore) || rejectReason === 'counter';
+          const accepted = (hpAfter < hpBefore) || rejectReason === 'counter' || rejectReason === 'blocked' || rejectReason === 'guard_break';
+          const ackReason = rejectReason === 'guard_break'
+            ? 'guard_break'
+            : (rejectReason === 'blocked'
+              ? 'blocked'
+              : (accepted ? (rejectReason === 'counter' ? 'counter' : 'ok') : (rejectReason || 'ignored')));
           this.send({
             type: 'pvp_hit_ack',
             epoch: this._matchEpoch || 1,
@@ -2120,8 +2145,9 @@ class OnlineManager {
             accepted,
             appliedDmg: Math.max(0, hpBefore - hpAfter),
             newHp: hpAfter,
+            guardGauge: Math.round(p.guardGauge ?? 100),
             isDead: !!p.isDead || hpAfter <= 0,
-            reason: accepted ? (rejectReason === 'counter' ? 'counter' : 'ok') : (rejectReason || 'ignored')
+            reason: ackReason
           });
         }
         break;
@@ -2141,8 +2167,18 @@ class OnlineManager {
           rp.hp = Math.max(0, Math.min(rp.maxHp || 1000, msg.newHp));
           rp.isDead = !!msg.isDead || rp.hp <= 0;
         }
-        if (!msg.accepted && (msg.reason === 'dodge' || msg.reason === 'counter') && window.effectManager && typeof window.effectManager.addFloatingText === 'function') {
-          window.effectManager.addFloatingText(msg.reason === 'dodge' ? 'NÉ ĐÒN!' : 'PHẢN ĐÒN!', rp.x, (rp.y || 580) - 150, 'block');
+        if (Number.isFinite(msg.guardGauge)) {
+          rp.guardGauge = Math.max(0, Math.min(rp.maxGuardGauge || 100, msg.guardGauge));
+        }
+        if (window.effectManager && typeof window.effectManager.addFloatingText === 'function') {
+          if (!msg.accepted && (msg.reason === 'dodge' || msg.reason === 'counter')) {
+            window.effectManager.addFloatingText(msg.reason === 'dodge' ? 'NÉ ĐÒN!' : 'PHẢN ĐÒN!', rp.x, (rp.y || 580) - 150, 'block');
+          } else if (msg.reason === 'guard_break') {
+            window.effectManager.addFloatingText('💥 BỂ THỦ!', rp.x, (rp.y || 580) - 160, 'counter');
+          } else if (msg.reason === 'blocked' && rp.state !== 'guard') {
+            const blocksLeft = Math.max(0, Math.ceil((rp.guardGauge || 0) / 16));
+            window.effectManager.addFloatingText(`ĐỠ ĐÒN [${blocksLeft}/6]`, rp.x, (rp.y || 580) - 105, 'block');
+          }
         }
         if (!this._roundOver && (rp.isDead || rp.hp <= 0)) {
           this._roundOver = true;
@@ -2842,6 +2878,7 @@ class OnlineManager {
     const curY = Math.round(p.y || 580);
     const curZ = Math.round(p.z || 0);
     const curHp = Math.round(p.hp || 0);
+    const curGuard = Math.round(p.guardGauge ?? 100);
 
     const activeFiends = Array.isArray(p._summonedFiends)
       ? p._summonedFiends
@@ -2859,7 +2896,7 @@ class OnlineManager {
       : [];
     const curFiendsSig = activeFiends.map((f) => `${f.id}:${f.slash ? 1 : 0}:${f.summonKind}`).join('|');
 
-    if (curState !== this._lastSentState || curFacing !== this._lastSentFacing || curCombo !== this._lastSentCombo || curFiendsSig !== this._lastSentFiendsSig) {
+    if (curState !== this._lastSentState || curFacing !== this._lastSentFacing || curCombo !== this._lastSentCombo || curGuard !== this._lastSentGuard || curFiendsSig !== this._lastSentFiendsSig) {
       this._syncAccum = 999;
     }
 
@@ -2883,6 +2920,7 @@ class OnlineManager {
         this._lastSentY = curY;
         this._lastSentZ = curZ;
         this._lastSentHp = curHp;
+        this._lastSentGuard = curGuard;
         this._lastSentFiendsSig = curFiendsSig;
         this.send({
           type: 'player_state',
@@ -2908,6 +2946,7 @@ class OnlineManager {
             energy: Math.round(p.energy || 0),
             stamina: Math.round(p.stamina || 100),
             shieldHp: Math.round(p.shieldHp || 0),
+            guardGauge: Math.round(p.guardGauge ?? 100),
             isDead: !!p.isDead,
             ackHitSeq: this._lastRecvHitSeq || 0,
             fiends: activeFiends,

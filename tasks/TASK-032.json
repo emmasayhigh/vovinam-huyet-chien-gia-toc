@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-032",
+  "title": "Fix PvP Online Guard/Block Gauge Consumption, Guard Break & Sync",
+  "author": "Antigravity Senior Game Engine & Netcode Engineer",
+  "date": "2026-11-19",
+  "objective": "Sửa lỗi thủ/đỡ đòn (Guard / Block) trong PvP Online không tính mất 1 block (guardGauge) khi bị đánh trúng thế thủ, không kích hoạt Bể Thủ (Guard Break), không phát hiệu ứng ĐỠ ĐÒN [X/6] và không đồng bộ thanh độ bền khiên 6 nấc.",
+  "requestedBehavior": "1. Trong PlayerDamage.takeDamage (js/entities/player/playerDamage.js), khi nhận đòn pvp_hit ở trạng thái guard (!fromBlockedHint), kiểm tra unblockable (phá thủ nếu unblockable), gọi consumeGuard(guardCost) theo trọng lượng đòn (16/28/42) để trừ đúng số block, kích hoạt Bể Thủ (guard_break +1.3x DMG) khi hết thanh thủ, phát âm thanh/text ĐỠ ĐÒN [X/6], và chặn được cả đòn knockdown thông thường trừ đòn unblockable. 2. Trong CombatSystem (js/combat/combat.js) và RemotePlayer/OnlineManager (js/core/game.js), truyền weight & unblockable qua gói pvp_hit, đồng bộ guardGauge trong player_state và pvp_hit_ack, áp dụng guardBehind đồng nhất cho người chơi/RemotePlayer, và hiển thị thanh Guard 6 nấc cho RemotePlayer trong animationRenderBase.js. 3. Thêm test hồi quy 15f xác minh PvP block trừ từng block và vỡ khiên Bể Thủ.",
+  "allowedFiles": [
+    "js/entities/player/playerDamage.js",
+    "js/combat/combat.js",
+    "js/core/game.js",
+    "js/entities/animation/animationRenderBase.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_online_multiplayer.js",
+    "tasks/TASK-032.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-NET-001",
+    "FEAT-CMB-001"
+  ],
+  "dependencies": [
+    "PlayerDamage",
+    "PlayerBase",
+    "CombatSystem",
+    "OnlineManager",
+    "RemotePlayer",
+    "SkeletalRendererRenderBase"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 30,
+    "authorizedRemovals": [
+      "Updating script cache-bust versions in index.html (4 lines)",
+      "Replacing incomplete PvP guard/block checks in PlayerDamage.takeDamage, CombatSystem, OnlineManager, RemotePlayer, and animationRenderBase with full guardGauge consumption and sync"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-032.json"
+  ]
+}

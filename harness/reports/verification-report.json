@@ -1,7 +1,7 @@
 {
-  "taskId": "TASK-031",
-  "taskTitle": "Fix Phantom 0-HP / Invisible RemotePlayer Desync Across PvP Rematch & Optimistic Hits",
-  "generatedAt": "2026-11-19T09:31:41.700Z",
+  "taskId": "TASK-032",
+  "taskTitle": "Fix PvP Online Guard/Block Gauge Consumption, Guard Break & Sync",
+  "generatedAt": "2026-11-19T09:39:02.984Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
@@ -13,7 +13,7 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-031.json"
+      "tasks/TASK-032.json"
     ],
     "filesModified": [
       "arness/reports/latest-test-run.json",
@@ -23,7 +23,7 @@
       "js/combat/combat.js",
       "js/core/game.js",
       "js/entities/animation/animationRenderBase.js",
-      "server.js",
+      "js/entities/player/playerDamage.js",
       "tests/test_online_multiplayer.js"
     ],
     "filesDeleted": []

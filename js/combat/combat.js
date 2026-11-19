@@ -690,7 +690,7 @@ class CombatSystem {
     // Nếu đối thủ đang Thủ (Guard) — chỉ chặn được đòn tới từ phía mặt (địch bị đánh từ sau lưng không được thủ)
     const isPvpFight = !!(window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'pvp');
     const isPvpTarget = !!(defender && defender.isRemotePlayer);
-    const guardBehind = defender.type !== 'player' && Math.sign(attacker.x - defender.x) !== (defender.facing || 1);
+    const guardBehind = defender.type !== 'player' && !defender.isRemotePlayer && Math.sign(attacker.x - defender.x) !== (defender.facing || 1);
     if (defender.state === 'guard' && !guardBehind) {
       // Đòn chân kẹp Vovinam, tuyệt kỹ hoặc Perfect Counter không thể bị đỡ!
       if (attackData.unblockable || isCrit) {
@@ -700,10 +700,16 @@ class CombatSystem {
           defender.triggerGuardBreak();
         }
       } else {
-        if (defender.type === 'player') {
+        let isBroken = false;
+        if (defender.type === 'player' || defender.isRemotePlayer) {
           const guardCost = (weight === 'heavy') ? 28 : (weight === 'ultimate' ? 42 : 16);
-          const isBroken = defender.consumeGuard ? defender.consumeGuard(guardCost) : false;
-          if (isBroken) {
+          if (defender.type === 'player') {
+            isBroken = defender.consumeGuard ? defender.consumeGuard(guardCost) : false;
+          } else if (typeof defender.guardGauge === 'number') {
+            defender.guardGauge = Math.max(0, defender.guardGauge - guardCost);
+            isBroken = defender.guardGauge <= 0;
+          }
+          if (isBroken && defender.type === 'player') {
             damage = Math.round(damage * 1.3);
             const kb = (attackData.knockback || 4) * attacker.facing * 0.6;
             defender.takeDamage(damage, kb, false);
@@ -718,8 +724,9 @@ class CombatSystem {
         if (!isPvpTarget) {
           damage = Math.round(damage * 0.2); // Giảm 80% sát thương khi thủ
         }
-        const blocksLeft = defender.type === 'player' ? Math.max(0, Math.ceil((defender.guardGauge || 0) / 16)) : 0;
-        const blockLabel = defender.type === 'player' ? ('ĐỠ ĐÒN [' + blocksLeft + '/6]') : 'BLOCKED';
+        const showBlocksCount = defender.type === 'player' || defender.isRemotePlayer;
+        const blocksLeft = showBlocksCount ? Math.max(0, Math.ceil((defender.guardGauge || 0) / 16)) : 0;
+        const blockLabel = showBlocksCount ? ('ĐỠ ĐÒN [' + blocksLeft + '/6]') : 'BLOCKED';
         if (window.audioManager) window.audioManager.playBlock();
         if (window.effectManager) effectManager.addFloatingText(blockLabel, defender.x, defender.y - 100, 'block');
         if (isPlayerAttacking && isPvpTarget && typeof attacker.addEnergy === 'function') {
@@ -739,7 +746,7 @@ class CombatSystem {
             window.trainingManager.recordAction('guard_held');
           }
         }
-        defender.pendingHit = { weight: 'light', isCrit: false, blocked: true };
+        defender.pendingHit = { weight: weight || 'light', isCrit: false, blocked: !isBroken, unblockable: false };
         defender.takeDamage(isPvpTarget ? rawDamageForRemote : damage, 0, false);
         return;
       }
@@ -771,7 +778,7 @@ class CombatSystem {
     // Ghi thông tin đòn đánh để đối thủ xử lý siêu giáp (poise) chính xác
     defender.pendingHit = {
       weight: noStagger ? 'light' : weight, isCrit, knockdown: isKnockdown, noFlinch: noStagger, blocked: false,
-      fromX: attacker.x, unblockable: !!attackData.unblockable,
+      fromX: attacker.x, unblockable: !!(attackData.unblockable || isCrit),
       attackerState: attacker.state
     };
     defender.takeDamage(damage, knockback, isKnockdown);
