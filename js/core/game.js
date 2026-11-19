@@ -309,6 +309,31 @@ class RemotePlayer extends (window.Player || Object) {
     }
     this.animTime = (this.animTime || 0) + step;
     this.stateTimer = (this.stateTimer || 0) + step;
+    // Giải kẹt tự động khi đối thủ chuyển tab / thu nhỏ trình duyệt lúc đang knockdown hoặc getup
+    if (!this.isDead) {
+      if (this.state === 'knockdown' && (this.netTargetZ || 0) >= -2 && (this.z || 0) >= -2) {
+        const kdLimit = Math.max(0.55, (Number(this.stateDuration) || 0.45) + 0.45);
+        if (this.stateTimer >= kdLimit) {
+          this.state = 'getup';
+          this.stateTimer = 0;
+          this.stateDuration = 0.28;
+          this.animTime = 0;
+          this.isAttacking = false;
+          this.z = 0;
+          this.netTargetZ = 0;
+          this.netVz = 0;
+        }
+      } else if (this.state === 'getup') {
+        const guLimit = Math.max(0.28, (Number(this.stateDuration) || 0.28) + 0.2);
+        if (this.stateTimer >= guLimit) {
+          this.state = 'idle';
+          this.stateTimer = 0;
+          this.stateDuration = 0;
+          this.animTime = 0;
+          this.isAttacking = false;
+        }
+      }
+    }
     if (this.hitJitterTimer > 0) this.hitJitterTimer = Math.max(0, this.hitJitterTimer - step);
     if (this.invincibleTimer > 0) this.invincibleTimer = Math.max(0, this.invincibleTimer - step);
     if (this.bleedTimer > 0) this.bleedTimer = Math.max(0, this.bleedTimer - step);

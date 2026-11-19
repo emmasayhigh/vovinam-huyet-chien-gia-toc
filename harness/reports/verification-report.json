@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-029",
-  "taskTitle": "Integrate Dedicated Boss Battle MP3 Soundtrack Across Campaign, Co-op, and Boss Rush",
-  "generatedAt": "2026-11-19T09:05:40.785Z",
+  "taskId": "TASK-030",
+  "taskTitle": "Fix Permanent Knockdown Freeze When Switching Browser Tabs / Window Blur / Online ESC",
+  "generatedAt": "2026-11-19T09:13:38.831Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 2,
-    "filesModifiedCount": 6,
+    "filesAddedCount": 1,
+    "filesModifiedCount": 7,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,25 +13,23 @@
   },
   "scope": {
     "filesAdded": [
-      "assets/audio/boss_theme.mp3",
-      "tasks/TASK-029.json"
+      "tasks/TASK-030.json"
     ],
     "filesModified": [
-      "ndex.html",
-      "js/core/audio.js",
+      "arness/reports/latest-test-run.json",
+      "harness/reports/verification-report.json",
+      "harness/reports/verification-report.md",
+      "index.html",
       "js/core/game.js",
-      "js/core/gameWave.js",
-      "js/features/bossRush.js",
-      "tests/test_audio_bgm.js"
+      "js/core/gameBase.js",
+      "tests/test_online_multiplayer.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
-      "FEAT-BOS-001",
-      "FEAT-BOS-002",
       "FEAT-NET-001",
-      "FEAT-UI-001"
+      "FEAT-CMB-001"
     ],
     "preserved": [
       "FEAT-CMB-001",

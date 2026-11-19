@@ -91,7 +91,65 @@ class GameBase {
     this._menuFrameRendered = false;
     this.isLoopRunning = true;
     this.lastTime = performance.now();
+    this._lastLogicTickAt = this.lastTime;
+    this._bindBackgroundKeepAlive();
     requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
+  }
+
+  _bindBackgroundKeepAlive() {
+    if (this._bgTickerBound) return;
+    this._bgTickerBound = true;
+
+    const tickIfStalled = () => {
+      const om = window.onlineManager;
+      if (!om || !om.isActive || this.state === 'MENU') return;
+      const now = performance.now();
+      if ((now - (this._lastLogicTickAt || 0)) >= 180) {
+        this.catchUpBackgroundSimulation(now);
+      }
+    };
+
+    const timer = setInterval(tickIfStalled, 250);
+    if (timer && typeof timer.unref === 'function') timer.unref();
+    this._bgKeepAliveInterval = timer;
+
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (window.input && typeof window.input.clearAll === 'function') {
+            window.input.clearAll();
+          }
+          tickIfStalled();
+        } else {
+          this.catchUpBackgroundSimulation(performance.now());
+        }
+      });
+    }
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('blur', () => {
+        if (window.input && typeof window.input.clearAll === 'function') {
+          window.input.clearAll();
+        }
+      });
+    }
+  }
+
+  catchUpBackgroundSimulation(now = performance.now()) {
+    const om = window.onlineManager;
+    if (!om || !om.isActive || this.state === 'MENU') return 0;
+    const prev = this._lastLogicTickAt || this.lastTime || now;
+    let remain = Math.min(2.4, Math.max(0, (now - prev) / 1000));
+    if (remain < 0.12) return 0;
+    this._lastLogicTickAt = now;
+    this.lastTime = now;
+    let steps = 0;
+    while (remain > 0.001) {
+      const sub = Math.min(0.05, remain);
+      remain -= sub;
+      this.stepSimulation(sub, false);
+      steps++;
+    }
+    return steps;
   }
 
   // ==========================================================================
@@ -295,17 +353,14 @@ class GameBase {
   }
 
   // ==========================================================================
-  // VÒNG LẶP CHÍNH CỦA GAME (GAME LOOP)
+  // MÔ PHỎNG LOGIC MỘT BƯỚC (DÙNG CHUNG CHO rAF VÀ BACKGROUND TAB KEEP-ALIVE)
   // ==========================================================================
-  gameLoop(currentTime) {
-    // Tính toán Delta Time chuẩn xác (giới hạn tối đa 0.1s tránh glitch)
-    const rawDt = Math.min(0.1, (currentTime - this.lastTime) / 1000);
-    this.lastTime = currentTime;
-
+  stepSimulation(rawDt, allowRender = true) {
+    this._lastLogicTickAt = performance.now();
     // Cập nhật Hiệu Ứng (bao gồm slow-motion scale)
     const dt = window.effectManager ? window.effectManager.update(rawDt) : rawDt;
 
-    // Cập nhật Logic (hit-stop đóng bang logic chiến đấu trong vài khung hình)
+    // Cập nhật Logic (hit-stop đóng băng logic chiến đấu trong vài khung hình)
     try {
       if (this.hitStop > 0) {
         this.hitStop -= rawDt;
@@ -336,9 +391,7 @@ class GameBase {
           this.state = 'MENU';
           this.previousState = 'MENU';
           this._pausedNoModalTimer = 0;
-          // Phải tiếp tục vòng lặp, nếu không game sẽ đứng hình vĩnh viễn
-          requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
-          return;
+          return 'CONTINUE';
         }
         // Cơ chế bảo vệ chống softlock: nếu game đang ở trạng thái PAUSED nhưng KHÔNG CÓ bất kỳ modal nào hiển thị
         const anyModal = document.querySelector('.modal-overlay:not(.hidden)');
@@ -375,17 +428,16 @@ class GameBase {
 
       // Nghỉ hoàn toàn rAF nền khi đang ở Title Screen hoặc mở modal phủ kín để tiết kiệm CPU/GPU
       if (this.state === 'MENU' && typeof window !== 'undefined' && window.uiCore && window.uiCore.shouldPauseMenuGameLoop()) {
-        if (!this._menuFrameRendered) {
+        if (allowRender && !this._menuFrameRendered) {
           this._menuFrameRendered = true;
           this.render();
         }
-        this.isLoopRunning = false;
-        return;
+        return 'STOP_MENU';
       }
 
       // Render Đồ Họa (Tối ưu hóa: Chỉ bỏ qua render nền khi đang ở MENU với modal toàn màn hình như Võ Đường / Chọn Đồng Minh)
       const isFullScreenModalOpen = !!(this.state === 'MENU' && typeof document !== 'undefined' && document.querySelector && document.querySelector('.cs-modal-screen:not(.hidden)'));
-      if (!isFullScreenModalOpen) {
+      if (allowRender && !isFullScreenModalOpen) {
         try {
           this.render();
         } catch (renderErr) {
@@ -394,7 +446,7 @@ class GameBase {
       }
     } catch (loopErr) {
       console.error('[GameLoop Error]', loopErr);
-      if (this.state !== 'MENU') {
+      if (allowRender && this.state !== 'MENU') {
         try { this.render(); } catch (_) {}
       }
     }
@@ -404,6 +456,27 @@ class GameBase {
       try {
         window.input.update();
       } catch (_) {}
+    }
+    return 'CONTINUE';
+  }
+
+  // ==========================================================================
+  // VÒNG LẶP CHÍNH CỦA GAME (GAME LOOP)
+  // ==========================================================================
+  gameLoop(currentTime) {
+    const om = window.onlineManager;
+    const elapsedSec = Math.max(0, (currentTime - this.lastTime) / 1000);
+    // Nếu tab vừa quay lại sau khi bị trình duyệt tạm dừng lúc đấu Online, bù ngay mô phỏng để không kẹt knockdown/state
+    if (om && om.isActive && this.state !== 'MENU' && elapsedSec > 0.14) {
+      this.catchUpBackgroundSimulation(currentTime);
+    }
+    const rawDt = Math.min(0.1, elapsedSec);
+    this.lastTime = currentTime;
+
+    const status = this.stepSimulation(rawDt, true);
+    if (status === 'STOP_MENU') {
+      this.isLoopRunning = false;
+      return;
     }
 
     requestAnimationFrame((timestamp) => this.gameLoop(timestamp));

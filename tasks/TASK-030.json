@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-030",
+  "title": "Fix Permanent Knockdown Freeze When Switching Browser Tabs / Window Blur / Online ESC",
+  "author": "Antigravity Senior Game Engine & Netcode Engineer",
+  "date": "2026-11-19",
+  "objective": "Sửa triệt để lỗi nhân vật bị nằm sàn (knockdown) vĩnh viễn không đứng dậy khi 1 người mở ESC hoặc chuyển tab / thu nhỏ / rời trình duyệt sang ứng dụng khác trong lúc thi đấu Online.",
+  "requestedBehavior": "1. Tách stepSimulation(rawDt) trong GameBase (js/core/gameBase.js) và chạy background heartbeat fallback (setInterval + visibilitychange catch-up) khi onlineManager.isActive để rAF bị browser tạm dừng vẫn cập nhật knockdown -> getup -> idle, trọng lực và gửi player_state bình thường. 2. Trong RemotePlayer.updateRemote (js/core/game.js), tự động chuyển visual knockdown -> getup -> idle nếu quá thời lượng mà peer chưa kịp gửi gói mới (giải kẹt tức thì). 3. Thêm test hồi quy chứng minh background step và RemotePlayer knockdown auto-recovery hoạt động chuẩn.",
+  "allowedFiles": [
+    "js/core/gameBase.js",
+    "js/core/game.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_online_multiplayer.js",
+    "tasks/TASK-030.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-NET-001",
+    "FEAT-CMB-001"
+  ],
+  "dependencies": [
+    "GameBase",
+    "OnlineManager",
+    "RemotePlayer",
+    "PlayerBase"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 45,
+    "authorizedRemovals": [
+      "Extracting stepSimulation(rawDt) from GameBase.gameLoop so rAF and background keep-alive share one helper"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-030.json"
+  ]
+}

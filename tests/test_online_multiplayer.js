@@ -1460,8 +1460,42 @@ function connectWsClient(port) {
     assert.strictEqual(propsRenderedInTraining, false, 'GameRender skips propSystem.render while in TRAINING state');
     window.propSystem.render = origPropRender;
     window.game.returnToMenu();
+
+    // 15d. TASK-030 Background tab knockdown recovery (local catchUpBackgroundSimulation + RemotePlayer fallback)
+    const savedInput15d = window.input;
+    window.input = { isDown: () => false, isJustPressed: () => false, peek: () => false, consume: () => false, update() {}, clearAll() {} };
+    window.onlineManager.startPvPMatch({
+      code: 'KD30',
+      mode: 'pvp',
+      matchEpoch: 1,
+      players: [
+        { slot: 1, name: 'TabHost', charId: 'nghi', skinId: 'default' },
+        { slot: 2, name: 'TabGuest', charId: 'huavudai', skinId: 'default' }
+      ]
+    });
+    window.onlineManager._introLockTimer = 0;
+    window.game.player.setState('knockdown', 0.45);
+    window.game.player.z = 0;
+    window.game.player.isDead = false;
+    window.game._lastLogicTickAt = performance.now() - 1200; // Simulate 1.2s background tab throttling
+    window.game.catchUpBackgroundSimulation(window.game._lastLogicTickAt + 1200);
+    assert.strictEqual(window.game.player.state, 'idle', 'catchUpBackgroundSimulation finishes knockdown -> getup -> idle cleanly');
+
+    const rpKd = window.onlineManager.remotePlayer;
+    rpKd.isDead = false;
+    rpKd.z = 0;
+    rpKd.netTargetZ = 0;
+    rpKd.state = 'knockdown';
+    rpKd.stateTimer = 0;
+    rpKd.stateDuration = 0.45;
+    for (let i = 0; i < 12; i++) rpKd.updateRemote(0.1);
+    assert.strictEqual(rpKd.state, 'getup', 'RemotePlayer transitions out of stalled knockdown -> getup when peer tab freezes');
+    for (let i = 0; i < 6; i++) rpKd.updateRemote(0.1);
+    assert.strictEqual(rpKd.state, 'idle', 'RemotePlayer finishes getup -> idle cleanly instead of staying knocked down forever');
+    window.onlineManager.leaveMatch(false);
+    window.input = savedInput15d;
   }
-  console.log('✓ TEST 15: TASK-025 (Rematch Epoch/Bar Guard, Co-op Stage Lock + Chain Integrity, Training Prop Clean) passed');
+  console.log('✓ TEST 15: TASK-025 & TASK-030 (Rematch, Co-op Stage Lock, Training Prop Clean, Knockdown Background Recovery) passed');
 
   console.log('\n================================================');
   console.log('ALL ONLINE MULTIPLAYER TESTS PASSED 100%!');
