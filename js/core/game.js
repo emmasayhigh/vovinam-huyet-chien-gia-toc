@@ -29,6 +29,7 @@ class RemotePlayer extends (window.Player || Object) {
     this.netVy = 0;
     this.netVz = 0;
     this.comboStep = 0;
+    this._lastStateSeq = 0;
     this._optimisticHpLockTimer = 0;
     this._optimisticTargetHitSeq = 0;
     this._netRxAge = 0;
@@ -85,6 +86,7 @@ class RemotePlayer extends (window.Player || Object) {
     this.netVy = 0;
     this.netVz = 0;
     this.comboStep = 0;
+    this._lastStateSeq = 0;
     this._optimisticHpLockTimer = 0;
     this._optimisticTargetHitSeq = 0;
     this._netRxAge = 0;
@@ -363,6 +365,7 @@ class RemotePlayer extends (window.Player || Object) {
 
     const packet = {
       type: 'pvp_hit',
+      epoch: (mgr && mgr._matchEpoch) || 1,
       hitSeq,
       damage: rawDmg,
       knockbackX: Number(knockbackX) || 0,
@@ -386,13 +389,13 @@ class RemotePlayer extends (window.Player || Object) {
     const isPvp = mode === 'pvp';
     const tag = isPvp ? '⚔️ ĐỐI THỦ' : '🤝 ĐỒNG ĐỘI';
     const tagColor = isPvp ? '#f87171' : '#38bdf8';
-    const barW = 90;
+    const barW = 92;
     const barH = 6;
     const maxHp = Math.max(1, this.maxHp || 1000);
-    const hpPct = Math.max(0, Math.min(1, (this.hp || 0) / maxHp));
-    const damaged = this.hp < maxHp ||
-      (this.bleedTimer > 0 || this.burnTimer > 0 || this.chillTimer > 0 || this.stunTimer > 0 || this.armorBreakTimer > 0);
-    const labelY = damaged ? (sy - 166) : (sy - 154);
+    const curHp = Math.max(0, Math.round(this.hp || 0));
+    const hpPct = Math.max(0, Math.min(1, curHp / maxHp));
+    const labelY = sy - 178;
+    const barY = sy - 169;
 
     ctx.font = '800 11px Montserrat, sans-serif';
     ctx.textAlign = 'center';
@@ -401,18 +404,17 @@ class RemotePlayer extends (window.Player || Object) {
     ctx.fillStyle = tagColor;
     ctx.fillText(`${tag}: ${(this.displayName || this.name || 'Võ Sĩ').toUpperCase()}`, sx, labelY);
 
-    if (!damaged) {
-      ctx.fillStyle = 'rgba(0,0,0,0.72)';
-      ctx.fillRect(sx - barW / 2, sy - 144, barW, barH);
-      ctx.fillStyle = isPvp ? '#ef4444' : '#10b981';
-      ctx.fillRect(sx - barW / 2, sy - 144, barW * hpPct, barH);
-      ctx.strokeStyle = isPvp ? '#fca5a5' : '#7dd3fc';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(sx - barW / 2, sy - 144, barW, barH);
-      ctx.font = '700 9px Montserrat, sans-serif';
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(`${Math.ceil(this.hp || 0)} / ${maxHp} HP`, sx, sy - 129);
-    }
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(0,0,0,0.78)';
+    ctx.fillRect(sx - barW / 2, barY, barW, barH);
+    ctx.fillStyle = isPvp ? '#ef4444' : '#10b981';
+    ctx.fillRect(sx - barW / 2, barY, barW * hpPct, barH);
+    ctx.strokeStyle = isPvp ? '#fca5a5' : '#7dd3fc';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(sx - barW / 2, barY, barW, barH);
+    ctx.font = '700 9px Montserrat, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(`${Math.ceil(this.hp || 0)} / ${maxHp} HP`, sx, barY + barH + 10);
     ctx.restore();
   }
 }
@@ -470,6 +472,7 @@ class OnlineManager {
     if (this._pendingHits) this._pendingHits.clear();
     this._roundOver = false;
     this._rematchRequested = false;
+    this._matchEpoch = 1;
     this._hooked = false;
     this._vfxHooked = false;
     this._applyingRemoteVfx = false;
@@ -748,7 +751,13 @@ class OnlineManager {
       this.allyId = (allyEl.value === this.charId) ? 'auto' : allyEl.value;
       if (allyEl.value !== this.allyId) allyEl.value = this.allyId;
     }
-    if (stageEl && stageEl.value) this.stageId = Math.max(1, Math.min(20, Number(stageEl.value) || 1));
+    if (stageEl && stageEl.value) {
+      const parsedStage = Math.max(1, Math.min(20, Number(stageEl.value) || 1));
+      this.stageId = this.mode === 'coop' ? this._clampUnlockedCoopStage(parsedStage) : parsedStage;
+      if (this.mode === 'coop' && String(stageEl.value) !== String(this.stageId)) {
+        stageEl.value = String(this.stageId);
+      }
+    }
   }
 
   _getAllyMeta(allyId) {
@@ -841,20 +850,67 @@ class OnlineManager {
     }
   }
 
+  _isCoopStageUnlocked(stageId) {
+    const id = Math.max(1, Math.min(20, Number(stageId) || 1));
+    if (id <= 1) return true;
+    const sm = window.saveManager;
+    if (!sm || typeof sm.isStageUnlocked !== 'function') return true;
+    return !!sm.isStageUnlocked(id);
+  }
+
+  _getMaxUnlockedCoopStage() {
+    const defs = window.STAGE_DEFINITIONS;
+    const ids = defs
+      ? Object.keys(defs).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b)
+      : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+    let best = 1;
+    for (const id of ids) {
+      if (this._isCoopStageUnlocked(id)) best = id;
+    }
+    return best;
+  }
+
+  _clampUnlockedCoopStage(stageId) {
+    const desired = Math.max(1, Math.min(20, Number(stageId) || 1));
+    if (this._isCoopStageUnlocked(desired)) return desired;
+    return this._getMaxUnlockedCoopStage();
+  }
+
   _populateCoopStages() {
     const stageEl = this._el('online-coop-stage');
     const defs = window.STAGE_DEFINITIONS;
-    if (!stageEl || !defs || stageEl.__vov20Populated) return;
-    stageEl.__vov20Populated = true;
+    if (!stageEl || !defs) return;
     const prevVal = stageEl.value || String(this.stageId || 1);
     const ids = Object.keys(defs).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
     if (!ids.length) return;
-    stageEl.innerHTML = ids.map((id) => {
+    stageEl.innerHTML = '';
+    if (Array.isArray(stageEl.children)) stageEl.children.length = 0;
+
+    let firstUnlocked = ids[0];
+    let selectedVal = null;
+    for (const id of ids) {
       const s = defs[id];
+      const unlocked = this._isCoopStageUnlocked(id);
+      if (unlocked && firstUnlocked === ids[0] && !this._isCoopStageUnlocked(firstUnlocked)) {
+        firstUnlocked = id;
+      }
       const bossTag = s.bossName ? ` [🔥 BOSS: ${s.bossName}]` : (s.escape ? ' [🏃 TRỐN THOÁT]' : '');
-      return `<option value="${id}">${s.title}${bossTag}</option>`;
-    }).join('');
-    stageEl.value = defs[Number(prevVal)] ? prevVal : String(ids[0]);
+      const opt = (typeof document !== 'undefined' && typeof document.createElement === 'function')
+        ? document.createElement('option')
+        : { value: '', textContent: '', disabled: false };
+      opt.value = String(id);
+      opt.disabled = !unlocked;
+      opt.textContent = unlocked ? `${s.title}${bossTag}` : `🔒 ${s.title}${bossTag} (Mở trong Chiến Dịch)`;
+      if (typeof stageEl.appendChild === 'function') stageEl.appendChild(opt);
+      if (unlocked && String(id) === String(prevVal)) {
+        selectedVal = String(id);
+      }
+    }
+    if (!selectedVal) {
+      selectedVal = String(this._clampUnlockedCoopStage(prevVal) || firstUnlocked || 1);
+    }
+    stageEl.value = selectedVal;
+    this.stageId = Number(selectedVal) || 1;
   }
 
   _appendChatMessage(senderName, text, isSystem = false) {
@@ -890,11 +946,16 @@ class OnlineManager {
     if (btnPvp && btnPvp.classList) btnPvp.classList.toggle('active', this.mode === 'pvp');
     if (btnCoop && btnCoop.classList) btnCoop.classList.toggle('active', this.mode === 'coop');
     if (stageRow && stageRow.classList) stageRow.classList.toggle('hidden', this.mode !== 'coop');
+    if (this.mode === 'coop') {
+      this._populateCoopStages();
+      this.stageId = this._clampUnlockedCoopStage(this.stageId);
+    }
     if (this.room && this.slot === 1) {
       this.send({
         type: 'update_lobby',
         mode: this.mode,
         stageId: this.stageId,
+        maxUnlockedStage: this._getMaxUnlockedCoopStage(),
         name: this.playerName,
         charId: this.charId,
         skinId: this.skinId,
@@ -905,6 +966,9 @@ class OnlineManager {
 
   syncLobbyProfile() {
     this.readProfileInputs();
+    if (this.mode === 'coop') {
+      this.stageId = this._clampUnlockedCoopStage(this.stageId);
+    }
     if (window.saveManager && window.saveManager.data) {
       window.saveManager.data.selectedAlly = this.allyId;
     }
@@ -913,6 +977,7 @@ class OnlineManager {
         type: 'update_lobby',
         mode: this.mode,
         stageId: this.stageId,
+        maxUnlockedStage: this._getMaxUnlockedCoopStage(),
         name: this.playerName,
         charId: this.charId,
         skinId: this.skinId,
@@ -1063,11 +1128,19 @@ class OnlineManager {
       return;
     }
     this.readProfileInputs();
+    const maxUnlockedStage = this._getMaxUnlockedCoopStage();
+    if (this.mode === 'coop' && !this._isCoopStageUnlocked(this.stageId)) {
+      this.stageId = this._clampUnlockedCoopStage(this.stageId);
+      const stageEl = this._el('online-coop-stage');
+      if (stageEl) stageEl.value = String(this.stageId);
+      this._toast(`🔒 Chỉ mở khóa Co-op theo tiến trình Chiến Dịch — Đã chọn Màn ${this.stageId}.`);
+    }
     this.setQuickMatchState('searching');
     this.send({
       type: 'quick_match',
       mode: this.mode,
       stageId: this.stageId,
+      maxUnlockedStage,
       name: this.playerName,
       charId: this.charId,
       skinId: this.skinId,
@@ -1094,6 +1167,14 @@ class OnlineManager {
       return;
     }
     this.readProfileInputs();
+    const maxUnlockedStage = this._getMaxUnlockedCoopStage();
+    if (this.mode === 'coop' && !this._isCoopStageUnlocked(this.stageId)) {
+      const clamped = this._clampUnlockedCoopStage(this.stageId);
+      this._toast(`🔒 Màn ${this.stageId} chưa mở khóa trong Chiến Dịch! Đã chọn Màn ${clamped}.`);
+      this.stageId = clamped;
+      const stageEl = this._el('online-coop-stage');
+      if (stageEl) stageEl.value = String(clamped);
+    }
     const nameEl = this._el('online-create-room-name');
     const privEl = this._el('online-create-privacy');
     const passEl = this._el('online-create-password');
@@ -1108,6 +1189,7 @@ class OnlineManager {
       password,
       mode: this.mode,
       stageId: this.stageId,
+      maxUnlockedStage,
       name: this.playerName,
       charId: this.charId,
       skinId: this.skinId,
@@ -1232,8 +1314,14 @@ class OnlineManager {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'btn btn-sm btn-primary orcp-join-btn';
-      btn.textContent = r.isPrivate && r.hasPassword ? '🔑 MỞ KHÓA' : 'VÀO ĐÀI ➔';
+      btn.textContent = (isCoop && !this._isCoopStageUnlocked(r.stageId))
+        ? `🔒 CHƯA MỞ M${Number(r.stageId) || 1}`
+        : (r.isPrivate && r.hasPassword ? '🔑 MỞ KHÓA' : 'VÀO ĐÀI ➔');
       btn.onclick = () => {
+        if (isCoop && !this._isCoopStageUnlocked(r.stageId)) {
+          this._toast(`🔒 Bạn cần mở khóa Màn ${Number(r.stageId) || 1} trong Chiến Dịch trước khi vào phòng Co-op này!`);
+          return;
+        }
         if (r.isPrivate && r.hasPassword) {
           this._pendingPrivateRoomCode = r.code;
           const pBar = this._el('online-private-join-bar');
@@ -1560,6 +1648,10 @@ class OnlineManager {
       const banner = this._el('online-invite-banner');
       if (banner && banner.classList) banner.classList.add('hidden');
       if (!inv || !inv.roomCode) return;
+      if (inv.mode === 'coop' && !this._isCoopStageUnlocked(inv.stageId)) {
+        this._toast(`🔒 Bạn cần mở khóa Màn ${Number(inv.stageId) || 1} trong Chiến Dịch trước khi vào phòng Co-op này!`);
+        return;
+      }
       this.readProfileInputs();
       this.send({
         type: 'join_room',
@@ -1670,6 +1762,11 @@ class OnlineManager {
         this._toast('Vui lòng nhập Mã Phòng!');
         return;
       }
+      const listed = (this.rooms || []).find((r) => r && r.code === code);
+      if (listed && listed.mode === 'coop' && !this._isCoopStageUnlocked(listed.stageId)) {
+        this._toast(`🔒 Bạn cần mở khóa Màn ${Number(listed.stageId) || 1} trong Chiến Dịch trước khi vào phòng Co-op này!`);
+        return;
+      }
       this.readProfileInputs();
       this.send({
         type: 'join_room',
@@ -1710,6 +1807,12 @@ class OnlineManager {
     bindClick('btn-online-leave-match', () => {
       this.leaveMatch(true);
     });
+  }
+
+  _isEpochMismatch(msg) {
+    if (!msg || !Number.isFinite(Number(msg.epoch))) return false;
+    const cur = Number(this._matchEpoch || 0);
+    return cur > 0 && Number(msg.epoch) !== cur;
   }
 
   handleServerMessage(msg) {
@@ -1868,6 +1971,11 @@ class OnlineManager {
         this._stopQmAutoStart();
         this._resetRematchButton(false);
         this.room = msg.room || this.room;
+        if (this.room && Number.isFinite(Number(this.room.matchEpoch))) {
+          this._matchEpoch = Number(this.room.matchEpoch);
+        } else {
+          this._matchEpoch = (this._matchEpoch || 0) + 1;
+        }
         if (this.room) {
           this.mode = this.room.mode === 'coop' ? 'coop' : 'pvp';
           this.stageId = this.room.stageId || 1;
@@ -1882,6 +1990,7 @@ class OnlineManager {
         break;
       }
       case 'player_state': {
+        if (this._isEpochMismatch(msg)) break;
         this._lastPeerPacketAt = Date.now();
         if (this.remotePlayer && msg.state) {
           this.remotePlayer.applyRemoteState(msg.state);
@@ -1897,12 +2006,14 @@ class OnlineManager {
         break;
       }
       case 'vfx_event': {
+        if (this._isEpochMismatch(msg)) break;
         if (this.isActive) {
           this.applyRemoteVfx(msg);
         }
         break;
       }
       case 'pvp_hit': {
+        if (this._isEpochMismatch(msg)) break;
         this._lastPeerPacketAt = Date.now();
         const g = window.game;
         const allowMode = this.mode === 'pvp' || (this.mode === 'coop' && !!msg.fromCoopProjectile);
@@ -1972,6 +2083,7 @@ class OnlineManager {
           const accepted = (hpAfter < hpBefore) || rejectReason === 'counter';
           this.send({
             type: 'pvp_hit_ack',
+            epoch: this._matchEpoch || 1,
             hitSeq: msg.hitSeq,
             accepted,
             appliedDmg: Math.max(0, hpBefore - hpAfter),
@@ -1983,6 +2095,7 @@ class OnlineManager {
         break;
       }
       case 'pvp_hit_ack': {
+        if (this._isEpochMismatch(msg)) break;
         this._lastPeerPacketAt = Date.now();
         if (this._pendingHits && Number.isFinite(msg.hitSeq)) {
           this._pendingHits.delete(msg.hitSeq);
@@ -2001,11 +2114,12 @@ class OnlineManager {
         }
         if (!this._roundOver && (rp.isDead || rp.hp <= 0)) {
           this._roundOver = true;
-          this.send({ type: 'match_result', winnerSlot: this.slot || 1 });
+          this.send({ type: 'match_result', epoch: this._matchEpoch || 1, winnerSlot: this.slot || 1 });
         }
         break;
       }
       case 'coop_hit_enemy': {
+        if (this._isEpochMismatch(msg)) break;
         this._lastPeerPacketAt = Date.now();
         const g = window.game;
         if (!this.isActive || this.mode !== 'coop' || !g || !Array.isArray(g.enemies)) break;
@@ -2029,6 +2143,7 @@ class OnlineManager {
         if (Number.isFinite(msg.hitSeq)) {
           this.send({
             type: 'coop_hit_ack',
+            epoch: this._matchEpoch || 1,
             hitSeq: msg.hitSeq,
             netId: msg.netId,
             accepted: acceptedHit,
@@ -2039,6 +2154,7 @@ class OnlineManager {
         break;
       }
       case 'coop_hit_ack': {
+        if (this._isEpochMismatch(msg)) break;
         this._lastPeerPacketAt = Date.now();
         const g = window.game;
         if (!this.isActive || this.mode !== 'coop' || !g || !Array.isArray(g.enemies)) break;
@@ -2055,6 +2171,7 @@ class OnlineManager {
         break;
       }
       case 'coop_enemies_sync': {
+        if (this._isEpochMismatch(msg)) break;
         this._lastPeerPacketAt = Date.now();
         if (this.isActive && this.mode === 'coop' && this.slot !== 1) {
           this.applyCoopEnemiesSync(msg);
@@ -2062,6 +2179,7 @@ class OnlineManager {
         break;
       }
       case 'match_result': {
+        if (this._isEpochMismatch(msg)) break;
         if (msg.scores) this.pvpScores = { ...msg.scores };
         this._roundOver = true;
         const iWon = Number(msg.winnerSlot) === Number(this.slot);
@@ -2090,6 +2208,7 @@ class OnlineManager {
         break;
       }
       case 'coop_stage_ended': {
+        if (this._isEpochMismatch(msg)) break;
         const wasOver = !!this._roundOver;
         this._roundOver = true;
         if (!this._rematchRequested) {
@@ -2286,10 +2405,15 @@ class OnlineManager {
     const g = window.game;
     if (!g) return;
     this.installHooks();
+    if (this.room && Number.isFinite(Number(this.room.matchEpoch))) {
+      this._matchEpoch = Number(this.room.matchEpoch);
+    } else if (!this._matchEpoch) {
+      this._matchEpoch = 1;
+    }
     this.isActive = true;
     this.mode = 'pvp';
     this._roundOver = false;
-    this._syncAccum = 0;
+    this._syncAccum = 999;
     this._enemySyncAccum = 0;
     this._lastSentState = null;
     this._lastSentFacing = null;
@@ -2330,10 +2454,14 @@ class OnlineManager {
     this.triggerVsSplash(room || this.room);
 
     if (window.uiManager) {
+      if (typeof window.uiManager.hidePause === 'function') window.uiManager.hidePause();
+      if (typeof window.uiManager.hideGameOver === 'function') window.uiManager.hideGameOver();
+      if (typeof window.uiManager.hideStageClear === 'function') window.uiManager.hideStageClear();
       window.uiManager.hideBossHUD();
       window.uiManager.setObjective('⚔️ ĐẤU VÕ ĐÀI 1V1 ONLINE — HẠ GỤC ĐỐI THỦ!');
       window.uiManager.showAlertBanner('⚔️ VÕ ĐÀI 1V1 BẮT ĐẦU!');
     }
+    this._syncAccum = 999;
     this._resetRematchButton(false);
     this.updateMatchBar();
   }
@@ -2342,10 +2470,15 @@ class OnlineManager {
     const g = window.game;
     if (!g) return;
     this.installHooks();
+    if (room && Number.isFinite(Number(room.matchEpoch))) {
+      this._matchEpoch = Number(room.matchEpoch);
+    } else if (!this._matchEpoch) {
+      this._matchEpoch = 1;
+    }
     this.isActive = true;
     this.mode = 'coop';
     this._roundOver = false;
-    this._syncAccum = 0;
+    this._syncAccum = 999;
     this._enemySyncAccum = 0;
     this._nextNetId = 1;
     this._lastSentState = null;
@@ -2390,9 +2523,13 @@ class OnlineManager {
     if (arenaHud && arenaHud.classList) arenaHud.classList.add('hidden');
 
     if (window.uiManager) {
+      if (typeof window.uiManager.hidePause === 'function') window.uiManager.hidePause();
+      if (typeof window.uiManager.hideGameOver === 'function') window.uiManager.hideGameOver();
+      if (typeof window.uiManager.hideStageClear === 'function') window.uiManager.hideStageClear();
       window.uiManager.setObjective(`🤝 2P CO-OP MÀN ${targetStage} — HỢP LỰC HẠ BOSS!`);
       window.uiManager.showAlertBanner(`🤝 XUẤT TRẬN CO-OP MÀN ${targetStage}!`);
     }
+    this._syncAccum = 999;
     this._resetRematchButton(false);
     this.updateMatchBar();
   }
@@ -2592,7 +2729,7 @@ class OnlineManager {
     check('stun', 'stunTimer');
     check('armorBreak', 'armorBreakTimer');
     if (hasNew) {
-      this.send({ type: 'pvp_hit', damage: 0, debuffs: newlyApplied });
+      this.send({ type: 'pvp_hit', epoch: this._matchEpoch || 1, damage: 0, debuffs: newlyApplied });
     }
   }
 
@@ -2657,7 +2794,7 @@ class OnlineManager {
       g.player.isDead = true;
       g.player.invincibleTimer = 999;
       const oppSlot = this.slot === 1 ? 2 : 1;
-      this.send({ type: 'match_result', winnerSlot: oppSlot });
+      this.send({ type: 'match_result', epoch: this._matchEpoch || 1, winnerSlot: oppSlot });
       const rematchBtn = this._el('btn-online-rematch');
       if (rematchBtn && rematchBtn.classList) rematchBtn.classList.remove('hidden');
     }
@@ -2714,6 +2851,7 @@ class OnlineManager {
         this._lastSentFiendsSig = curFiendsSig;
         this.send({
           type: 'player_state',
+          epoch: this._matchEpoch || 1,
           state: {
             seq: ++this._sentStateSeq,
             name: this.playerName,
@@ -2784,6 +2922,7 @@ class OnlineManager {
           });
           this.send({
             type: 'coop_enemies_sync',
+            epoch: this._matchEpoch || 1,
             enemies: enemiesPayload,
             arenaLocked: !!g.arenaLocked,
             arenaMinX: g.arenaMinX,
@@ -3034,6 +3173,7 @@ class OnlineManager {
           this._optimisticTargetHitSeq = hitSeq;
           mgr.send({
             type: 'coop_hit_enemy',
+            epoch: mgr._matchEpoch || 1,
             hitSeq,
             netId: this._netId,
             damage: Number(amount) || 0,
@@ -3058,7 +3198,7 @@ class OnlineManager {
           const out = orig.apply(this, args);
           if (om.isActive && !om._applyingRemoteVfx) {
             const payload = makePayload(...args);
-            if (payload) om.send({ type: 'vfx_event', ...payload });
+            if (payload) om.send({ type: 'vfx_event', epoch: om._matchEpoch || 1, ...payload });
           }
           return out;
         };
@@ -3100,7 +3240,7 @@ class OnlineManager {
           const out = origSpawnProj.apply(this, arguments);
           const om = window.onlineManager;
           if (om && om.isActive && !om._applyingRemoteVfx && owner === this.player) {
-            om.send({ type: 'vfx_event', kind: 'projectile', x: Math.round(x), y: Math.round(y), vx: Math.round(vx || 0), vy: Math.round(vy || 0), pType: type || 'knife' });
+            om.send({ type: 'vfx_event', epoch: om._matchEpoch || 1, kind: 'projectile', x: Math.round(x), y: Math.round(y), vx: Math.round(vx || 0), vy: Math.round(vy || 0), pType: type || 'knife' });
           }
           return out;
         };

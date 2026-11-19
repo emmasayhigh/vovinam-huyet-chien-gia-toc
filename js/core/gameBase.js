@@ -129,6 +129,11 @@ class GameBase {
     if (window.allyManager && typeof window.allyManager.reset === 'function') {
       window.allyManager.reset();
     }
+    if (window.propSystem) {
+      window.propSystem.props = [];
+    }
+    this._activeHazards = [];
+    this.stageHazardMode = null;
 
     if (!opts.keepBossRush) this.isBossRush = false;
     this.pendingChoice = null;
@@ -420,8 +425,8 @@ class GameBase {
       window.weaponSystem.update(dt, this.player, this.enemies);
     }
 
-    // 1c. Cập nhật Vật thể sân khấu & va chạm môi trường (Wall Splat)
-    if (window.propSystem) {
+    // 1c. Cập nhật Vật thể sân khấu & va chạm môi trường (Wall Splat — bỏ qua Võ đường / Tân thủ)
+    if (window.propSystem && this.state !== 'TRAINING' && this.state !== 'TUTORIAL') {
       window.propSystem.update(dt, this.player, this.enemies);
     }
 

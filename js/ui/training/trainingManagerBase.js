@@ -99,11 +99,24 @@ class TrainingManagerBase {
     const game = window.game;
     if (!game) return;
 
-    // Tắt mưa hoàn toàn trong võ đường
+    // Tắt mưa hoàn toàn và dọn sạch vật thể/thùng hàng/vũ khí rơi từ màn chơi trước trong võ đường
     if (window.effectManager) {
       window.effectManager.isRaining = false;
       window.effectManager.rainDrops = [];
+      if (typeof window.effectManager.clearCombatEffects === 'function') {
+        window.effectManager.clearCombatEffects();
+      }
     }
+    if (window.propSystem) {
+      window.propSystem.props = [];
+    }
+    if (window.weaponSystem && typeof window.weaponSystem.reset === 'function') {
+      window.weaponSystem.reset(game.player);
+    }
+    game.projectiles = [];
+    game._activeHazards = [];
+    game.stageHazardMode = null;
+    game.stageEvidence = null;
 
     // Chọn nhân vật xuất trận trong võ đường (ưu tiên charId -> selectedTrainingChar -> saveManager -> 'nghi')
     const targetChar = charId || this.selectedTrainingChar || (window.saveManager && window.saveManager.data.selectedCharacter) || 'nghi';

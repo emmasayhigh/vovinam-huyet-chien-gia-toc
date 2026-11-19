@@ -283,7 +283,8 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
         skinId: p.skinId,
         allyId: p.allyId || 'auto',
         ready: !!p.ready
-      }))
+      })),
+      matchEpoch: room.matchEpoch || 1
     };
   }
 
@@ -412,7 +413,11 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       : '';
     const code = (customCode && !rooms.has(customCode)) ? customCode : generateRoomCode();
     const mode = msg.mode === 'coop' ? 'coop' : 'pvp';
-    const stageId = Math.max(1, Math.min(20, Number(msg.stageId) || 1));
+    const rawStage = Math.max(1, Math.min(20, Number(msg.stageId) || 1));
+    const maxUnlocked = Number.isFinite(Number(msg.maxUnlockedStage))
+      ? Math.max(1, Math.min(20, Number(msg.maxUnlockedStage)))
+      : 20;
+    const stageId = mode === 'coop' ? Math.min(rawStage, maxUnlocked) : rawStage;
     const isQM = !!msg.fromQuickMatch;
 
     client.name = sanitizeDisplayText(msg.name, client.name || 'Võ Sĩ 1', 24);
@@ -439,6 +444,7 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       isQuickMatch: isQM,
       quickMatched: false,
       status: 'waiting',
+      matchEpoch: 1,
       scores: { p1: 0, p2: 0 },
       players: [client]
     };
@@ -570,9 +576,13 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
 
       case 'quick_match': {
         const targetMode = msg.mode === 'coop' ? 'coop' : 'pvp';
+        const reqMax = Number.isFinite(Number(msg.maxUnlockedStage))
+          ? Math.max(1, Math.min(20, Number(msg.maxUnlockedStage)))
+          : null;
         let found = null;
         for (const room of rooms.values()) {
           if (room.status === 'waiting' && !room.isPrivate && room.players.length === 1 && room.mode === targetMode && room.players[0].id !== client.id) {
+            if (targetMode === 'coop' && reqMax !== null && (Number(room.stageId) || 1) > reqMax) continue;
             found = room;
             break;
           }
@@ -677,6 +687,7 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
           return;
         }
         room.status = 'playing';
+        room.matchEpoch = (room.matchEpoch || 1) + 1;
         room.players.forEach((p) => { p.rematchReady = false; p.isSearching = false; });
         broadcastRoom(room, { type: 'match_started', room: serializeRoom(room) });
         broadcastRoomsToLobby();
@@ -742,6 +753,7 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
         broadcastRoom(room, { type: 'rematch_request', fromSlot: client.slot }, client.id);
         if (room.players.every((p) => p.rematchReady)) {
           room.status = 'playing';
+          room.matchEpoch = (room.matchEpoch || 1) + 1;
           room.players.forEach((p) => { p.rematchReady = false; p.ready = true; });
           broadcastRoom(room, { type: 'rematch_start', room: serializeRoom(room) });
         }

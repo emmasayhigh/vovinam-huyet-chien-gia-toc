@@ -43,11 +43,12 @@ class GameStory extends window.GameFlow {
       { speaker: 'NGÔ NHẤT NGHỊ', role: 'SÁT THẦN VIỆT VÕ ĐẠO', avatar: 'nghi',
         text: 'Cảm ơn. Nếu sau này tôi cần một đồng minh không biết nói dối — tôi sẽ tìm anh.' }
     ], () => {
-      if (window.saveManager) {
+      const isOnline = !!(window.onlineManager && window.onlineManager.isActive);
+      if (window.saveManager && !isOnline) {
         window.saveManager.unlockAchievement('truce_bichlam');
         window.saveManager.completeMission('truce_bichlam');
       }
-      if (window.uiManager) window.uiManager.showToast('THÀNH TÍCH: HIỆP ƯỚC GIỮA HAI NGƯỜI');
+      if (window.uiManager && !isOnline) window.uiManager.showToast('THÀNH TÍCH: HIỆP ƯỚC GIỮA HAI NGƯỜI');
       // Kết thúc trận đấu mà không cần hạ gục
       boss.isDead = true;
       boss.setState('knockdown', 1.2);
@@ -215,14 +216,16 @@ class GameStory extends window.GameFlow {
               text: 'Tôi sẽ lên Thập Vạn Đại Sơn tìm Hoàng Anh để đối chứng. Rời khỏi thành phố đi trước khi người của Mộc Đăng đến.'
             }
           ], () => {
-            if (window.saveManager) {
+            const isOnline = !!(window.onlineManager && window.onlineManager.isActive);
+            if (window.saveManager && !isOnline) {
               window.saveManager.unlockCharacter('dunghai');
               window.saveManager.unlockAlly('dunghai');
             }
             this.triggerStageVictory();
           });
         } else if (optId === 'confront') {
-          if (inv) {
+          const isOnline = !!(window.onlineManager && window.onlineManager.isActive);
+          if (inv && !isOnline) {
             inv.adjustTrust('dunghai', +40, 'Bạn chứng minh được sự ngụy tạo của lệnh khai trừ');
             inv.collectEvidence('DOC_AUDIO_MOCDANG');
             inv.ensureState(window.saveManager);
@@ -244,7 +247,7 @@ class GameStory extends window.GameFlow {
               text: 'Nghị, tôi nợ cậu một mạng. Bất cứ khi nào cậu cần, tôi sẽ yểm trợ cậu bằng sương mù và ảo ảnh Vovinam!'
             }
           ], () => {
-            if (window.saveManager) {
+            if (window.saveManager && !isOnline) {
               window.saveManager.unlockCharacter('dunghai');
               window.saveManager.unlockAlly('dunghai');
             }
@@ -285,9 +288,10 @@ class GameStory extends window.GameFlow {
         text: 'Hừ... Đánh hay lắm. Muốn giao nộp tôi cho Hứa Vũ Đại thì làm đi. Nhưng đừng hòng moi thêm một chữ nào từ miệng tôi.'
       }
     ], () => {
+      const isOnline = !!(window.onlineManager && window.onlineManager.isActive);
       const inv = window.investigationManager;
-      if (inv) inv.collectEvidence('DOC_AUDIO_MOCDANG');
-      if (window.saveManager) {
+      if (inv && !isOnline) inv.collectEvidence('DOC_AUDIO_MOCDANG');
+      if (window.saveManager && !isOnline) {
         window.saveManager.unlockCharacter('dunghai');
         window.saveManager.unlockAlly('dunghai');
       }

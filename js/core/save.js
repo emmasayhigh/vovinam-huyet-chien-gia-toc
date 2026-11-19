@@ -304,19 +304,36 @@ class SaveManager {
   // -------------------------------------------------------------------------
   // TRUY VẤN TIẾN TRÌNH
   // -------------------------------------------------------------------------
+  _hasContiguousMainChain(targetMainId) {
+    const id = Number(targetMainId);
+    if (!isFinite(id) || id <= 1) return true;
+    const completed = (this.data && Array.isArray(this.data.completedStages)) ? this.data.completedStages : [];
+    const mainOrder = window.STORY_META && window.STORY_META.mainOrder;
+    let cur = id;
+    const visited = new Set();
+    while (cur && cur > 1 && !visited.has(cur)) {
+      visited.add(cur);
+      const entry = mainOrder && mainOrder[cur];
+      let prev = entry ? entry.prev : (cur - 1);
+      if (!entry && cur === 6) prev = 4;
+      if (prev === null || prev === undefined) break;
+      if (!completed.includes(prev)) return false;
+      cur = prev;
+    }
+    return true;
+  }
+
   isStageUnlocked(stageId) {
     const s = Number(stageId);
     if (!isFinite(s) || s <= 1) return true;
-    // Đã hoàn thành màn này rồi -> luôn coi là mở khóa (tránh hiển thị "khóa + đã qua" mâu thuẫn)
-    if (this.data.completedStages.includes(s)) return true;
-    // Màn phụ (nhiệm vụ phụ) được mở khi hoàn thành màn cha
-    const sideOf = (window.STORY_META && window.STORY_META.sideOf[s]) || null;
-    if (sideOf && !this.data.completedStages.includes(sideOf)) return false;
-    // Màn chính: hoàn thành màn trước đó
-    const mainOf = (window.STORY_META && window.STORY_META.mainOrder[s]) || null;
-    const prev = mainOf ? mainOf.prev : s - 1;
-    if (prev === null || prev === undefined) return true;
-    return this.data.completedStages.includes(prev);
+    const completed = (this.data && Array.isArray(this.data.completedStages)) ? this.data.completedStages : [];
+    // Màn phụ (nhiệm vụ phụ) được mở khi hoàn thành màn cha và đủ chuỗi màn chính tới màn cha
+    const sideOf = (window.STORY_META && window.STORY_META.sideOf[s]) || (s === 5 ? 4 : null);
+    if (sideOf) {
+      return completed.includes(sideOf) && this._hasContiguousMainChain(sideOf);
+    }
+    // Màn chính: chỉ mở khóa khi toàn bộ các màn chính liền trước đều đã hoàn thành (chống mở màn lẻ lẻ)
+    return this._hasContiguousMainChain(s);
   }
 
   completeStage(stageId) {

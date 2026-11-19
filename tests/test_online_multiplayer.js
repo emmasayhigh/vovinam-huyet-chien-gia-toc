@@ -1308,6 +1308,161 @@ function connectWsClient(port) {
   }
   console.log('✓ TEST 14: Groups A-E Overhaul (Connection Recovery, PvP Hit ACK, Co-op Sync/Rewards, Lobby UX & Security) passed');
 
+  // -------------------------------------------------------------------------
+  // TEST 15: TASK-025 (Rematch Epoch & Overlay Guard, Co-op Stage Lock + Chain Integrity, Training Prop Clean)
+  // -------------------------------------------------------------------------
+  {
+    const pkts15 = [];
+    window.onlineManager._testTransport = (pkt) => pkts15.push(pkt);
+
+    // 15a. PvP Rematch increments _matchEpoch, rejects stale Round-1 packets, and RemotePlayer skips drawEnemyHpBar
+    window.onlineManager.slot = 1;
+    window.onlineManager.handleServerMessage({
+      type: 'match_started',
+      room: {
+        code: 'REM15',
+        mode: 'pvp',
+        status: 'playing',
+        matchEpoch: 2,
+        scores: { p1: 0, p2: 0 },
+        players: [
+          { slot: 1, name: 'GiangManh', charId: 'giangmanh', skinId: 'default' },
+          { slot: 2, name: 'Vua', charId: 'huavudai', skinId: 'default' }
+        ]
+      }
+    });
+    assert.strictEqual(window.onlineManager._matchEpoch, 2, 'match_started sets _matchEpoch from room');
+
+    window.onlineManager.handleServerMessage({
+      type: 'rematch_start',
+      room: {
+        code: 'REM15',
+        mode: 'pvp',
+        status: 'playing',
+        matchEpoch: 3,
+        scores: { p1: 1, p2: 0 },
+        players: [
+          { slot: 1, name: 'GiangManh', charId: 'giangmanh', skinId: 'default' },
+          { slot: 2, name: 'Vua', charId: 'huavudai', skinId: 'default' }
+        ]
+      }
+    });
+    assert.strictEqual(window.onlineManager._matchEpoch, 3, 'rematch_start advances _matchEpoch');
+    const r2Remote = window.onlineManager.remotePlayer;
+    const r2RemoteFullHp = r2Remote.maxHp;
+    const r2LocalFullHp = window.game.player.maxHp;
+
+    // Stale Round-1 player_state (epoch 2, high seq 900, hp 10) must be dropped cleanly
+    window.onlineManager.handleServerMessage({
+      type: 'player_state',
+      epoch: 2,
+      state: { seq: 900, x: 400, y: 580, hp: 10, maxHp: r2RemoteFullHp, isDead: true, state: 'dead' }
+    });
+    assert.strictEqual(r2Remote.hp, r2RemoteFullHp, 'Stale pre-rematch player_state does not overwrite Round 2 HP');
+    assert.strictEqual(r2Remote._lastStateSeq, 0, 'Stale pre-rematch player_state does not poison _lastStateSeq');
+
+    // Stale Round-1 pvp_hit (epoch 2) must be dropped cleanly
+    window.onlineManager.handleServerMessage({
+      type: 'pvp_hit',
+      epoch: 2,
+      hitSeq: 88,
+      damage: 250,
+      knockbackX: 4
+    });
+    assert.strictEqual(window.game.player.hp, r2LocalFullHp, 'Stale pre-rematch pvp_hit does not damage Round 2 player');
+
+    // Fresh Round-2 player_state (epoch 3, seq 1) applies cleanly
+    window.onlineManager.handleServerMessage({
+      type: 'player_state',
+      epoch: 3,
+      state: { seq: 1, x: 520, y: 580, hp: 537, maxHp: 1080, state: 'idle' }
+    });
+    assert.strictEqual(r2Remote.hp, 537, 'Fresh epoch 3 player_state updates damaged RemotePlayer HP cleanly');
+
+    // SkeletalRendererRenderBase skips drawEnemyHpBar on RemotePlayer (no bar drawn across opponent's head/face)
+    const rendererInst = new window.SkeletalRenderer();
+    let enemyHpBarCalled = false;
+    const origDrawEnemyHpBar = rendererInst.drawEnemyHpBar;
+    rendererInst.drawEnemyHpBar = () => { enemyHpBarCalled = true; };
+    const noopCtx = {
+      save() {}, restore() {}, translate() {}, scale() {}, rotate() {},
+      beginPath() {}, closePath() {}, moveTo() {}, lineTo() {}, quadraticCurveTo() {}, bezierCurveTo() {}, arc() {}, arcTo() {}, ellipse() {}, rect() {}, roundRect() {}, clip() {},
+      fill() {}, stroke() {}, fillRect() {}, strokeRect() {}, fillText() {}, strokeText() {}, clearRect() {},
+      setLineDash() {}, measureText: () => ({ width: 32 }),
+      createRadialGradient: () => ({ addColorStop() {} }),
+      createLinearGradient: () => ({ addColorStop() {} })
+    };
+    rendererInst.render(noopCtx, r2Remote, { x: 0, y: 0 });
+    assert.strictEqual(enemyHpBarCalled, false, 'SkeletalRenderer must NOT draw enemy HP bar over RemotePlayer head');
+    rendererInst.drawEnemyHpBar = origDrawEnemyHpBar;
+
+    let drawnHpLabel = '';
+    const overlayCtx = Object.assign({}, noopCtx, {
+      fillText(txt) { if (String(txt).includes('537')) drawnHpLabel = String(txt); }
+    });
+    r2Remote.drawOverlay(overlayCtx, { x: 0, y: 0 }, 'pvp');
+    assert.ok(drawnHpLabel.includes('537'), 'RemotePlayer.drawOverlay keeps rendering clean overhead HP bar when damaged');
+    window.onlineManager.leaveMatch(false);
+
+    // 15b. Co-op Stage Lock, Contiguous Chain Progression & Ranking/Story Co-op Isolation
+    window.saveManager.resetProgress();
+    // Simulate legacy fragmented Co-op save leak [1, 9]
+    window.saveManager.data.completedStages = [1, 9];
+    assert.strictEqual(window.saveManager.isStageUnlocked(1), true, 'Stage 1 is always unlocked');
+    assert.strictEqual(window.saveManager.isStageUnlocked(2), true, 'Stage 2 unlocks after Stage 1');
+    assert.strictEqual(window.saveManager.isStageUnlocked(9), false, 'Fragmented orphan Stage 9 does NOT unlock without stages 2..8');
+    assert.strictEqual(window.saveManager.isStageUnlocked(10), false, 'Fragmented orphan Stage 9 does NOT cascade unlock Stage 10');
+
+    window.saveManager.resetProgress();
+    window.onlineManager.setLobbyMode('coop');
+    window.onlineManager._populateCoopStages();
+    const coopStageSel = document.getElementById('online-coop-stage');
+    const opt1 = coopStageSel.children.find((o) => o.value === '1');
+    const opt20 = coopStageSel.children.find((o) => o.value === '20');
+    assert.ok(opt1 && !opt1.disabled, 'Co-op Stage 1 option is enabled for Stage 1 save');
+    assert.ok(opt20 && opt20.disabled, 'Co-op Stage 20 option is locked/disabled until unlocked in Campaign');
+    assert.strictEqual(coopStageSel.value, '1', 'Co-op stage selector defaults to unlocked Stage 1');
+
+    // Attempt to force locked stageId = 20 when creating Co-op room -> clamps cleanly to Stage 1
+    pkts15.length = 0;
+    window.onlineManager.connected = true;
+    coopStageSel.value = '20';
+    window.onlineManager.submitCreateRoom();
+    const createPkt = pkts15.find((p) => p.type === 'create_room');
+    assert.ok(createPkt && createPkt.stageId === 1, 'submitCreateRoom clamps locked Co-op stage to highest unlocked Campaign stage');
+
+    // RankingManager.processAndDisplayVictory must NOT save campaign stage records or side missions in Co-op
+    window.saveManager.resetProgress();
+    const goldPreRank = window.saveManager.getGold();
+    window.onlineManager.isActive = true;
+    window.onlineManager.mode = 'coop';
+    if (window.rankingManager) {
+      window.rankingManager.processAndDisplayVictory(10, 'MÀN 10', {
+        timeSec: 45, timeStr: '00:45', hpPercent: 100, maxCombo: 15, totalHits: 40, perfectDodges: 3, perfectCounters: 2, sideDone: true
+      });
+    }
+    assert.strictEqual(window.saveManager.data.stageBestRecords[10], undefined, 'Co-op victory does not write solo stageBestRecords');
+    assert.strictEqual(window.saveManager.isMissionDone('side_10'), false, 'Co-op victory does not mark solo side missions complete');
+    assert.strictEqual(window.saveManager.getGold(), goldPreRank, 'Co-op ranking modal does not double-grant solo Gold reward');
+    window.onlineManager.isActive = false;
+
+    // 15c. Training Mode (Võ Đường) clears stage props and does not render/update props in TRAINING state
+    window.propSystem.initStage(1);
+    assert.ok(window.propSystem.props.length > 0, 'Stage 1 initializes interactive props (crates/barrels)');
+    window.trainingManager.startTraining('free');
+    assert.strictEqual(window.game.state, 'TRAINING', 'startTraining transitions game to TRAINING');
+    assert.strictEqual(window.propSystem.props.length, 0, 'Entering Võ Đường clears all stage crates/props');
+    // Even if a synthetic prop existed while in TRAINING, render() must skip propSystem.render
+    let propsRenderedInTraining = false;
+    const origPropRender = window.propSystem.render;
+    window.propSystem.render = () => { propsRenderedInTraining = true; };
+    window.game.render();
+    assert.strictEqual(propsRenderedInTraining, false, 'GameRender skips propSystem.render while in TRAINING state');
+    window.propSystem.render = origPropRender;
+    window.game.returnToMenu();
+  }
+  console.log('✓ TEST 15: TASK-025 (Rematch Epoch/Bar Guard, Co-op Stage Lock + Chain Integrity, Training Prop Clean) passed');
+
   console.log('\n================================================');
   console.log('ALL ONLINE MULTIPLAYER TESTS PASSED 100%!');
   console.log('================================================');

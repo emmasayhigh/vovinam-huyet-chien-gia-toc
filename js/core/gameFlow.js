@@ -62,7 +62,7 @@ class GameFlow extends window.GameCamera {
         om._resetRematchButton(true);
       }
       if (shouldNotifyPeer && typeof om.send === 'function') {
-        om.send({ type: 'coop_stage_ended', result: 'victory' });
+        om.send({ type: 'coop_stage_ended', epoch: om._matchEpoch || 1, result: 'victory' });
       }
     }
 
@@ -275,7 +275,7 @@ class GameFlow extends window.GameCamera {
         om._resetRematchButton(true);
       }
       if (shouldNotifyPeer && typeof om.send === 'function') {
-        om.send({ type: 'coop_stage_ended', result: 'defeat' });
+        om.send({ type: 'coop_stage_ended', epoch: om._matchEpoch || 1, result: 'defeat' });
       }
     }
     if (window.audioManager) window.audioManager.stopBGM();

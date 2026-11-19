@@ -278,7 +278,8 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
       : [];
 
     // Thanh Máu & Nhãn Hiệu Ứng Bất Lợi ngay DƯỚI thanh máu của kẻ bị dính (Địch / Tinh anh / Boss)
-    if (!ghost && !isSil && !isPlayer && !e.isDead && typeof e.hp === 'number' && typeof e.maxHp === 'number' && (e.hp < e.maxHp || entityDebuffs.length > 0)) {
+    // RemotePlayer tự vẽ HUD PvP/Co-op qua drawOverlay -> không vẽ đè thanh máu quái lên mặt đối thủ
+    if (!ghost && !isSil && !isPlayer && !e.isRemotePlayer && !e.isDead && typeof e.hp === 'number' && typeof e.maxHp === 'number' && (e.hp < e.maxHp || entityDebuffs.length > 0)) {
       const hpBarY = sy + z - (isBoss ? 156 : 148) * S / 1.3;
       const hpBarH = isBoss ? 7 : ((e.armorAll || (e.maxHp >= 240)) ? 6 : 5);
       this.drawEnemyHpBar(ctx, sx, hpBarY, e);

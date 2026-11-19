@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-025",
+  "title": "Fix PvP Rematch Visual/State Desync, Co-op Stage Unlock & Save Isolation, and Training Mode Prop Leak",
+  "author": "Antigravity Senior Game Systems & Network Engineer",
+  "date": "2026-11-19",
+  "objective": "Khắc phục 3 lỗi thực chiến do người chơi báo cáo: (1) Lỗi hình ảnh/đồng bộ sau khi ấn Chơi Lại / Đấu Lại trong PvP (thanh máu quái vẽ đè lên mặt RemotePlayer khi tụt HP + gói state/hit hiệp cũ tràn sang hiệp mới); (2) Lỗi Co-op cho chọn bất kỳ màn 1..20 & làm mở màn lẻ lẻ không tuần tự trong Chiến Dịch; (3) Lỗi thùng hàng/vật thể từ màn chơi tự xuất hiện trong Võ Đường (Training).",
+  "requestedBehavior": "1. PvP Rematch & RemotePlayer Overlay: Ngăn drawEnemyHpBar vẽ đè lên mặt RemotePlayer (isRemotePlayer), luôn vẽ overlay thanh máu sạch phía trên đầu RemotePlayer, và đồng bộ matchEpoch để lọc hoàn toàn gói player_state/pvp_hit hiệp trước sau rematch_start. 2. Co-op Stage Lock & Save Isolation: Chỉ mở khóa chọn màn Co-op tương ứng với tiến trình Chiến Dịch đã mở (saveManager.isStageUnlocked), lọc ghép nhanh Co-op theo màn đã mở, ngăn rankingManager/gameStory ghi đè kỷ lục/mở khóa chiến dịch trong Co-op, và đảm bảo isStageUnlocked kiểm tra đủ chuỗi màn trước liền mạch tránh mở màn lẻ lẻ. 3. Training Prop Isolation: Dọn sạch propSystem, weaponSystem, projectiles và hazards khi vào Võ Đường/resetTransientModes và chặn propSystem update/render trong TRAINING/TUTORIAL.",
+  "allowedFiles": [
+    "js/entities/animation/animationRenderBase.js",
+    "js/core/game.js",
+    "js/core/gameBase.js",
+    "js/core/gameRender.js",
+    "js/core/gameFlow.js",
+    "js/core/gameStory.js",
+    "js/core/save.js",
+    "js/ui/ranking.js",
+    "js/ui/training/trainingManagerBase.js",
+    "server.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_online_multiplayer.js",
+    "tests/test_tutorial_trigger.js",
+    "tasks/TASK-025.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-NET-001",
+    "FEAT-SAV-001",
+    "FEAT-TRN-001",
+    "FEAT-CMB-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "OnlineManager",
+    "RemotePlayer",
+    "SkeletalRendererRenderBase",
+    "SaveManager",
+    "TrainingManagerBase",
+    "PropSystem",
+    "RankingManager",
+    "GameFlow",
+    "GameStory"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 100,
+    "authorizedRemovals": [
+      "Replacing unfiltered RemotePlayer drawOverlay damage guard and drawEnemyHpBar overlap",
+      "Replacing permanent __vov20Populated Co-op stage list cache with dynamic unlock-aware renderer"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-025.json"
+  ]
+}

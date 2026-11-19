@@ -233,9 +233,10 @@ class RankingManager {
    */
   processAndDisplayVictory(stageId, stageTitle, rawStats) {
     const result = this.calculateScore(stageId, rawStats);
+    const isCoopOnline = !!(window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'coop');
 
-    // Lưu kỷ lục tốt nhất vào SaveManager
-    if (window.saveManager) {
+    // Trong Co-op Online KHÔNG ghi đè kỷ lục/nhiệm vụ Chiến dịch và KHÔNG thưởng trùng Vàng/Kim Cương (đã thưởng ở GameFlow)
+    if (window.saveManager && !isCoopOnline) {
       result.isNewBest = !!window.saveManager.recordStageBest(stageId, {
         rank: result.rank,
         score: result.totalScore,

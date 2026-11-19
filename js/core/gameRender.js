@@ -133,8 +133,8 @@ class GameRender extends window.GameStory {
       window.weaponSystem.render(this.ctx, this.camera);
     }
 
-    // 1c. Vẽ Vật thể tương tác sân khấu (thùng hàng, thùng phuy, mảnh vỡ)
-    if (window.propSystem && !inMenu) {
+    // 1c. Vẽ Vật thể tương tác sân khấu (thùng hàng, thùng phuy, mảnh vỡ — không vẽ trong Võ đường / Tân thủ)
+    if (window.propSystem && !inMenu && this.state !== 'TRAINING' && this.state !== 'TUTORIAL') {
       window.propSystem.render(this.ctx, this.camera);
     }
 

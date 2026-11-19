@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-024",
-  "taskTitle": "Swap Shop Skins: Remove Grey Tiger (Ho Xam) from Shop and Add White Dog (Cho Doi Non) to Shop",
-  "generatedAt": "2026-11-19T08:06:59.291Z",
+  "taskId": "TASK-025",
+  "taskTitle": "Fix PvP Rematch Visual/State Desync, Co-op Stage Unlock & Save Isolation, and Training Mode Prop Leak",
+  "generatedAt": "2026-11-19T08:39:42.163Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 5,
+    "filesModifiedCount": 15,
     "filesDeletedCount": 0,
     "testsExecuted": 27,
     "testsPassed": 27,
@@ -13,22 +13,34 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-024.json"
+      "tasks/TASK-025.json"
     ],
     "filesModified": [
-      "ndex.html",
-      "js/data/skins.js",
-      "tests/test_online_multiplayer.js",
-      "tests/test_skin_registry_and_cloud_auth.js",
-      "tests/test_vovinam_skin_skills.js"
+      "arness/reports/latest-test-run.json",
+      "harness/reports/verification-report.json",
+      "harness/reports/verification-report.md",
+      "index.html",
+      "js/core/game.js",
+      "js/core/gameBase.js",
+      "js/core/gameFlow.js",
+      "js/core/gameRender.js",
+      "js/core/gameStory.js",
+      "js/core/save.js",
+      "js/entities/animation/animationRenderBase.js",
+      "js/ui/ranking.js",
+      "js/ui/training/trainingManagerBase.js",
+      "server.js",
+      "tests/test_online_multiplayer.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
-      "FEAT-CHR-001",
-      "FEAT-UI-001",
-      "FEAT-SAV-001"
+      "FEAT-NET-001",
+      "FEAT-SAV-001",
+      "FEAT-TRN-001",
+      "FEAT-CMB-001",
+      "FEAT-UI-001"
     ],
     "preserved": [
       "FEAT-CMB-001",
