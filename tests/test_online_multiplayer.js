@@ -487,12 +487,14 @@ function connectWsClient(port) {
   assert.ok(!huaSkins.includes('namcheo') && !huaSkins.includes('hoxam'), 'Hứa Vũ Đại không hiển thị skin của nhân vật khác');
   assert.ok(huaSkins.includes('default') && huaSkins.includes('vovinam') && huaSkins.includes('chodoinon'), 'Hứa Vũ Đại hiển thị đầy đủ skin hợp lệ gồm Chó Đội Nón trong danh sách chọn');
   const choOpt = skinSel.children.find((o) => o.value === 'chodoinon');
-  assert.ok(choOpt && !choOpt.disabled, 'Skin Chó Đội Nón chọn được trực tiếp trong Sảnh Online');
+  assert.ok(choOpt && choOpt.disabled === true, 'Skin Chó Đội Nón hiển thị Chưa sở hữu trong Sảnh Online khi chưa mua Shop');
 
   charSel.value = 'nghi';
   window.onlineManager._populateSkinOptions();
   const nghiSkins = skinSel.children.map((o) => o.value);
   assert.ok(nghiSkins.includes('default') && nghiSkins.includes('hoxam') && !nghiSkins.includes('vovinam'), 'Ngô Nhất Nghị hiển thị Mặc Định & Hổ Xám (không trùng lặp vovinam)');
+  const hoxamOpt = skinSel.children.find((o) => o.value === 'hoxam');
+  assert.ok(hoxamOpt && !hoxamOpt.disabled, 'Skin Hổ Xám chọn được trực tiếp trong Sảnh Online');
 
   charSel.value = 'bichlam';
   window.onlineManager._populateSkinOptions();

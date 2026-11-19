@@ -106,12 +106,13 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     'assets/images/characters/char_nghi_hoxam.png',
     'SkinRegistry.resolveImage trả đúng ảnh Hổ Xám cho Ngô Nhất Nghị'
   );
-  assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'hoxam' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê đúng Hổ Xám (Ngô Nhất Nghị)');
-  assert.ok(!window.SkinRegistry.getShopSkins().some((s) => s.id === 'thantrung' || s.id === 'chodoinon'), '2 skin Thần Trùng & Chó Đội Nón tạm thời chưa mở bán trong Shop');
+  assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'chodoinon' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê Chó Trắng Mũi Đỏ Đội Nón (Hứa Vũ Đại)');
+  assert.ok(!window.SkinRegistry.getShopSkins().some((s) => s.id === 'hoxam' || s.id === 'thantrung'), '2 skin Hổ Xám & Thần Trùng không mở bán trong Shop');
   assert.ok(window.SkinRegistry.getForCharacter('thienkhanh').some((s) => s.id === 'thantrung'), 'Skin Thần Trùng vẫn hiển thị trong danh sách chọn của Thiên Khánh');
-  assert.ok(window.SkinRegistry.getForCharacter('huavudai').some((s) => s.id === 'chodoinon'), 'Skin Chó Đội Nón vẫn hiển thị trong danh sách chọn của Hứa Vũ Đại');
+  assert.ok(window.SkinRegistry.getForCharacter('huavudai').some((s) => s.id === 'chodoinon'), 'Skin Chó Đội Nón hiển thị trong danh sách chọn của Hứa Vũ Đại');
   assert.strictEqual(window.saveManager.isSkinUnlocked('thienkhanh', 'thantrung'), true, 'Skin Thần Trùng trang bị trực tiếp được khi chưa mở bán trong Shop');
-  assert.strictEqual(window.saveManager.isSkinUnlocked('huavudai', 'chodoinon'), true, 'Skin Chó Đội Nón trang bị trực tiếp được khi chưa mở bán trong Shop');
+  assert.strictEqual(window.saveManager.isSkinUnlocked('nghi', 'hoxam'), true, 'Skin Hổ Xám trang bị trực tiếp được khi đã gỡ khỏi Shop');
+  assert.strictEqual(window.saveManager.isSkinUnlocked('huavudai', 'chodoinon'), false, 'Skin Chó Đội Nón cần mua tại Shop khi mới tạo save');
 
   window.SkinRegistry.register('thienkhanh', {
     id: 'test_huyet_linh',

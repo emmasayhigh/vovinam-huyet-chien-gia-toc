@@ -225,10 +225,8 @@ window.saveManager.setSkinEquipped('thienkhanh', 'default');
 
 // TEST 8: Skin HỔ XÁM SƠN LÂM (Ngô Nhất Nghị) — Giữ hình người + Vằn hổ xám + Đấm hổ ngoạm + Ulti vồ như hổ
 console.log('\n--- TEST 8: Skin HỔ XÁM SƠN LÂM (Ngô Nhất Nghị) ---');
-window.saveManager.addDiamonds(400);
-const buyTigerRes = window.saveManager.buyShopSkin('skin_nghi_hoxam', 'nghi', 'hoxam', 'diamond', 150);
-check(buyTigerRes.ok === true && window.saveManager.isSkinUnlocked('nghi', 'hoxam') === true, 'Mua thành công skin Hổ Xám bằng 150 Kim Cương');
-check(!window.saveManager.data.unlockedCharacters.includes('skin_nghi_hoxam') && !window.saveManager.data.unlockedCharacters.includes('hoxam'), 'Không nhầm Hổ Xám thành character');
+window.saveManager.setSkinEquipped('nghi', 'hoxam');
+check(window.saveManager.isSkinUnlocked('nghi', 'hoxam') === true, 'Skin Hổ Xám chọn trực tiếp được sau khi bỏ khỏi Shop');
 player.setCharacter('nghi');
 check(player.equippedSkin === 'hoxam' && player.isVovinamSkin === false, 'Ngô Nhất Nghị trang bị skin hoxam');
 const tigerStyle = window.skeletalRenderer.getStyle(player);
@@ -254,11 +252,14 @@ try {
 check(tigerRenderOk, 'Render Ngô Nhất Nghị skin Hổ Xám (dáng vồ + bóng Hổ Xám vồ phía sau) không lỗi');
 window.saveManager.setSkinEquipped('nghi', 'default');
 
-// TEST 9: Đảm bảo 2 skin Thần Trùng & Chó Đội Nón tạm thời chưa mở bán trong Shop
-console.log('\n--- TEST 9: Xác nhận tạm ẩn 2 skin Thần Trùng & Chó Đội Nón khỏi Shop ---');
+// TEST 9: Đảm bảo Shop Trang Phục hiển thị Ông Năm Chèo & Chó Trắng Đội Nón, bỏ Hổ Xám & Thần Trùng khỏi Shop
+console.log('\n--- TEST 9: Xác nhận Shop Trang Phục thay Hổ Xám bằng Chó Trắng Đội Nón ---');
 const visibleShopIds = window.SkinRegistry.getShopSkins().map((s) => s.id);
-check(visibleShopIds.includes('namcheo') && visibleShopIds.includes('hoxam'), 'Shop Trang Phục hiển thị Ông Năm Chèo & Hổ Xám');
-check(!visibleShopIds.includes('thantrung') && !visibleShopIds.includes('chodoinon'), 'Shop Trang Phục tạm thời không hiển thị Thần Trùng & Chó Đội Nón');
+check(visibleShopIds.includes('namcheo') && visibleShopIds.includes('chodoinon'), 'Shop Trang Phục hiển thị Ông Năm Chèo & Chó Trắng Mũi Đỏ Đội Nón');
+check(!visibleShopIds.includes('thantrung') && !visibleShopIds.includes('hoxam'), 'Shop Trang Phục không hiển thị Hổ Xám & Thần Trùng');
+window.saveManager.addDiamonds(400);
+const buyDogRes = window.saveManager.buyShopSkin('skin_huavudai_chodoinon', 'huavudai', 'chodoinon', 'diamond', 150);
+check(buyDogRes.ok === true && window.saveManager.isSkinUnlocked('huavudai', 'chodoinon') === true, 'Mua thành công skin Chó Trắng Đội Nón bằng 150 Kim Cương trong Shop');
 
 // TEST 10: Nâng cấp skin Thần Trùng (Châu Ngọc Thiên Khánh) sang tông Đen-Tím Hắc Ám + Ulti chém bão đường Đen-Tím
 console.log('\n--- TEST 10: Nâng cấp Skin Thần Trùng (Đen-Tím Hắc Ám & Ulti Chém Đường Đen-Tím) ---');

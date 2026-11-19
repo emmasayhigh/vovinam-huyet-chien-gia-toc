@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-024",
+  "title": "Swap Shop Skins: Remove Grey Tiger (Ho Xam) from Shop and Add White Dog (Cho Doi Non) to Shop",
+  "author": "Antigravity Senior Game UI & Systems Engineer",
+  "date": "2026-11-19",
+  "objective": "Bỏ skin Hổ Xám (Ngô Nhất Nghị) khỏi Cửa Hàng (giữ trong danh sách chọn nhân vật) và mở bán skin Chó Trắng Mũi Đỏ Đội Nón (Hứa Vũ Đại) trong Cửa Hàng thay thế.",
+  "requestedBehavior": "1. Đặt shopSkin: false cho hoxam trong js/data/skins.js để ẩn khỏi SkinRegistry.getShopSkins(). 2. Đặt shopSkin: true cho chodoinon trong js/data/skins.js để mở bán tại Khu Skin Cửa Hàng (150 Kim Cương). 3. Cập nhật kiểm thử tương ứng.",
+  "allowedFiles": [
+    "js/data/skins.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tests/test_vovinam_skin_skills.js",
+    "tests/test_online_multiplayer.js",
+    "tasks/TASK-024.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-UI-001",
+    "FEAT-SAV-001"
+  ],
+  "dependencies": [
+    "SkinRegistry",
+    "SaveManager",
+    "MenuManagerCollections",
+    "OnlineManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 25,
+    "authorizedRemovals": [
+      "Updating shopSkin flags on hoxam and chodoinon and matching shop assertions in tests"
+    ]
+  },
+  "requiredTests": [
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tests/test_vovinam_skin_skills.js",
+    "tests/test_online_multiplayer.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "SkinRegistry.getShopSkins() chứa namcheo và chodoinon, không chứa hoxam và thantrung",
+    "SkinRegistry.getForCharacter('nghi') vẫn chứa hoxam để chọn trực tiếp",
+    "Mua skin chodoinon bằng 150 Kim Cương trong Shop hoạt động bình thường",
+    "Tất cả 27/27 bộ test regression và browser smoke test đạt PASS"
+  ]
+}
