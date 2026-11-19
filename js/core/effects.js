@@ -1055,6 +1055,8 @@ class EffectManager {
         sp.x = sp.fiend.x;
         sp.y = sp.fiend.y;
         sp.life = sp.fiend.life;
+        sp.alpha = sp.life > 0.35 ? 1.0 : Math.max(0, sp.life / 0.35);
+        continue;
       } else {
         sp.life -= dt;
       }
@@ -1872,16 +1874,18 @@ class EffectManager {
         const f = sp.fiend;
         ctx.restore(); // reset from sp.x/sp.y so we always track live f.x, f.y
         ctx.save();
-        ctx.globalAlpha = Math.max(0, Math.min(1, sp.alpha * 0.95));
+        ctx.globalAlpha = Math.max(0, Math.min(1, sp.alpha));
         ctx.translate(f.x, f.y);
         const dir = f.facing >= 0 ? 1 : -1;
         const bob = Math.sin(performance.now() * 0.015 + (f.seed || 0)) * 3.5;
         ctx.scale(dir, 1);
-        // Vòng bùa chú đỏ dưới chân quái triệu hồi
+        // Vòng bùa chú đỏ sáng dưới chân + hào quang lửa giúp Tiểu Quỷ nổi bật rõ trên mọi sàn đấu
         ctx.globalCompositeOperation = 'lighter';
-        ctx.strokeStyle = 'rgba(220, 38, 38, 0.72)';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.ellipse(0, 2, 22, 7, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = 'rgba(248, 113, 113, 0.9)';
+        ctx.lineWidth = 2.6;
+        ctx.beginPath(); ctx.ellipse(0, 2, 24, 8, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.22)';
+        ctx.beginPath(); ctx.ellipse(0, -34 + bob, 28, 36, 0, 0, Math.PI * 2); ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
 
         const impSprite = this._getEffectSprite('tieuquy_imp', 'assets/images/effects/tieuquy_imp.png');
