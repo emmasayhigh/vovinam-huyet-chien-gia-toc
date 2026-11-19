@@ -1,7 +1,7 @@
 {
   "pass": true,
-  "timestamp": "2026-11-19T08:58:41.708Z",
-  "totalDuration": "5.97s",
+  "timestamp": "2026-11-19T09:00:57.477Z",
+  "totalDuration": "5.83s",
   "totalSuites": 28,
   "passedSuites": 28,
   "failedSuites": 0,
@@ -10,7 +10,7 @@
       "file": "test_ally_select_screen.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.08s",
+      "duration": "0.07s",
       "exitCode": 0,
       "stdout": "enuManagerCharSelectDeployment]\n[TEST 2.1: openAllySelect chuyển đổi modal & cập nhật võ sĩ xuất trận]\n✓ openAllySelect() cập nhật modal, số lượng roster (9) và badge võ sĩ chuẩn xác!\n\n[TEST 2.2: renderAllyDockPills tạo các thẻ chuẩn cs-card và gán cờ hero-busy]\n✓ 9 thẻ đồng minh dạng cs-card được render hoàn hảo với đầy đủ banner, avatar và cờ hero-busy!\n\n[TEST 2.3: cycleAlly(1) và cycleAlly(-1) bỏ qua thẻ hero-busy]\n✓ cycleAlly(1) từ auto đã nhảy qua Bích Lâm để chọn: hoanganh\n✓ cycleAlly(-1) lùi thành công về: auto\n\n[TEST 2.4: backToCharSelect() chuyển lại màn chọn tướng]\n✓ backToCharSelect() hoạt động trơn tru!\n\n[TEST 2.5: Võ Đường (#training-mode-modal) Support Tab & Loadout + #char-select-modal sạch]\n✓ Hệ thống Support Tab, Skin & Loadout nằm đúng trong Võ Đường (#training-mode-modal)!\n\n===============================================================\nTẤT CẢ BÀI TEST GIAO DIỆN & LOGIC MÀN CHỌN ĐỒNG MINH ĐỀU PASS 100%!\n===============================================================\n",
       "stderr": ""
@@ -28,7 +28,7 @@
       "file": "test_aura_armor.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.11s",
+      "duration": "0.09s",
       "exitCode": 0,
       "stdout": "✅ PASSED: Player kích hoạt thành công Hào quang Đỏ\n✅ PASSED: Độ bền giáp Đỏ ban đầu là 100 HP\n✅ PASSED: Số đòn chịu đựng ban đầu là 3 đòn\n✅ PASSED: Sau đòn 1, Bá Thể Đỏ vẫn còn hoạt động\n✅ PASSED: Số đòn còn lại giảm xuống 2: thực tế 2\n✅ PASSED: Bá Thể Đỏ hấp thụ hoàn toàn chùn bước, không bị khựng\n✅ PASSED: Số đòn còn lại giảm xuống 1\n✅ PASSED: Bá Thể Đỏ hấp thụ hoàn toàn knockdown\n✅ PASSED: Bá Thể Đỏ ĐÃ BỊ PHÁ VỠ thành công!\n✅ PASSED: Sau khi vỡ Bá Thể Đỏ, người chơi bị quật ngã (knockdown)\n\n[TEST 4: U+J & U+K Counter Mọi Đòn & Phá Bá Thể Đỏ]\n✅ PASSED: Kẻ địch đang sở hữu Bá Thể Đỏ\n✅ PASSED: U+J đỡ và phản đòn thành công tuyệt đối đòn uncounterable/AoE/Ultimate\n✅ PASSED: Defender không nhận bất kỳ sát thương nào\n✅ PASSED: Phản đòn thành công LẬP TỨC PHÁ VỠ BÁ THỂ ĐỎ của kẻ địch!\n✅ PASSED: Kẻ địch bị tê liệt chấn động (hurt)\n\n==========================================\nTẤT CẢ TEST HÀO QUANG GIÁP 3 TẦNG & COUNTER TOÀN DIỆN ĐỀU THÀNH CÔNG 100%!\n==========================================\n",
       "stderr": ""
@@ -82,7 +82,7 @@
       "file": "test_enemy_target_ally.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.09s",
+      "duration": "0.08s",
       "exitCode": 0,
       "stdout": "=== BẮT ĐẦU TEST AI QUÁI LỰA CHỌN MỤC TIÊU GẦN HƠN (ALLY VS PLAYER) ===\n\n✓ TEST 1: window.allySystem đồng bộ chính xác với window.allyManager\n✓ TEST 2: Đồng minh ở gần hơn (60px vs 250px) -> Quái lập tức nhắm và quay mặt đánh đồng minh\n✓ TEST 3: Player tiến lại gần hơn (40px vs 200px) -> Quái chuyển mục tiêu sang đánh Player\n✓ TEST 4: Tướng Đỡ Đòn Đình An khiêu khích thu hút quái chuẩn xác\n✓ TEST 5: Đòn đánh của quái trúng đồng minh -> Máu đồng minh giảm: 600 -> 579 HP\n✓ TEST 6: Khi đồng minh gục ngã, quái lập tức chuyển mục tiêu về Player\n\n==========================================\nTẤT CẢ 6 BỘ TEST AI LỰA CHỌN MỤC TIÊU PASS 100%!\n==========================================\n",
       "stderr": ""
@@ -91,7 +91,7 @@
       "file": "test_giangmanh_unlock.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.10s",
+      "duration": "0.09s",
       "exitCode": 0,
       "stdout": "--- BẮT ĐẦU KIỂM TRA MỞ KHÓA NGÔ GIANG MẠNH ---\n✓ Cấu hình Màn 20 trong STORY_META và STAGE_DEFINITIONS hợp lệ.\n✓ recordStageProgress đã mở khóa Ngô Giang Mạnh thành công.\n✓ Dữ liệu lưu vĩnh viễn (Persist) hoạt động chuẩn xác.\n✓ Self-Healing hồi phục mở khóa cho save cũ thành công.\n--- TOÀN BỘ CÁC KIỂM TRA MỞ KHÓA NGÔ GIANG MẠNH ĐỀU ĐẠT CHUẨN! ---\n",
       "stderr": ""
@@ -127,7 +127,7 @@
       "file": "test_online_multiplayer.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.75s",
+      "duration": "0.66s",
       "exitCode": 0,
       "stdout": "ayer Features (Private Room, Ready Gating, Invites & Quick Match States) passed\n✓ TEST 7: Anti-Lag Optimization (Instant State Flush, Optimistic HP Lock & Co-op Interpolation) passed\n✓ TEST 8: Rematch Lifecycle, Leave Match Room Cleanup, Co-op Stage End & Intro Damage Guard passed\n✓ TEST 9: PvP Nộ (Energy) Gain Boost & RemotePlayer HUD Isolation passed\n✓ TEST 10: Giang Mạnh PvP Freeze Balance & Stunlock Immunity passed\n✓ TEST 11: PvP & Co-op HP Sync Integrity passed\n✓ TEST 12: Production Cloud Default Server URL Resolution passed\n✓ TEST 13: Thien Khanh PvP Balance, Fiends Chase Sync, High-Ping ACK & Co-op Wave Stability passed\n✓ TEST 14: Groups A-E Overhaul (Connection Recovery, PvP Hit ACK, Co-op Sync/Rewards, Lobby UX & Security) passed\n✓ TEST 15: TASK-025 (Rematch Epoch/Bar Guard, Co-op Stage Lock + Chain Integrity, Training Prop Clean) passed\n\n================================================\nALL ONLINE MULTIPLAYER TESTS PASSED 100%!\n================================================\n",
       "stderr": "5:35)\n    at Game.render (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\game.js:3326:20)\n    at C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\tests\\test_online_multiplayer.js:1459:17\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processTimers (node:internal/timers:520:9)\n[Render Entity Error] TypeError: ctx.rotate is not a function\n    at SkeletalRenderer.drawLeg (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\entities\\animation\\animationRenderBase.js:1087:9)\n    at SkeletalRenderer.render (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\entities\\animation\\animationRenderBase.js:217:10)\n    at Game.render (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\gameRender.js:195:35)\n    at Game.render (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\game.js:3326:20)\n    at C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\tests\\test_online_multiplayer.js:1459:17\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processTimers (node:internal/timers:520:9)\n"
@@ -136,7 +136,7 @@
       "file": "test_passives_real.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.12s",
+      "duration": "0.11s",
       "exitCode": 0,
       "stdout": ", frost_stacks\n✅ PASSED: Đóng băng ưu tiên hiển thị thay thế Choáng & Hàn Khí trung gian\n✅ PASSED: Đọc đủ hiệu ứng bất lợi trên người chơi: guard_break, bleed, exhaust, stale\n✅ PASSED: getPassiveHudStatus trả về đủ danh sách selfDebuffs & targetDebuffs\n\n--- TEST 13: CHÂU NGỌC THIÊN KHÁNH (KIẾM XU THIÊU ĐỐT & TRIỆU HỒI HỎA ÂM BINH) ---\n✅ PASSED: Thiên Khánh có giá siêu đắt 12.000 Vàng trong Khu Chiêu Mộ Võ Sĩ\n✅ PASSED: Đòn đánh của Thiên Khánh khắc hiệu ứng Thiêu Đốt (burnTimer)\n✅ PASSED: Debuff Thiêu Đốt hiển thị trên kẻ địch: burn\n✅ PASSED: Kích hoạt W+U của Thiên Khánh triệu hồi 1 Hỏa Âm Binh\n✅ PASSED: Hỏa Âm Binh tự động lao vào chém địch (HP: 400 -> 382)\n✅ PASSED: Hỏa Âm Binh tự động đuổi theo và đánh trúng đối thủ PvP Online (dmg=24)\n✅ PASSED: Huyết Ấn Hấp Tinh hồi máu cho Thiên Khánh khi đốt mục tiêu (HP: 600 -> 604)\n\n==========================================\nTẤT CẢ 13 BỘ KIỂM THỬ NỘI TẠI, TỔ HỢP ĐÒN & DEBUFF HUD ĐỀU THÀNH CÔNG RỰC RỠ!\n==========================================\n",
       "stderr": ""
@@ -145,7 +145,7 @@
       "file": "test_skill_animation_overhaul.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.28s",
+      "duration": "0.27s",
       "exitCode": 0,
       "stdout": "khác hoàn toàn S+K (không đối xứng gương)\n✅ PASSED: dunghai: W+K khác biệt rõ ràng so với K thường (kick_push)\n✅ PASSED: dunghai: Disable-VFX chặn hoàn toàn particle/VFX khi kiểm tra silhouette\n✅ PASSED: giangmanh có poses.punch_straight riêng (J+J+K Beat 1)\n✅ PASSED: giangmanh có poses.punch_hook riêng (J+J+K Beat 2)\n✅ PASSED: giangmanh có poses.kick_roundhouse riêng (J+J+K Beat 3)\n✅ PASSED: giangmanh có poses.wk riêng (W+K)\n✅ PASSED: giangmanh có poses.kick_sweep riêng (S+K)\n✅ PASSED: giangmanh: W+K khác hoàn toàn S+K (không đối xứng gương)\n✅ PASSED: giangmanh: W+K khác biệt rõ ràng so với K thường (kick_push)\n✅ PASSED: giangmanh: Disable-VFX chặn hoàn toàn particle/VFX khi kiểm tra silhouette\n✅ PASSED: Tất cả 9/9 nhân vật có silhouette J+J+K Beat 3 khác biệt hoàn toàn (9/9)\n✅ PASSED: Tất cả 9/9 nhân vật có silhouette W+K khác biệt hoàn toàn (9/9)\n✅ PASSED: Tất cả 9/9 nhân vật có silhouette S+K khác biệt hoàn toàn (9/9)\n\n🎉 ALL 257 CHECKS PASSED in test_skill_animation_overhaul.js!\n\n",
       "stderr": ""
@@ -154,7 +154,7 @@
       "file": "test_skin_registry_and_cloud_auth.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.41s",
+      "duration": "0.40s",
       "exitCode": 0,
       "stdout": "=== TEST SUITE: SKIN REGISTRY & CLOUD ACCOUNT AUTH ===\n\n✓ TEST 1: Modular SkinRegistry passed\n✓ TEST 2: SoundEngine extension safety passed\n✓ TEST 3: Account Auth, Scrypt Hashing, Cloud Save & Leaderboard API passed\n✓ TEST 4: InputManager typing guard & AccountManager mandatory auth gate passed\n\n================================================\nSKIN REGISTRY & CLOUD AUTH TESTS PASSED 100%!\n================================================\n",
       "stderr": "Web Audio API not supported on this browser: TypeError: AudioContext is not a constructor\n    at SoundEngine.init (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\audio.js:195:18)\n    at SoundEngine.unlock (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\audio.js:219:33)\n    at C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\input.js:201:29\n    at C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\tests\\test_skin_registry_and_cloud_auth.js:243:43\n    at Array.forEach (<anonymous>)\n    at C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\tests\\test_skin_registry_and_cloud_auth.js:243:27\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n"
@@ -190,7 +190,7 @@
       "file": "test_upgrades.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.16s",
+      "duration": "0.15s",
       "exitCode": 0,
       "stdout": "drill thành công\n✅ PASSED: Nhảy trực tiếp đến Bài 3 thành công\n✅ PASSED: Có dropdown chọn nhảy bài tập trực tiếp trong Drill mode\n✅ PASSED: Chuyển sang chế độ free sandbox thành công\n✅ PASSED: Có bảng đo đòn cuối trong Free Sandbox\n✅ PASSED: Có bảng đo sát thương combo trong Free Sandbox\n✅ PASSED: Ghi nhận đòn đánh 250 dmg\n✅ PASSED: Tích lũy combo damage 250\n✅ PASSED: Tích lũy combo damage 600\n✅ PASSED: Cập nhật kỷ lục combo damage 600\n✅ PASSED: Reset vị trí mộc nhân về (500, 580)\n✅ PASSED: Reset combo damage về 0\n✅ PASSED: Người chơi được bảo hộ bất tử, không chết trong Võ Đường\n✅ PASSED: Người chơi không bị kích hoạt Game Over trong Võ Đường\n✅ PASSED: Tutorial tân thủ có đủ 10 bước hướng dẫn: thực tế 10\n✅ PASSED: Bỏ qua tutorial lưu cờ tutorialSkipped = true vào SaveManager\n✅ PASSED: Sau khi bỏ qua, isTutorialNeeded trả về false\n\n====================================================\nKẾT QUẢ KIỂM THỬ: 86 / 86 BÀI THÀNH CÔNG RỰC RỠ!\n====================================================\n\n",
       "stderr": ""
@@ -208,7 +208,7 @@
       "file": "test_v5_combat_and_passives.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.09s",
+      "duration": "0.08s",
       "exitCode": 0,
       "stdout": "T 1: PASSIVES DATA IN CHAR_SLOTS ===\n✓ NGHI: 4 passives verified (Cương Nhu Phối Triển | Bất Khuất Thân Pháp | Kẹp Cổ Triệt Hạ | Gạt Quyền Phản Chưởng)\n✓ BICHLAM: 4 passives verified (Thần Phong Nộ Quyền | Lục Chiến Bất Khuất | Phi Thân Lạc Bộ | Cuồng Phong Phản Trảo)\n✓ HUAVUDAI: 4 passives verified (Trầm Tĩnh Thống Soái | Hắc Long Hộ Thể | Thiết Trượng Chấn Lực | Mạng Lưới Chi Viện)\n✓ DINHAN: 4 passives verified (Thiết Bích Kim Cương | Phụng Hoàng Hộ Tâm | Khiên Kích Phá Giáp | Trọng Chùy Chấn Địa)\n✓ HOANGANH: 4 passives verified (Thập Vạn Sơn Lực | Cuốc Sắt Càn Quét | Đập Nát Địa Tầng | Nham Thạch Hồi Phục)\n✓ DUNGHAI: 4 passives verified (Huyễn Ảnh Xuất Quỷ | Huyết Đao Xuất Huyết | Hư Ảnh Biến Ảo | Ám Khí Triệt Tiêu)\n✓ GIANGMANH: 4 passives verified (Nhất Kiếm Tuyệt Sát | Hàn Băng Tâm Pháp | Bắt Bài Phản Công | Băng Thân Tuyệt Ảnh)\n\n=== TEST 2: INPUT MANAGER HOLD U + TAP J/K ===\n✓ Hold U + tap J counter confirmed\n✓ Hold U + tap K counter confirmed\n\n=== ALL NEW SPEC TESTS PASSED! ===\n",
       "stderr": ""
@@ -217,7 +217,7 @@
       "file": "test_v5_features.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.17s",
+      "duration": "0.14s",
       "exitCode": 0,
       "stdout": "iễn Đòn Thế Võ Thuật (Move Showcase & Choreography)]\n✅ PASSED: Hệ thống có đầy đủ kịch bản combo biểu diễn cho các nhân vật\n✅ PASSED: Mỗi đòn trong combo có state, duration > 0 và sound\n✅ PASSED: Kích hoạt triggerCsStageDemo bật sân khấu võ đài và nạp hàng đợi chiêu thức\n✅ PASSED: toggleCsStageView chuyển đổi qua lại giữa Võ Đài 3D và Tranh vẽ\n\n[7. Võ Đường Full 7 Nhân Vật Luyện Võ]\n✅ PASSED: Võ Đường có đầy đủ toàn bộ 10 võ sĩ (mở full kể cả nhân vật Cửa Hàng)\n✅ PASSED: Mỗi nhân vật trong Võ Đường có đầy đủ metadata hình ảnh, danh hiệu và phong cách\n✅ PASSED: Chuyển đổi võ sĩ trong Võ Đường (setPlayerCharacter) áp dụng cho cả 9 nhân vật và reset cooldown\n\n[8. Hồ Sơ Nhân Vật - Triệu Vinh Tâm (Dossier)]\n✅ PASSED: Hồ sơ nhân vật Triệu Vinh Tâm có key vinhtam và khớp c.id\n✅ PASSED: Hiển thị hồ sơ chi tiết Triệu Vinh Tâm không bị lỗi undefined\n====================================================\nKẾT QUẢ KIỂM THỬ: 21 / 21 BÀI THÀNH CÔNG!\n====================================================\n",
       "stderr": ""
@@ -226,7 +226,7 @@
       "file": "test_vovinam_skin_skills.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.27s",
+      "duration": "0.23s",
       "exitCode": 0,
       "stdout": " 9: Xác nhận Shop Trang Phục thay Hổ Xám bằng Chó Trắng Đội Nón ---\n✅ PASSED: Shop Trang Phục hiển thị Ông Năm Chèo & Chó Trắng Mũi Đỏ Đội Nón\n✅ PASSED: Shop Trang Phục không hiển thị Hổ Xám & Thần Trùng\n✅ PASSED: Mua thành công skin Chó Trắng Đội Nón bằng 150 Kim Cương trong Shop\n\n--- TEST 10: Nâng cấp Skin Thần Trùng (Đen-Tím Hắc Ám & Ulti Chém Đường Đen-Tím) ---\n✅ PASSED: Thiên Khánh trang bị skin thantrung trực tiếp từ danh sách chọn\n✅ PASSED: Skin Thần Trùng dùng bảng màu Hắc Ám Đen-Tím (#09090d / #a855f7 / #9333ea)\n✅ PASSED: Vệt chém Thần Trùng dùng tông Đen-Tím (darkVoid=true)\n✅ PASSED: Đòn thường Thiên Khánh (Thần Trùng) sinh ra kiếm khí Đen-Tím (theme: void)\n✅ PASSED: Đòn đánh Thần Trùng kèm vết chém Đen-Tím sắc bén (darkCore=true)\n✅ PASSED: Ulti Thần Trùng chém hàng loạt đường Đen-Tím cắt ngang màn hình (9 đường trảm)\n✅ PASSED: Render Thiên Khánh Thần Trùng + Hiệu ứng chém Đen-Tím hoàn hảo không lỗi\n\n🎉 TẤT CẢ 80 BÀI TEST VOVINAM COSMETIC & ÔNG NĂM CHÈO ĐỀU THÀNH CÔNG 100%!\n\n",
       "stderr": ""
@@ -235,7 +235,7 @@
       "file": "test_weapon_shield_throw_visuals.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.42s",
+      "duration": "0.40s",
       "exitCode": 0,
       "stdout": "=== TEST: KHIÊN CẦM TAY, ANIMATION NÉM [E] & TẠO HÌNH VŨ KHÍ ===\n✅ TẤT CẢ ASSERTIONS CHO KHIÊN, ANIMATION NÉM [E] & TẠO HÌNH VŨ KHÍ ĐỀU PASS!\n",
       "stderr": ""
@@ -244,7 +244,7 @@
       "file": "test_weapons_durability.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.08s",
+      "duration": "0.23s",
       "exitCode": 0,
       "stdout": "EAPON DURABILITY INTEGRITY ---\n✅ PASSED: Nhặt vũ khí khởi tạo đúng độ bền ban đầu: 8\n✅ PASSED: Tung đòn vũ khí khi còn 1 độ bền thành công\n✅ PASSED: Vũ khí hết độ bền bị gãy ngay khi chạm đích, không cho phép âm độ bền\n✅ PASSED: startPlayerAttack chặn hoàn toàn khi không có vũ khí hoặc vũ khí gãy\n✅ PASSED: Ngay cả khi bị ngắt đòn, vũ khí đã được clear an toàn, không thể tồn tại âm độ bền (-1 hay -2)\n✅ PASSED: HUD không vẽ thanh độ bền hoặc số âm khi vũ khí hết độ bền\n\n--- TEST: PHÍM [E] NÉM VŨ KHÍ KHI KHÔNG CÓ VŨ KHÍ DƯỚI ĐẤT ---\n✅ PASSED: Nhấn [E] khi không có vũ khí dưới đất ném thành công vũ khí đang cầm\n✅ PASSED: Vũ khí ném trúng đối thủ gây sát thương, giảm 2 độ bền và rơi thành drop nhặt lại\n✅ PASSED: Vũ khí độ bền thấp khi ném trúng đối thủ sẽ vỡ nát hoàn toàn\n✅ PASSED: Khi có vũ khí dưới đất, [E] luôn ưu tiên nhặt / đổi vũ khí, không bị nhầm lẫn\n\n==========================================\nTẤT CẢ TEST ĐỘ BỀN VŨ KHÍ HOÀN TOÀN CHÍNH XÁC!\n==========================================\n",
       "stderr": ""
@@ -253,7 +253,7 @@
       "file": "validate_index_scripts.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.22s",
+      "duration": "0.21s",
       "exitCode": 0,
       "stdout": "aded: js/ui/training.js\n✓ Loaded: js/features/deduction.js\n✓ Loaded: js/features/bossRush.js\n✓ Loaded: js/entities/allySystem.js\n✓ Loaded: js/ui/tutorial/tutorialDummy.js\n✓ Loaded: js/ui/tutorial/tutorialManagerBase.js\n✓ Loaded: js/ui/tutorial/tutorialManagerOverlay.js\n✓ Loaded: js/ui/tutorial.js\n✓ Loaded: js/ui/uiCore.js\n✓ Loaded: js/ui/ui.js\n✓ Loaded: js/ui/menu/charSlots.js\n✓ Loaded: js/ui/menu/menuBase.js\n✓ Loaded: js/ui/menu/charselect/charSelectCore.js\n✓ Loaded: js/ui/menu/charselect/charSelectDemo.js\n✓ Loaded: js/ui/menu/charselect/charSelectDeployment.js\n✓ Loaded: js/ui/menu/charSelect.js\n✓ Loaded: js/ui/menu/collections.js\n✓ Loaded: js/ui/menu/settings.js\n✓ Loaded: js/ui/menu/chronicles.js\n✓ Loaded: js/ui/menu.js\n✓ Loaded: js/core/gameBase.js\n✓ Loaded: js/core/gameWave.js\n✓ Loaded: js/core/gameCamera.js\n✓ Loaded: js/core/gameFlow.js\n✓ Loaded: js/core/gameStory.js\n✓ Loaded: js/core/gameRender.js\n✓ Loaded: js/core/game.js\n✓ Loaded: js/core/main.js\nLoad test completed. Errors: 0\n",
       "stderr": ""

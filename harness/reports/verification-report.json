@@ -1,28 +1,20 @@
 {
   "taskId": "TASK-028",
   "taskTitle": "Integrate Dedicated Dojo (Vo Duong / Training) MP3 Soundtrack",
-  "generatedAt": "2026-11-19T08:58:44.552Z",
+  "generatedAt": "2026-11-19T09:01:00.541Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 2,
-    "filesModifiedCount": 6,
+    "filesAddedCount": 0,
+    "filesModifiedCount": 1,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
     "testsFailed": 0
   },
   "scope": {
-    "filesAdded": [
-      "assets/audio/dojo_theme.mp3",
-      "tasks/TASK-028.json"
-    ],
+    "filesAdded": [],
     "filesModified": [
-      "arness/reports/latest-test-run.json",
-      "harness/reports/verification-report.json",
-      "harness/reports/verification-report.md",
-      "js/core/audio.js",
-      "js/ui/training/trainingManagerBase.js",
-      "tests/test_audio_bgm.js"
+      "ndex.html"
     ],
     "filesDeleted": []
   },
