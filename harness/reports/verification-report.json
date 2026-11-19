@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-021",
-  "taskTitle": "Multiplayer Networking, PvP Hit Authority, Co-op Sync, Lobby UX & Security Overhaul (Groups A-E)",
-  "generatedAt": "2026-11-19T07:28:40.485Z",
+  "taskId": "TASK-022",
+  "taskTitle": "Restore Than Trung & Cho Doi Non Skins to Selection Lists While Keeping Them Out of Shop",
+  "generatedAt": "2026-11-19T07:35:28.327Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 11,
+    "filesModifiedCount": 8,
     "filesDeletedCount": 0,
     "testsExecuted": 27,
     "testsPassed": 27,
@@ -13,28 +13,25 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-021.json"
+      "tasks/TASK-022.json"
     ],
     "filesModified": [
       "arness/reports/latest-test-run.json",
       "harness/reports/verification-report.json",
       "harness/reports/verification-report.md",
       "index.html",
-      "js/combat/combat.js",
-      "js/core/game.js",
-      "js/core/gameFlow.js",
-      "js/core/gameWave.js",
-      "js/entities/player/playerDamage.js",
-      "server.js",
-      "tests/test_online_multiplayer.js"
+      "js/core/save.js",
+      "js/data/skins.js",
+      "tests/test_online_multiplayer.js",
+      "tests/test_skin_registry_and_cloud_auth.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
-      "FEAT-ONL-001",
-      "FEAT-CMB-001",
-      "FEAT-UI-001"
+      "FEAT-CHR-001",
+      "FEAT-UI-001",
+      "FEAT-SAV-001"
     ],
     "preserved": [
       "FEAT-CMB-001",

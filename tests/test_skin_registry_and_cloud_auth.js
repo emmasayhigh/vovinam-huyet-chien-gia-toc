@@ -108,8 +108,10 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
   );
   assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'hoxam' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê đúng Hổ Xám (Ngô Nhất Nghị)');
   assert.ok(!window.SkinRegistry.getShopSkins().some((s) => s.id === 'thantrung' || s.id === 'chodoinon'), '2 skin Thần Trùng & Chó Đội Nón tạm thời chưa mở bán trong Shop');
-  assert.ok(!window.SkinRegistry.getForCharacter('thienkhanh').some((s) => s.id === 'thantrung'), 'Skin Thần Trùng tạm ẩn khỏi danh sách hiển thị');
-  assert.ok(!window.SkinRegistry.getForCharacter('huavudai').some((s) => s.id === 'chodoinon'), 'Skin Chó Đội Nón tạm ẩn khỏi danh sách hiển thị');
+  assert.ok(window.SkinRegistry.getForCharacter('thienkhanh').some((s) => s.id === 'thantrung'), 'Skin Thần Trùng vẫn hiển thị trong danh sách chọn của Thiên Khánh');
+  assert.ok(window.SkinRegistry.getForCharacter('huavudai').some((s) => s.id === 'chodoinon'), 'Skin Chó Đội Nón vẫn hiển thị trong danh sách chọn của Hứa Vũ Đại');
+  assert.strictEqual(window.saveManager.isSkinUnlocked('thienkhanh', 'thantrung'), true, 'Skin Thần Trùng trang bị trực tiếp được khi chưa mở bán trong Shop');
+  assert.strictEqual(window.saveManager.isSkinUnlocked('huavudai', 'chodoinon'), true, 'Skin Chó Đội Nón trang bị trực tiếp được khi chưa mở bán trong Shop');
 
   window.SkinRegistry.register('thienkhanh', {
     id: 'test_huyet_linh',
@@ -121,7 +123,7 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     image: 'assets/images/characters/char_thienkhanh.png'
   });
   const tkSkins = window.SkinRegistry.getForCharacter('thienkhanh');
-  assert.strictEqual(tkSkins.length, 3, 'SkinRegistry.register tự thêm skin vào danh sách nhân vật (default, vovinam, test_huyet_linh)');
+  assert.strictEqual(tkSkins.length, 4, 'SkinRegistry.register tự thêm skin vào danh sách nhân vật (default, vovinam, thantrung, test_huyet_linh)');
   assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'test_huyet_linh'), 'Skin mới đăng ký tự động xuất hiện trong ShopSkins');
 
   // Kiểm chứng runtime skin styles đã tách hoàn toàn khỏi file nhân vật

@@ -598,6 +598,11 @@ class SaveManager {
 
   isSkinUnlocked(charId, skinName) {
     if (!skinName || skinName === 'default' || skinName === 'vovinam') return true;
+    const reg = (typeof window !== 'undefined' && window.SkinRegistry) ? window.SkinRegistry : null;
+    if (reg && typeof reg.getSkin === 'function') {
+      const sk = reg.getSkin(charId, skinName);
+      if (sk && sk.id === skinName && sk.shopSkin === false) return true;
+    }
     const purchases = (this.data && Array.isArray(this.data.shopPurchases)) ? this.data.shopPurchases : [];
     const purchaseKey = `skin_${charId}_${skinName}`;
     return purchases.includes(purchaseKey) || purchases.includes(skinName);

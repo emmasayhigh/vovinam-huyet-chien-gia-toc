@@ -484,8 +484,10 @@ function connectWsClient(port) {
   charSel.value = 'huavudai';
   window.onlineManager._populateSkinOptions();
   const huaSkins = skinSel.children.map((o) => o.value);
-  assert.ok(!huaSkins.includes('namcheo') && !huaSkins.includes('chodoinon'), 'Hứa Vũ Đại không hiển thị skin ngoài hoặc skin đang tạm ẩn');
-  assert.ok(huaSkins.includes('default') && huaSkins.includes('vovinam'), 'Hứa Vũ Đại chỉ hiển thị skin hợp lệ của bản thân');
+  assert.ok(!huaSkins.includes('namcheo') && !huaSkins.includes('hoxam'), 'Hứa Vũ Đại không hiển thị skin của nhân vật khác');
+  assert.ok(huaSkins.includes('default') && huaSkins.includes('vovinam') && huaSkins.includes('chodoinon'), 'Hứa Vũ Đại hiển thị đầy đủ skin hợp lệ gồm Chó Đội Nón trong danh sách chọn');
+  const choOpt = skinSel.children.find((o) => o.value === 'chodoinon');
+  assert.ok(choOpt && !choOpt.disabled, 'Skin Chó Đội Nón chọn được trực tiếp trong Sảnh Online');
 
   charSel.value = 'nghi';
   window.onlineManager._populateSkinOptions();

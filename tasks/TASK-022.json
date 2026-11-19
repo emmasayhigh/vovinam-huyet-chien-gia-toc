@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-022",
+  "title": "Restore Than Trung & Cho Doi Non Skins to Selection Lists While Keeping Them Out of Shop",
+  "author": "Antigravity Senior Game UI & Systems Engineer",
+  "date": "2026-11-19",
+  "objective": "Hiển thị lại 2 trang phục Thần Trùng (Châu Ngọc Thiên Khánh) và Chó Trắng Mũi Đỏ Đội Nón (Hứa Vũ Đại) trong các danh sách chọn trang phục (Võ Đường, Sảnh Online) và cho phép trang bị trực tiếp, nhưng vẫn giữ ẩn khỏi Cửa Hàng (Shop).",
+  "requestedBehavior": "1. Bỏ hidden: true khỏi định nghĩa thantrung và chodoinon trong js/data/skins.js, giữ nguyên shopSkin: false để không hiển thị trong SkinRegistry.getShopSkins(). 2. SaveManager.isSkinUnlocked mở khóa tự động các skin không bán trong shop (shopSkin === false) để người chơi trang bị được trong Võ Đường & Sảnh Online.",
+  "allowedFiles": [
+    "js/data/skins.js",
+    "js/core/save.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tests/test_online_multiplayer.js",
+    "tasks/TASK-022.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-UI-001",
+    "FEAT-SAV-001"
+  ],
+  "dependencies": [
+    "SkinRegistry",
+    "SaveManager",
+    "MenuManagerCharSelectCore",
+    "OnlineManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 20,
+    "authorizedRemovals": [
+      "hidden: true flag on thantrung and chodoinon in js/data/skins.js"
+    ]
+  },
+  "requiredTests": [
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tests/test_vovinam_skin_skills.js",
+    "tests/test_online_multiplayer.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "SkinRegistry.getForCharacter('thienkhanh') chứa thantrung và SkinRegistry.getForCharacter('huavudai') chứa chodoinon",
+    "SkinRegistry.getShopSkins() không chứa thantrung và chodoinon",
+    "SaveManager.isSkinUnlocked trả true cho thantrung và chodoinon để trang bị trực tiếp trong Võ Đường và Sảnh Online",
+    "Tất cả 27 bộ test regression và browser smoke test đạt PASS"
+  ]
+}
