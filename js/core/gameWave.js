@@ -399,12 +399,24 @@ class GameWave extends window.GameBase {
   }
 
   // Vật bay (đá/gạch Dung Hải ném) — va chạm với người chơi
-  spawnProjectile(x, y, dirX, speed, damage, owner) {
+  spawnProjectile(x, y, dirX, speed, damage, owner, pType = 'stone') {
     this.projectiles.push({
       x, y, z: 0, vx: (dirX >= 0 ? 1 : -1) * speed, vy: 0,
-      damage: damage || 30, owner: owner || null, life: 2.4, rot: 0
+      damage: damage || 30, owner: owner || null, life: 2.4, rot: 0, pType
     });
     if (window.audioManager) window.audioManager.playWhoosh();
+    const om = window.onlineManager;
+    if (om && om.isActive && om.mode === 'coop' && om.slot === 1 && !om._applyingRemoteVfx && owner !== this.player) {
+      om.send({
+        type: 'vfx_event',
+        kind: 'enemy_projectile',
+        x: Math.round(x),
+        y: Math.round(y),
+        dirX: dirX >= 0 ? 1 : -1,
+        speed: Math.round(speed || 280),
+        pType: pType || 'stone'
+      });
+    }
   }
 
   updateProjectiles(dt) {
@@ -414,13 +426,37 @@ class GameWave extends window.GameBase {
       p.rot += dt * 12;
       p.life -= dt;
 
-      const hitPlayer = !this.player.isDead &&
+      const isVisualOnly = !!(p.owner && (p.owner.isRemoteEnemyProj || p.owner.isRemotePlayer));
+      const hitPlayer = !isVisualOnly && !this.player.isDead &&
         Math.abs(p.x - this.player.x) < 44 &&
         Math.abs(p.y - 30 - (this.player.y - 60)) < 70 &&
         this.player.z > -70;
 
       if (hitPlayer) {
         this.player.takeDamage(p.damage, Math.sign(p.vx) * 9, false);
+        if (window.effectManager) window.effectManager.createHitSparks(p.x, p.y, 10, false);
+        this.projectiles.splice(i, 1);
+        continue;
+      }
+
+      const om = window.onlineManager;
+      const rp = (om && om.isActive && om.mode === 'coop' && om.slot === 1) ? om.remotePlayer : null;
+      const hitRemoteCoop = !isVisualOnly && rp && !rp.isDead && rp.state !== 'dodge' && (rp.invincibleTimer || 0) <= 0 &&
+        Math.abs(p.x - rp.x) < 44 &&
+        Math.abs(p.y - 30 - ((rp.y || 580) - 60)) < 70 &&
+        (rp.z || 0) > -70;
+
+      if (hitRemoteCoop) {
+        const hitSeq = ++om._lastSentHitSeq;
+        rp.invincibleTimer = 0.4;
+        om.send({
+          type: 'pvp_hit',
+          fromCoopProjectile: true,
+          hitSeq,
+          damage: p.damage || 30,
+          knockbackX: Math.sign(p.vx || 1) * 9,
+          isKnockdown: false
+        });
         if (window.effectManager) window.effectManager.createHitSparks(p.x, p.y, 10, false);
         this.projectiles.splice(i, 1);
         continue;

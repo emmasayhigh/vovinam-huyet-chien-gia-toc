@@ -196,6 +196,10 @@ class RemotePlayer extends (window.Player || Object) {
 
   applyRemoteState(s) {
     if (!s || typeof s !== 'object') return;
+    if (Number.isFinite(s.seq)) {
+      if (this._lastStateSeq && s.seq < this._lastStateSeq) return;
+      this._lastStateSeq = s.seq;
+    }
     this._netRxAge = 0;
     if (s.charId && (s.charId !== this.charId || (s.skinId || 'default') !== this.equippedSkin)) {
       this.setCharacter(s.charId, s.skinId || 'default');
@@ -317,6 +321,8 @@ class RemotePlayer extends (window.Player || Object) {
     if (!mgr || !mgr.isActive || mgr.mode !== 'pvp') return;
     if (mgr._roundOver || (mgr._introLockTimer || 0) > 0) return;
     const bypassInv = !!(opts && opts.bypassInvincible);
+    const blockedHint = !!(this.pendingHit && this.pendingHit.blocked);
+    this.pendingHit = null;
     if (!bypassInv) {
       if (this.isDead || this.state === 'dodge' || this.state === 'knockdown' || this.state === 'getup' || (this.invincibleTimer || 0) > 0) return;
     } else if (this.isDead) {
@@ -324,7 +330,7 @@ class RemotePlayer extends (window.Player || Object) {
     }
 
     const rawDmg = Math.max(1, Math.round(amount || 0));
-    const isBlocked = !bypassInv && !isKnockdown && this.state === 'guard';
+    const isBlocked = !bypassInv && !isKnockdown && (this.state === 'guard' || blockedHint);
     const mitigation = (this.incomingDamageMul || 1) * (1 - Math.max(0, Math.min(0.85, this.damageReduction || 0))) * (isBlocked ? 0.2 : 1);
     const predictedDmg = Math.max(1, Math.round(rawDmg * mitigation));
 
@@ -355,7 +361,7 @@ class RemotePlayer extends (window.Player || Object) {
       window.effectManager.addFloatingText(`-${predictedDmg}`, this.x, (this.y || 580) - 135, isKnockdown ? 'crit' : 'normal');
     }
 
-    mgr.send({
+    const packet = {
       type: 'pvp_hit',
       hitSeq,
       damage: rawDmg,
@@ -363,7 +369,11 @@ class RemotePlayer extends (window.Player || Object) {
       isKnockdown: !!isKnockdown,
       bypassInvincible: bypassInv,
       attackerState: (window.game && window.game.player && window.game.player.state) || 'punch_straight'
-    });
+    };
+    if (mgr._pendingHits && typeof mgr._pendingHits.set === 'function') {
+      mgr._pendingHits.set(hitSeq, { hitSeq, packet, sentAt: Date.now(), retried: false });
+    }
+    mgr.send(packet);
   }
 
   drawOverlay(ctx, camera, mode = 'pvp') {
@@ -454,6 +464,10 @@ class OnlineManager {
     this._coopHitSeq = 0;
     this._lastCoopHitAck = 0;
     this._lastCoopWaveIndex = 0;
+    this._sentStateSeq = 0;
+    this._lastPeerPacketAt = Date.now();
+    this._peerLostWarned = false;
+    if (this._pendingHits) this._pendingHits.clear();
     this._roundOver = false;
     this._rematchRequested = false;
     this._hooked = false;
@@ -463,6 +477,73 @@ class OnlineManager {
     this._pendingInviteRoom = null;
     this._uiBound = false;
     this._testTransport = null;
+    this.sessionToken = null;
+    this._resumeToken = null;
+    this._resumeRoomCode = null;
+    this._reconnectAttempts = 0;
+    this._reconnectTimer = null;
+    this._intentionalClose = false;
+    this._lastPeerPacketAt = 0;
+    this._peerLostWarned = false;
+    this._pendingHits = new Map();
+    this._sentStateSeq = 0;
+    this._qmAutoStartTimer = null;
+    this._lastRoomsRenderSig = '';
+    this._lastPlayersRenderSig = '';
+    this._lastChatRoomCode = null;
+  }
+
+  _escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, (ch) => (
+      ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '"' ? '&quot;' : '&#39;'
+    ));
+  }
+
+  _clearChatLog() {
+    const log = this._el('online-chat-log');
+    if (log) log.innerHTML = '';
+  }
+
+  _stopQmAutoStart() {
+    if (this._qmAutoStartTimer) {
+      clearTimeout(this._qmAutoStartTimer);
+      this._qmAutoStartTimer = null;
+    }
+  }
+
+  _scheduleQuickMatchAutoStart() {
+    this._stopQmAutoStart();
+    if (!this.room || !this.room.quickMatched || this.room.status !== 'waiting') return;
+    if (!Array.isArray(this.room.players) || this.room.players.length < 2) return;
+    const roomCode = this.room.code;
+    this._qmAutoStartTimer = setTimeout(() => {
+      this._qmAutoStartTimer = null;
+      if (!this.room || this.room.code !== roomCode || this.room.status !== 'waiting' || this.isActive) return;
+      if (!Array.isArray(this.room.players) || this.room.players.length < 2) return;
+      if (this.slot === 1) {
+        this.syncLobbyProfile();
+        this.send({ type: 'start_match' });
+      }
+    }, 2000);
+  }
+
+  _clearReconnectTimer() {
+    if (this._reconnectTimer) {
+      clearTimeout(this._reconnectTimer);
+      this._reconnectTimer = null;
+    }
+  }
+
+  _scheduleReconnect() {
+    if (this._intentionalClose || this._reconnectTimer || typeof WebSocket === 'undefined') return;
+    const delayMs = Math.min(10000, Math.round(1200 * Math.pow(1.6, Math.min(5, this._reconnectAttempts || 0))));
+    this._reconnectAttempts = (this._reconnectAttempts || 0) + 1;
+    this._reconnectTimer = setTimeout(() => {
+      this._reconnectTimer = null;
+      if (!this.connected && !this._intentionalClose) {
+        this.connect();
+      }
+    }, delayMs);
   }
 
   normalizeServerUrls(raw) {
@@ -536,17 +617,11 @@ class OnlineManager {
       this.updateConnectionUI('unavailable');
       return false;
     }
-    const urlInput = this._el('online-server-url');
-    const typedUrl = urlInput && urlInput.value.trim();
-    const chosenRaw = customUrl || typedUrl || this.getDefaultWsUrl();
+    this._intentionalClose = false;
+    this._clearReconnectTimer();
+    const chosenRaw = customUrl || this.getDefaultWsUrl();
     const norm = this.normalizeServerUrls(chosenRaw);
     const rawUrl = norm.wsUrl || chosenRaw;
-    if (urlInput && rawUrl) urlInput.value = rawUrl;
-    if (typedUrl && norm.httpBase && typeof localStorage !== 'undefined') {
-      try {
-        localStorage.setItem('vovinam_online_server_url', norm.httpBase);
-      } catch (_) {}
-    }
 
     if (this.ws && (this.ws.readyState === 0 || this.ws.readyState === 1)) {
       return true;
@@ -558,6 +633,8 @@ class OnlineManager {
       this.ws = ws;
       ws.onopen = () => {
         this.connected = true;
+        this._reconnectAttempts = 0;
+        this._clearReconnectTimer();
         this.updateConnectionUI('connected');
         this.readProfileInputs();
         this.send({
@@ -589,7 +666,18 @@ class OnlineManager {
         if (this.ws === ws) this.ws = null;
         this.updateConnectionUI('disconnected');
         if (this.quickMatchState === 'searching' || this.quickMatchState === 'connecting') {
-          this.setQuickMatchState('lost', 'Kết nối máy chủ bị ngắt');
+          this.setQuickMatchState('lost', 'Kết nối máy chủ bị ngắt — Đang tự kết nối lại...');
+        }
+        if (!this._intentionalClose) {
+          if (this.room && this.room.code) {
+            this._resumeRoomCode = this.room.code;
+            this._resumeToken = this.sessionToken || this._resumeToken;
+          }
+          const modal = this._el('online-modal');
+          const modalOpen = !!(modal && modal.classList && !modal.classList.contains('hidden'));
+          if (this.isActive || this.room || modalOpen) {
+            this._scheduleReconnect();
+          }
         }
       };
       return true;
@@ -601,6 +689,9 @@ class OnlineManager {
   }
 
   disconnect() {
+    this._intentionalClose = true;
+    this._clearReconnectTimer();
+    this._stopQmAutoStart();
     if (this.ws) {
       try { this.ws.close(); } catch (_) {}
       this.ws = null;
@@ -855,14 +946,7 @@ class OnlineManager {
       pill.textContent = '🟡 Đang kết nối...';
       if (netLabel) netLabel.textContent = 'Đang kết nối';
     } else if (status === 'error') {
-      const isStaticHost = (typeof window !== 'undefined' && window.location && /vercel\.app$/i.test(window.location.host || ''));
-      pill.textContent = isStaticHost
-        ? '🔴 Chưa nối Backend WS — Bấm ⚙️ Máy chủ để dán link Server'
-        : '🔴 Không kết nối được (Hãy chạy npm start)';
-      if (isStaticHost) {
-        const cfgBar = this._el('online-server-config-bar');
-        if (cfgBar && cfgBar.classList) cfgBar.classList.remove('hidden');
-      }
+      pill.textContent = '🔴 Chưa kết nối được Máy chủ Online — Đang thử lại...';
       if (pill.classList) pill.classList.add('error');
       if (netLabel) netLabel.textContent = 'Mất kết nối';
     } else {
@@ -973,8 +1057,8 @@ class OnlineManager {
     }
     this.setOnlineSubtab('quickmatch');
     if (!this.connected && !this._testTransport) {
-      this.setQuickMatchState('lost', 'Chưa kết nối Server! Chạy npm start rồi bấm KẾT NỐI.');
-      this._toast('Chưa kết nối Server! Chạy npm start rồi bấm KẾT NỐI.');
+      this.setQuickMatchState('connecting', 'Đang kết nối tới Máy chủ Online, vui lòng đợi giây lát...');
+      this._toast('Đang kết nối tới Máy chủ Online...');
       this.connect();
       return;
     }
@@ -993,16 +1077,19 @@ class OnlineManager {
 
   cancelQuickMatch() {
     if (this.quickMatchState !== 'searching') return;
+    if (!this.connected && !this._testTransport) {
+      this.room = null;
+      this.slot = 0;
+      this.setQuickMatchState('cancelled');
+      this.renderRoomPanel();
+      return;
+    }
     this.send({ type: 'cancel_quick_match' });
-    this.room = null;
-    this.slot = 0;
-    this.setQuickMatchState('cancelled');
-    this.renderRoomPanel();
   }
 
   submitCreateRoom() {
     if (!this.connected && !this._testTransport) {
-      this._toast('Chưa kết nối Server! Chạy npm start rồi bấm KẾT NỐI.');
+      this._toast('Đang kết nối tới Máy chủ Online, vui lòng thử lại sau giây lát!');
       this.connect();
       return;
     }
@@ -1033,18 +1120,29 @@ class OnlineManager {
     const peers = (this.onlinePlayers || []).filter((p) => p && p.id !== this.clientId);
     if (countBadge) countBadge.textContent = String((this.onlinePlayers || []).length);
 
+    const sig = JSON.stringify({
+      inRoom: !!this.room,
+      peers: peers.map((p) => [p.id, p.name, p.charId, p.skinId, p.status, p.roomCode])
+    });
+    if (sig === this._lastPlayersRenderSig && peers.length > 0) return;
+    this._lastPlayersRenderSig = sig;
+
     const renderInto = (container, emptyMsg, inRoomMode) => {
       if (!container) return;
       if (!peers.length) {
-        container.innerHTML = `<div class="online-room-item"><span>${emptyMsg}</span></div>`;
+        container.innerHTML = `<div class="online-room-item"><span>${this._escapeHtml(emptyMsg)}</span></div>`;
         return;
       }
       container.innerHTML = '';
       for (const p of peers) {
         const row = document.createElement('div');
         row.className = 'online-room-item';
-        const statusTxt = p.status === 'in_room' ? `Trong phòng #${p.roomCode || '?'}` : (p.status === 'searching' ? 'Đang tìm trận' : 'Đang rảnh tại Sảnh');
-        row.innerHTML = `<span>🟢 <strong>${p.name}</strong> • ${this._getCharMeta(p.charId, p.skinId).name} • <em>${statusTxt}</em></span>`;
+        const statusTxt = p.status === 'in_room'
+          ? `Trong phòng #${this._escapeHtml(p.roomCode || '?')}`
+          : (p.status === 'searching' ? 'Đang tìm trận' : 'Đang rảnh tại Sảnh');
+        const safeName = this._escapeHtml(p.name || 'Võ Sĩ');
+        const safeHero = this._escapeHtml(this._getCharMeta(p.charId, p.skinId).name);
+        row.innerHTML = `<span>🟢 <strong>${safeName}</strong> • ${safeHero} • <em>${statusTxt}</em></span>`;
         if (this.room && (inRoomMode || p.status !== 'in_room')) {
           const invBtn = document.createElement('button');
           invBtn.type = 'button';
@@ -1092,6 +1190,10 @@ class OnlineManager {
     if (!listEl) return;
     const waiting = (this.rooms || []).filter((r) => r && r.status === 'waiting');
     if (countPill) countPill.textContent = `${waiting.length} phòng`;
+    const roomsSig = JSON.stringify(waiting.map((r) => [r.code, r.roomName, r.mode, r.stageId, r.isPrivate, r.hasPassword, r.playerCount, r.hostName]));
+    if (roomsSig === this._lastRoomsRenderSig && listEl.children && listEl.children.length > 0) return;
+    this._lastRoomsRenderSig = roomsSig;
+
     if (!waiting.length) {
       listEl.innerHTML = `
         <div class="online-empty-arena">
@@ -1115,15 +1217,17 @@ class OnlineManager {
       row.className = 'online-room-item online-room-card-pro';
       const isCoop = r.mode === 'coop';
       const modeBadge = isCoop
-        ? `<span class="orcp-mode coop">🤝 CO-OP M${r.stageId || 1}</span>`
+        ? `<span class="orcp-mode coop">🤝 CO-OP M${Number(r.stageId) || 1}</span>`
         : `<span class="orcp-mode pvp">⚔️ 1V1 PVP</span>`;
       const lockBadge = r.isPrivate ? '<span class="orcp-lock" title="Phòng riêng tư">🔒</span>' : '';
-      const rTitle = r.roomName || `Võ Đài #${r.code}`;
+      const rTitle = this._escapeHtml(r.roomName || `Võ Đài #${r.code}`);
+      const safeCode = this._escapeHtml(r.code);
+      const safeHost = this._escapeHtml(r.hostName || 'Võ Sĩ');
       const occDots = r.playerCount >= 2 ? '●●' : '●○';
       row.innerHTML = `
         <div class="orcp-info">
-          <div class="orcp-top">${modeBadge}${lockBadge}<strong class="orcp-title">${rTitle}</strong><span class="orcp-code">#${r.code}</span></div>
-          <div class="orcp-sub">Chủ đài: <strong>${r.hostName}</strong> • <span class="orcp-occ">${occDots} ${r.playerCount}/2</span></div>
+          <div class="orcp-top">${modeBadge}${lockBadge}<strong class="orcp-title">${rTitle}</strong><span class="orcp-code">#${safeCode}</span></div>
+          <div class="orcp-sub">Chủ đài: <strong>${safeHost}</strong> • <span class="orcp-occ">${occDots} ${Number(r.playerCount) || 1}/2</span></div>
         </div>`;
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -1173,7 +1277,7 @@ class OnlineManager {
       const list = (window.SkinRegistry && typeof window.SkinRegistry.getForCharacter === 'function')
         ? window.SkinRegistry.getForCharacter(this.charId)
         : [{ id: 'default', name: 'Mặc Định' }];
-      skinSel.innerHTML = list.map((sk) => `<option value="${sk.id}">${sk.name}</option>`).join('');
+      skinSel.innerHTML = list.map((sk) => `<option value="${this._escapeHtml(sk.id)}">${this._escapeHtml(sk.name)}</option>`).join('');
       skinSel.value = list.some((s) => s.id === this.skinId) ? this.skinId : 'default';
     }
   }
@@ -1245,14 +1349,18 @@ class OnlineManager {
       const meta = this._getCharMeta(player.charId, player.skinId);
       const allyMeta = this._getAllyMeta(player.allyId);
       const roleTag = isHostSlot ? '👑 CHỦ PHÒNG' : '⚔️ ĐỐI THỦ / ĐỒNG ĐỘI';
-      const readyHtml = player.ready !== false
+      const isReady = player.ready === true;
+      const readyHtml = isReady
         ? '<span class="opfp-ready-pill ready">✓ SẴN SÀNG</span>'
         : '<span class="opfp-ready-pill not-ready">⏳ CHƯA SẴN SÀNG</span>';
-      const skinLabel = player.skinId && player.skinId !== 'default' ? ` • Skin: ${player.skinId}` : '';
-      return `<img class="opfp-slot-avatar" src="${meta.avatar}" alt="" style="color:${isHostSlot ? '#facc15' : '#38bdf8'}">
+      const skinLabel = player.skinId && player.skinId !== 'default' ? ` • Skin: ${this._escapeHtml(player.skinId)}` : '';
+      const safeName = this._escapeHtml(player.name || (isHostSlot ? 'P1' : 'P2'));
+      const safeChar = this._escapeHtml(charLabel(player.charId));
+      const safeAlly = this._escapeHtml(allyMeta.name);
+      return `<img class="opfp-slot-avatar" src="${this._escapeHtml(meta.avatar)}" alt="" style="color:${isHostSlot ? '#facc15' : '#38bdf8'}">
         <div class="opfp-slot-info">
-          <div class="opfp-slot-head"><strong>${isHostSlot ? 'P1' : 'P2'}: ${player.name}</strong><span class="opfp-role-badge">${roleTag}</span></div>
-          <span>${charLabel(player.charId)}${skinLabel} • 🤝 ${allyMeta.name}</span>
+          <div class="opfp-slot-head"><strong>${isHostSlot ? 'P1' : 'P2'}: ${safeName}</strong><span class="opfp-role-badge">${roleTag}</span></div>
+          <span>${safeChar}${skinLabel} • 🤝 ${safeAlly}</span>
           <div class="opfp-slot-badges">🟢 Online ${readyHtml}</div>
         </div>`;
     };
@@ -1276,15 +1384,16 @@ class OnlineManager {
     }
     this._syncInRoomLoadoutControls();
 
-    const myReady = !me || me.ready !== false;
+    const myReady = !!(me && me.ready === true);
     if (readyBtn) {
       readyBtn.classList.toggle('active', myReady);
       readyBtn.textContent = myReady ? '✓ ĐÃ SẴN SÀNG' : '⏳ BẤM SẴN SÀNG';
     }
-    const allReady = players.length >= 2 && players.every((p) => p.ready !== false);
+    const allReady = players.length >= 2 && players.every((p) => p.ready === true);
     if (readyHint) {
       if (players.length < 2) readyHint.textContent = 'Đang chờ đủ 2 võ sĩ trong phòng để giao đấu...';
-      else if (!allReady) readyHint.textContent = 'Chờ cả 2 võ sĩ nhấn [✓ SẴN SÀNG] để Chủ phòng bắt đầu!';
+      else if (this.room.quickMatched) readyHint.textContent = '🔥 Đã ghép đối thủ! Tự động khai chiến sau 2 giây...';
+      else if (!allReady) readyHint.textContent = 'Chờ cả 2 võ sĩ nhấn [⏳ BẤM SẴN SÀNG] để Chủ phòng bắt đầu!';
       else readyHint.textContent = '✓ Cả 2 võ sĩ đã sẵn sàng! Chủ phòng có thể khai chiến ngay!';
     }
 
@@ -1301,8 +1410,6 @@ class OnlineManager {
     this.bindUI();
     const modal = this._el('online-modal');
     if (modal && modal.classList) modal.classList.remove('hidden');
-    const urlEl = this._el('online-server-url');
-    if (urlEl && !urlEl.value) urlEl.value = this.getDefaultWsUrl();
 
     if (window.saveManager && window.saveManager.data) {
       let savedChar = window.saveManager.data.selectedCharacter || 'nghi';
@@ -1364,14 +1471,6 @@ class OnlineManager {
     bindClick('btn-top-online', () => this.openModal());
     bindClick('btn-online-close', () => this.closeModal());
     bindClick('btn-online-close-x', () => this.closeModal());
-    bindClick('btn-online-reconnect', () => {
-      this.disconnect();
-      this.connect();
-    });
-    bindClick('btn-online-toggle-server', () => {
-      const cfgBar = this._el('online-server-config-bar');
-      if (cfgBar && cfgBar.classList) cfgBar.classList.toggle('hidden');
-    });
     bindClick('btn-online-copy-web-url', () => {
       const urlSpan = this._el('online-share-web-url');
       let webUrl = (urlSpan && urlSpan.textContent) || (typeof window !== 'undefined' && window.location ? window.location.origin : 'http://localhost:3000/');
@@ -1587,14 +1686,19 @@ class OnlineManager {
     });
 
     bindClick('btn-online-leave-room', () => {
+      this._stopQmAutoStart();
+      this._resumeRoomCode = null;
       this.send({ type: 'leave_room' });
       this.room = null;
       this.slot = 0;
+      this._lastChatRoomCode = null;
+      this._clearChatLog();
       this.setQuickMatchState('ready');
       this.renderRoomPanel();
     });
 
     bindClick('btn-online-start-match', () => {
+      this._stopQmAutoStart();
       this.syncLobbyProfile();
       this.send({ type: 'start_match' });
     });
@@ -1613,16 +1717,45 @@ class OnlineManager {
     switch (msg.type) {
       case 'welcome': {
         this.clientId = msg.clientId || null;
+        if (msg.sessionToken) this.sessionToken = msg.sessionToken;
         this.rooms = Array.isArray(msg.rooms) ? msg.rooms : [];
         if (Array.isArray(msg.players)) this.onlinePlayers = msg.players;
         this.renderRoomsList();
         this.renderOnlinePlayers();
-        if (this._pendingInviteRoom) {
+        if (this._resumeToken && this._resumeRoomCode) {
+          this.send({
+            type: 'resume_session',
+            sessionToken: this._resumeToken,
+            roomCode: this._resumeRoomCode
+          });
+        } else if (this._pendingInviteRoom) {
           const code = this._pendingInviteRoom;
           this._pendingInviteRoom = null;
           this.readProfileInputs();
           this.send({ type: 'join_room', code, viaInvite: true, name: this.playerName, charId: this.charId, skinId: this.skinId, allyId: this.allyId });
         }
+        break;
+      }
+      case 'session_resumed': {
+        this._resumeToken = null;
+        this._resumeRoomCode = null;
+        this.room = msg.room || this.room;
+        if (msg.slot) this.slot = msg.slot;
+        this._toast('✅ Đã khôi phục kết nối vào phòng đấu!');
+        this.renderRoomPanel();
+        break;
+      }
+      case 'session_expired': {
+        this._resumeToken = null;
+        this._resumeRoomCode = null;
+        if (this.isActive) {
+          this.leaveMatch(true, { skipServerNotify: true });
+        } else {
+          this.room = null;
+          this.slot = 0;
+          this.renderRoomPanel();
+        }
+        this._toast('Phòng trước đó đã đóng sau khi mất kết nối.');
         break;
       }
       case 'rooms_list': {
@@ -1636,6 +1769,7 @@ class OnlineManager {
         break;
       }
       case 'search_cancelled': {
+        this._stopQmAutoStart();
         this.room = null;
         this.slot = 0;
         this.setQuickMatchState('cancelled');
@@ -1659,6 +1793,11 @@ class OnlineManager {
         break;
       }
       case 'room_joined': {
+        const nextCode = msg.room && msg.room.code ? msg.room.code : null;
+        if (nextCode && nextCode !== this._lastChatRoomCode) {
+          this._clearChatLog();
+          this._lastChatRoomCode = nextCode;
+        }
         this.room = msg.room || null;
         if (msg.slot) this.slot = msg.slot;
         if (this.room) {
@@ -1667,8 +1806,13 @@ class OnlineManager {
           const pBar = this._el('online-private-join-bar');
           if (pBar && pBar.classList) pBar.classList.add('hidden');
           this._pendingPrivateRoomCode = null;
-          if (this.quickMatchState === 'searching' && Array.isArray(this.room.players) && this.room.players.length >= 2) {
-            this.setQuickMatchState('match_ready');
+          if (Array.isArray(this.room.players) && this.room.players.length >= 2) {
+            if (this.quickMatchState === 'searching' || this.room.quickMatched) {
+              this.setQuickMatchState('match_ready');
+            }
+            if (this.room.quickMatched) {
+              this._scheduleQuickMatchAutoStart();
+            }
           }
         }
         this.renderRoomPanel();
@@ -1683,28 +1827,45 @@ class OnlineManager {
         if (this.room) {
           this.mode = this.room.mode === 'coop' ? 'coop' : 'pvp';
           this.stageId = this.room.stageId || 1;
-          if (this.quickMatchState === 'searching' && Array.isArray(this.room.players) && this.room.players.length >= 2) {
-            this.setQuickMatchState('match_ready');
+          if (Array.isArray(this.room.players) && this.room.players.length >= 2) {
+            if (this.quickMatchState === 'searching' || this.room.quickMatched) {
+              this.setQuickMatchState('match_ready');
+            }
+            if (this.room.quickMatched) {
+              this._scheduleQuickMatchAutoStart();
+            }
+          } else {
+            this._stopQmAutoStart();
           }
         }
         this.renderRoomPanel();
         break;
       }
       case 'peer_left': {
+        this._stopQmAutoStart();
         this.room = msg.room || this.room;
         if (this.room && Array.isArray(this.room.players) && this.clientId) {
           const me = this.room.players.find((p) => p.id === this.clientId);
           if (me) this.slot = me.slot;
         }
-        this._toast('Người chơi kia đã rời phòng!');
         if (this.isActive) {
-          this.leaveMatch(false);
+          if (this.mode === 'pvp' && !this._roundOver) {
+            this._roundOver = true;
+            if (window.uiManager && typeof window.uiManager.showAlertBanner === 'function') {
+              window.uiManager.showAlertBanner('🏆 ĐỐI THỦ RỜI TRẬN — BẠN GIỮ LẠI PHÒNG ĐẤU!');
+            }
+          }
+          this._toast('Người chơi kia đã rời trận — Bạn trở về phòng chờ.');
+          this.leaveMatch(true, { skipServerNotify: true, keepRoom: true });
+        } else {
+          this._toast('Người chơi kia đã rời phòng!');
         }
         this.renderRoomPanel();
         break;
       }
       case 'match_started':
       case 'rematch_start': {
+        this._stopQmAutoStart();
         this._resetRematchButton(false);
         this.room = msg.room || this.room;
         if (this.room) {
@@ -1721,6 +1882,7 @@ class OnlineManager {
         break;
       }
       case 'player_state': {
+        this._lastPeerPacketAt = Date.now();
         if (this.remotePlayer && msg.state) {
           this.remotePlayer.applyRemoteState(msg.state);
         }
@@ -1741,13 +1903,34 @@ class OnlineManager {
         break;
       }
       case 'pvp_hit': {
+        this._lastPeerPacketAt = Date.now();
         const g = window.game;
-        if (!this.isActive || this.mode !== 'pvp' || this._roundOver || (this._introLockTimer || 0) > 0 || !g || !g.player) break;
+        const allowMode = this.mode === 'pvp' || (this.mode === 'coop' && !!msg.fromCoopProjectile);
+        if (!this.isActive || !allowMode || this._roundOver || !g || !g.player) break;
+        if ((this._introLockTimer || 0) > 0) {
+          if (this._introLockTimer <= 0.35) {
+            this._introLockTimer = 0;
+          } else {
+            if (this.mode === 'pvp' && Number.isFinite(msg.hitSeq)) {
+              this.send({
+                type: 'pvp_hit_ack',
+                hitSeq: msg.hitSeq,
+                accepted: false,
+                appliedDmg: 0,
+                newHp: Math.round(g.player.hp || 0),
+                isDead: !!g.player.isDead,
+                reason: 'intro_lock'
+              });
+            }
+            break;
+          }
+        }
         if (Number.isFinite(msg.hitSeq)) {
           this._lastRecvHitSeq = Math.max(this._lastRecvHitSeq || 0, Number(msg.hitSeq));
         }
         this._syncAccum = 999;
         const p = g.player;
+        const hpBefore = Math.round(p.hp || 0);
         if (msg.debuffs) {
           const nowMs = Date.now();
           if (msg.debuffs.bleedTimer > 0) p.bleedTimer = Math.max(p.bleedTimer || 0, msg.debuffs.bleedTimer);
@@ -1772,6 +1955,7 @@ class OnlineManager {
           if (msg.bypassInvincible && !p.isDead) {
             const dmg = Math.max(1, Math.round(msg.damage));
             p.hp = Math.max(0, (p.hp || 0) - dmg);
+            p._lastDamageRejectReason = null;
             if (window.uiManager && typeof window.uiManager.updatePlayerHp === 'function') {
               window.uiManager.updatePlayerHp(p.hp, p.maxHp);
             }
@@ -1782,16 +1966,56 @@ class OnlineManager {
             p.takeDamage(msg.damage, msg.knockbackX || 0, !!msg.isKnockdown);
           }
         }
+        const hpAfter = Math.round(p.hp || 0);
+        const rejectReason = p._lastDamageRejectReason || null;
+        if (this.mode === 'pvp' && Number.isFinite(msg.hitSeq)) {
+          const accepted = (hpAfter < hpBefore) || rejectReason === 'counter';
+          this.send({
+            type: 'pvp_hit_ack',
+            hitSeq: msg.hitSeq,
+            accepted,
+            appliedDmg: Math.max(0, hpBefore - hpAfter),
+            newHp: hpAfter,
+            isDead: !!p.isDead || hpAfter <= 0,
+            reason: accepted ? (rejectReason === 'counter' ? 'counter' : 'ok') : (rejectReason || 'ignored')
+          });
+        }
+        break;
+      }
+      case 'pvp_hit_ack': {
+        this._lastPeerPacketAt = Date.now();
+        if (this._pendingHits && Number.isFinite(msg.hitSeq)) {
+          this._pendingHits.delete(msg.hitSeq);
+        }
+        const rp = this.remotePlayer;
+        if (!rp || !this.isActive || this.mode !== 'pvp') break;
+        if (Number.isFinite(msg.hitSeq) && msg.hitSeq >= (rp._optimisticTargetHitSeq || 0)) {
+          rp._optimisticHpLockTimer = 0;
+        }
+        if (Number.isFinite(msg.newHp)) {
+          rp.hp = Math.max(0, Math.min(rp.maxHp || 1000, msg.newHp));
+          rp.isDead = !!msg.isDead || rp.hp <= 0;
+        }
+        if (!msg.accepted && (msg.reason === 'dodge' || msg.reason === 'counter') && window.effectManager && typeof window.effectManager.addFloatingText === 'function') {
+          window.effectManager.addFloatingText(msg.reason === 'dodge' ? 'NÉ ĐÒN!' : 'PHẢN ĐÒN!', rp.x, (rp.y || 580) - 150, 'block');
+        }
+        if (!this._roundOver && (rp.isDead || rp.hp <= 0)) {
+          this._roundOver = true;
+          this.send({ type: 'match_result', winnerSlot: this.slot || 1 });
+        }
         break;
       }
       case 'coop_hit_enemy': {
+        this._lastPeerPacketAt = Date.now();
         const g = window.game;
         if (!this.isActive || this.mode !== 'coop' || !g || !Array.isArray(g.enemies)) break;
         if (Number.isFinite(msg.hitSeq)) {
           this._lastCoopHitAck = Math.max(this._lastCoopHitAck || 0, Number(msg.hitSeq));
         }
         const target = g.enemies.find((e) => e && e._netId === msg.netId);
+        let acceptedHit = false;
         if (target && !target.isDead && typeof target.takeDamage === 'function') {
+          acceptedHit = true;
           target._applyingRemoteHit = true;
           // Guest đã kiểm tra i-frame cục bộ trước khi gửi đòn: không để i-frame của Host nuốt mất đòn đánh hợp lệ từ Guest
           if ((target.invincibleTimer || 0) < 1.2) target.invincibleTimer = 0;
@@ -1802,9 +2026,36 @@ class OnlineManager {
           }
           this._enemySyncAccum = 999;
         }
+        if (Number.isFinite(msg.hitSeq)) {
+          this.send({
+            type: 'coop_hit_ack',
+            hitSeq: msg.hitSeq,
+            netId: msg.netId,
+            accepted: acceptedHit,
+            hp: target ? Math.round(target.hp || 0) : 0,
+            isDead: target ? !!target.isDead : true
+          });
+        }
+        break;
+      }
+      case 'coop_hit_ack': {
+        this._lastPeerPacketAt = Date.now();
+        const g = window.game;
+        if (!this.isActive || this.mode !== 'coop' || !g || !Array.isArray(g.enemies)) break;
+        const target = g.enemies.find((e) => e && e._netId === msg.netId);
+        if (target) {
+          if (Number.isFinite(msg.hitSeq) && msg.hitSeq >= (target._optimisticTargetHitSeq || 0)) {
+            target._optimisticHpLockTimer = 0;
+          }
+          if (Number.isFinite(msg.hp)) {
+            target.hp = Math.max(0, Math.min(target.maxHp || 9999, msg.hp));
+          }
+          target.isDead = !!msg.isDead || (target.hp || 0) <= 0;
+        }
         break;
       }
       case 'coop_enemies_sync': {
+        this._lastPeerPacketAt = Date.now();
         if (this.isActive && this.mode === 'coop' && this.slot !== 1) {
           this.applyCoopEnemiesSync(msg);
         }
@@ -1839,9 +2090,27 @@ class OnlineManager {
         break;
       }
       case 'coop_stage_ended': {
+        const wasOver = !!this._roundOver;
         this._roundOver = true;
         if (!this._rematchRequested) {
           this._resetRematchButton(true);
+        }
+        const g = window.game;
+        if (!wasOver && this.isActive && this.mode === 'coop' && g) {
+          if (msg.result === 'victory' && typeof g.triggerStageVictory === 'function' && !g.stageCompletedPending) {
+            g.triggerStageVictory();
+          } else if (msg.result === 'defeat' && g.state === 'PLAYING') {
+            g.state = 'GAME_OVER';
+            if (window.audioManager && typeof window.audioManager.stopBGM === 'function') window.audioManager.stopBGM();
+            if (window.uiManager) {
+              if (typeof window.uiManager.showAlertBanner === 'function') {
+                window.uiManager.showAlertBanner('💥 ĐỒNG ĐỘI ĐÃ GỤC — HẸN TRẬN SAU!');
+              }
+              if (typeof window.uiManager.showGameOver === 'function') {
+                window.uiManager.showGameOver();
+              }
+            }
+          }
         }
         break;
       }
@@ -2032,6 +2301,10 @@ class OnlineManager {
     this._lastSentFiendsSig = '';
     this._lastSentHitSeq = 0;
     this._lastRecvHitSeq = 0;
+    this._sentStateSeq = 0;
+    this._lastPeerPacketAt = Date.now();
+    this._peerLostWarned = false;
+    if (this._pendingHits) this._pendingHits.clear();
 
     this._startStageClean(1);
     g._onlinePauseOpen = false;
@@ -2086,6 +2359,10 @@ class OnlineManager {
     this._coopHitSeq = 0;
     this._lastCoopHitAck = 0;
     this._lastCoopWaveIndex = 0;
+    this._sentStateSeq = 0;
+    this._lastPeerPacketAt = Date.now();
+    this._peerLostWarned = false;
+    if (this._pendingHits) this._pendingHits.clear();
 
     const targetStage = Math.max(1, Math.min(20, Number((room && room.stageId) || this.stageId) || 1));
     this.stageId = targetStage;
@@ -2157,15 +2434,24 @@ class OnlineManager {
   }
 
   leaveMatch(reopenLobby = true, opts = {}) {
+    this._stopQmAutoStart();
     if (!opts.skipServerNotify && this.room) {
       this.send({ type: 'leave_room' });
     }
     this.isActive = false;
-    this.room = null;
-    this.slot = 0;
+    if (!opts.keepRoom) {
+      this.room = null;
+      this.slot = 0;
+      this._resumeRoomCode = null;
+      this._lastChatRoomCode = null;
+      this._clearChatLog();
+    }
     this.remotePlayer = null;
     this._roundOver = false;
     this._introLockTimer = 0;
+    this._lastPeerPacketAt = 0;
+    this._peerLostWarned = false;
+    if (this._pendingHits) this._pendingHits.clear();
     this.pvpScores = { p1: 0, p2: 0 };
     this._resetRematchButton(false);
     if (this._vsTimerIds) {
@@ -2315,6 +2601,37 @@ class OnlineManager {
     const g = window.game;
     if (!g || !g.player) return;
 
+    if (!this._roundOver && this._lastPeerPacketAt > 0) {
+      const gapMs = Date.now() - this._lastPeerPacketAt;
+      if (gapMs > 5000 && !this._peerLostWarned) {
+        this._peerLostWarned = true;
+        if (window.uiManager && typeof window.uiManager.showAlertBanner === 'function') {
+          window.uiManager.showAlertBanner('📡 MẤT TÍN HIỆU ĐỐI THỦ (>5s) — ĐANG CHỜ PHỤC HỒI...');
+        }
+        this._toast('📡 Mất tín hiệu đồng bộ từ người chơi kia (>5s)...');
+      } else if (gapMs <= 2000 && this._peerLostWarned) {
+        this._peerLostWarned = false;
+        this._toast('✅ Đã khôi phục tín hiệu trận đấu!');
+      }
+    }
+
+    if (this._pendingHits && this._pendingHits.size > 0 && this.mode === 'pvp' && !this._roundOver) {
+      const nowMs = Date.now();
+      for (const [hSeq, entry] of this._pendingHits.entries()) {
+        if (!entry) {
+          this._pendingHits.delete(hSeq);
+          continue;
+        }
+        const age = nowMs - entry.sentAt;
+        if (age > 1600) {
+          this._pendingHits.delete(hSeq);
+        } else if (age > 450 && !entry.retried) {
+          entry.retried = true;
+          this.send(entry.packet);
+        }
+      }
+    }
+
     if (this.remotePlayer && typeof this.remotePlayer.updateRemote === 'function') {
       this.remotePlayer.updateRemote(dt);
     }
@@ -2398,6 +2715,7 @@ class OnlineManager {
         this.send({
           type: 'player_state',
           state: {
+            seq: ++this._sentStateSeq,
             name: this.playerName,
             charId: p.charId,
             skinId: p.equippedSkin || 'default',
@@ -2665,7 +2983,14 @@ class OnlineManager {
           break;
         case 'projectile':
           if (g && typeof g.spawnProjectile === 'function') {
-            g.spawnProjectile(msg.x, msg.y, msg.vx || 0, msg.vy || 0, 0, this.remotePlayer || { isRemotePlayer: true }, msg.pType || 'knife');
+            const dir = Number.isFinite(msg.dirX) ? (msg.dirX >= 0 ? 1 : -1) : ((msg.vx || 0) >= 0 ? 1 : -1);
+            const spd = Number.isFinite(msg.speed) ? msg.speed : (Math.abs(msg.vx || 0) || 320);
+            g.spawnProjectile(msg.x, msg.y, dir, spd, 0, this.remotePlayer || { isRemotePlayer: true }, msg.pType || 'knife');
+          }
+          break;
+        case 'enemy_projectile':
+          if (g && typeof g.spawnProjectile === 'function') {
+            g.spawnProjectile(msg.x, msg.y, msg.dirX || 1, msg.speed || 280, 0, { isRemoteEnemyProj: true }, msg.pType || 'stone');
           }
           break;
       }

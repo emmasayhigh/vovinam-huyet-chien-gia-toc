@@ -33,24 +33,42 @@ class GameFlow extends window.GameCamera {
 
     const stageData = window.stageManager.getCurrentStage();
     const currentStageNum = window.stageManager.currentStageIndex;
-
-    // Lưu tiến trình, mở khóa nhân vật, thành tích
-    this.recordStageProgress(currentStageNum, stageData);
-
     const om = window.onlineManager;
-    if (om && om.isActive && om.mode === 'coop') {
+    const isCoopOnline = !!(om && om.isActive && om.mode === 'coop');
+
+    // Chơi Co-op thưởng Vàng & Kim Cương riêng thay vì ghi đè tiến trình mở khóa màn/nhân vật Chiến dịch
+    if (isCoopOnline) {
+      const sm = window.saveManager;
+      const stats = this.calculateStageStats();
+      const goldBonus = 120 + currentStageNum * 25;
+      const diamondBonus = (stageData && stageData.bossType) ? 10 : 5;
+      if (sm) {
+        if (typeof sm.addStats === 'function') {
+          sm.addStats({ hits: stats.hits, perfectDodges: stats.dodges, bestCombo: stats.maxCombo });
+        }
+        if (typeof sm.addGold === 'function') sm.addGold(goldBonus);
+        if (typeof sm.addDiamonds === 'function') sm.addDiamonds(diamondBonus);
+      }
+      this.toast(`🤝 CO-OP CHIẾN THẮNG! +${goldBonus} Vàng & +${diamondBonus} Kim Cương`);
+    } else {
+      // Lưu tiến trình, mở khóa nhân vật, thành tích (chế độ Chiến Dịch)
+      this.recordStageProgress(currentStageNum, stageData);
+    }
+
+    if (isCoopOnline) {
+      const shouldNotifyPeer = !om._roundOver;
       om._roundOver = true;
       if (typeof om._resetRematchButton === 'function' && !om._rematchRequested) {
         om._resetRematchButton(true);
       }
-      if (typeof om.send === 'function') {
+      if (shouldNotifyPeer && typeof om.send === 'function') {
         om.send({ type: 'coop_stage_ended', result: 'victory' });
       }
     }
 
     const proceed = () => {
-      // Màn cuối -> dòng kết thúc theo lựa chọn của người chơi
-      if (stageData.finalStage) {
+      // Màn cuối -> dòng kết thúc theo lựa chọn của người chơi (chỉ trong Chiến dịch đơn)
+      if (!isCoopOnline && stageData.finalStage) {
         this.showEndingFlow();
         return;
       }
@@ -77,7 +95,7 @@ class GameFlow extends window.GameCamera {
     const metaCur = window.STORY_META && window.STORY_META.stages ? window.STORY_META.stages[currentStageNum] : null;
     const isVinhTamStage = currentStageNum === 17 || (currentStageNum === 10 && stageData && stageData.bossType === 'vinhtam') || (metaCur && metaCur.boss === 'vinhtam');
     const hasConfrontationModal = typeof document !== 'undefined' && typeof document.getElementById === 'function' && !!document.getElementById('confrontation-modal');
-    if (isVinhTamStage && window.clanConfrontation && hasConfrontationModal) {
+    if (!isCoopOnline && isVinhTamStage && window.clanConfrontation && hasConfrontationModal) {
       window.clanConfrontation.startConfrontation(() => {
         if (stageData.postChoice && !(window.saveManager && window.saveManager.getChoice(stageData.postChoice))) {
           this.showStoryChoice(stageData.postChoice, proceed);
@@ -89,7 +107,7 @@ class GameFlow extends window.GameCamera {
     }
 
     // Lựa chọn cốt truyện có hệ quả thật (xếp trước màn kết quả)
-    if (stageData.postChoice) {
+    if (!isCoopOnline && stageData.postChoice) {
       this.showStoryChoice(stageData.postChoice, proceed);
     } else {
       proceed();
@@ -251,11 +269,12 @@ class GameFlow extends window.GameCamera {
     this.state = 'GAME_OVER';
     const om = window.onlineManager;
     if (om && om.isActive && om.mode === 'coop') {
+      const shouldNotifyPeer = !om._roundOver;
       om._roundOver = true;
       if (typeof om._resetRematchButton === 'function' && !om._rematchRequested) {
         om._resetRematchButton(true);
       }
-      if (typeof om.send === 'function') {
+      if (shouldNotifyPeer && typeof om.send === 'function') {
         om.send({ type: 'coop_stage_ended', result: 'defeat' });
       }
     }

@@ -14,8 +14,16 @@ class PlayerDamage extends window.PlayerBase {
   }
 
   takeDamage(amount, knockbackX = 0, isKnockdown = false) {
+    this._lastDamageRejectReason = null;
     // Miễn nhiễm tuyệt đối khi đã chết, khi đang có i-frame, hoặc khi đang nằm sàn (knockdown) / đang đứng dậy (getup)
-    if (this.isDead || this.invincibleTimer > 0 || this.state === 'knockdown' || this.state === 'getup') return;
+    if (this.isDead || this.invincibleTimer > 0 || this.state === 'knockdown' || this.state === 'getup') {
+      this._lastDamageRejectReason = this.isDead
+        ? 'dead'
+        : (this.state === 'dodge'
+          ? 'dodge'
+          : ((this.state === 'knockdown' || this.state === 'getup') ? 'knockdown' : 'iframe'));
+      return;
+    }
 
     const isPvpActive = !!(window.onlineManager && window.onlineManager.isActive && window.onlineManager.mode === 'pvp');
 
@@ -38,6 +46,7 @@ class PlayerDamage extends window.PlayerBase {
         window.effectManager.createShockRing(this.x, this.y, isHand ? '#38bdf8' : '#eab308');
         window.effectManager.addFloatingText('⚡ PHẢN ĐÒN PVP!', this.x, this.y - 175, 'counter');
       }
+      this._lastDamageRejectReason = 'counter';
       return;
     }
 
@@ -144,7 +153,9 @@ class PlayerDamage extends window.PlayerBase {
     if (this.superArmor && !isKnockdown && amount < this.armorThreshold) {
       const reduced = Math.max(1, Math.round(amount * 0.5));
       this.hp = Math.max(0, this.hp - reduced);
-      this.invincibleTimer = 0.2;
+      if (!isPvpActive) {
+        this.invincibleTimer = 0.2;
+      }
       if (window.uiManager) window.uiManager.updatePlayerHp(this.hp, this.maxHp);
       this._grantPvpRevengeEnergy(reduced);
       if (window.effectManager) {
@@ -194,10 +205,12 @@ class PlayerDamage extends window.PlayerBase {
     }
 
     // Đang thủ (Guard) và đỡ được đòn: giữ nguyên thế thủ, không bị ngắt vào hurt
-    const isBlocked = (this.state === 'guard') || (this.pendingHit && this.pendingHit.blocked);
+    const fromBlockedHint = !!(this.pendingHit && this.pendingHit.blocked);
+    const isBlocked = (this.state === 'guard') || fromBlockedHint;
     if (isBlocked && !isKnockdown) {
-      if (isPvpActive && (!this.pendingHit || !this.pendingHit.blocked) && typeof this.addEnergy === 'function') {
-        this.addEnergy(6);
+      if (isPvpActive && !fromBlockedHint) {
+        amount = Math.max(1, Math.round(amount * 0.2));
+        if (typeof this.addEnergy === 'function') this.addEnergy(6);
       }
       if (this.weapon && this.weapon.type === 'shield' && this.weapon.dur > 0) {
         const heavyChip = amount >= 5;
@@ -239,7 +252,10 @@ class PlayerDamage extends window.PlayerBase {
 
     if (hasTenacity && !isKnockdown) {
       this.hp = Math.max(0, this.hp - amount);
-      this.invincibleTimer = 0.18;
+      // Ở PvP không tạo i-frame 0.18s cho Lỳ Đòn để tránh nuốt đòn combo hợp lệ của đối thủ
+      if (!isPvpActive) {
+        this.invincibleTimer = 0.18;
+      }
       this.vx = knockbackX * 0.15; // Giữ vững thế tấn, chỉ lùi nhẹ
       if (this.comboWindowTimer > 0) {
         this.comboWindowTimer = Math.max(this.comboWindowTimer, 0.8);

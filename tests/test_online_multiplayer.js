@@ -190,17 +190,21 @@ function connectWsClient(port) {
     assert.strictEqual(apiData.ok, true);
     assert.ok(apiData.rooms.some((r) => r.code === roomCode && r.playerCount === 1), 'REST /api/online/rooms returns waiting room');
 
-    // Client 2 joins by room code
+    // Client 2 joins by room code (manual room defaults ready=false on both peers until clicked)
     c2 = await connectWsClient(port);
     await c2.waitFor('welcome');
     c2.send({ type: 'join_room', code: roomCode, name: 'BichLam', charId: 'bichlam', skinId: 'namcheo' });
     const joined2 = await c2.waitFor('room_joined');
     assert.strictEqual(joined2.slot, 2);
     assert.strictEqual(joined2.room.players.length, 2);
+    assert.strictEqual(joined2.room.players.every((p) => p.ready === false), true, 'Phòng tạo thủ công mặc định ready=false cho cả 2 người chơi');
     const upd1 = await c1.waitFor('room_updated');
     assert.strictEqual(upd1.room.players.length, 2);
 
-    // Host starts 1v1 PvP match
+    // Both players click Ready, then Host starts 1v1 PvP match
+    c1.send({ type: 'toggle_ready', ready: true });
+    c2.send({ type: 'toggle_ready', ready: true });
+    await c1.waitFor('room_updated');
     c1.send({ type: 'start_match' });
     const start1 = await c1.waitFor('match_started');
     const start2 = await c2.waitFor('match_started');
@@ -557,6 +561,7 @@ function connectWsClient(port) {
     const needReadyErr = await p1c.waitFor('error_msg');
     assert.ok(needReadyErr.message.includes('SẴN SÀNG'), 'Host cannot start match until peer is Ready');
 
+    p1c.send({ type: 'toggle_ready', ready: true });
     p2c.send({ type: 'toggle_ready', ready: true });
     await p1c.waitFor('room_updated');
     p1c.send({ type: 'start_match' });
@@ -1021,6 +1026,283 @@ function connectWsClient(port) {
     window.onlineManager.leaveMatch(false);
   }
   console.log('✓ TEST 13: Thien Khanh PvP Balance, Fiends Chase Sync, High-Ping ACK & Co-op Wave Stability passed');
+
+  // -------------------------------------------------------------------------
+  // TEST 14: Groups A-E Overhaul (Pong Timeout, Resume, Peer Left Survival, Watchdog,
+  //          PvP Hit ACK & Dodge/Counter Rejection, Tenacity/Guard Fix, Co-op Rewards & Projectiles,
+  //          Quick Match Auto-Start, Cancel Race Guard, Chat Reset & XSS Escaping + Frame Cap)
+  // -------------------------------------------------------------------------
+  {
+    // E4a. Oversized WS payload rejected cleanly by decodeWsFrames
+    const hugeHdr = Buffer.from([0x81, 126, 0xFF, 0xFF]); // 65535 + try 127 oversized:
+    const tooBig127 = Buffer.alloc(10);
+    tooBig127[0] = 0x81;
+    tooBig127[1] = 127;
+    tooBig127.writeUInt32BE(0, 2);
+    tooBig127.writeUInt32BE(80000, 6);
+    const badDecoded = decodeWsFrames(Buffer.concat([hugeHdr.subarray(0, 0), tooBig127]), 65536);
+    assert.strictEqual(badDecoded.error, 'PAYLOAD_TOO_LARGE', 'decodeWsFrames rejects oversized WebSocket payload > 64KB');
+
+    // A3 + A5 + D1 + D3 + E4b: Live WS checks
+    const srv14 = createOnlineServer(path.resolve(__dirname, '..'), { heartbeatIntervalMs: 45, maxMissedPongs: 2 });
+    await new Promise((res) => srv14.server.listen(0, '127.0.0.1', res));
+    const port14 = srv14.server.address().port;
+    let qa, qb, qReconn;
+    try {
+      qa = await connectWsClient(port14);
+      const wa = await qa.waitFor('welcome');
+      assert.ok(wa.sessionToken, 'welcome packet includes sessionToken');
+
+      // Quick Match pairs 2 players -> sets quickMatched=true & ready=true, and cancel_quick_match race is rejected
+      qa.send({ type: 'quick_match', mode: 'pvp', name: '<b>Alpha</b>', charId: 'nghi' });
+      await qa.waitFor('room_joined');
+
+      qb = await connectWsClient(port14);
+      await qb.waitFor('welcome');
+      qb.send({ type: 'quick_match', mode: 'pvp', name: 'Beta', charId: 'bichlam' });
+      const jb = await qb.waitFor('room_joined');
+      assert.strictEqual(jb.room.quickMatched, true, 'Quick Match marks paired room quickMatched=true');
+      assert.strictEqual(jb.room.players.every((p) => p.ready === true), true, 'Quick Match readies both matched players automatically');
+
+      // D3: cancel_quick_match after 2-player pair does NOT return search_cancelled
+      qb.send({ type: 'cancel_quick_match' });
+      const raceRes = await qb.waitFor('room_joined');
+      assert.strictEqual(raceRes.cancelRejected, true, 'cancel_quick_match after pair rejects cancel and keeps room synchronized');
+
+      // E4b: Server sanitizes < > HTML brackets and clamps absurd pvp_hit damage <= 600
+      qa.send({ type: 'start_match' });
+      await qa.waitFor('match_started');
+      qa.send({ type: 'pvp_hit', hitSeq: 5, damage: 99999 });
+      const clampedHit = await qb.waitFor('pvp_hit');
+      assert.strictEqual(clampedHit.damage, 600, 'Server clamps absurd pvp_hit damage to <= 600');
+
+      // A5: unexpected disconnect retains resume slot for survivor room -> reconnect resumes into room
+      const oldRoomCode = jb.room.code;
+      qb.close();
+      await qa.waitFor('peer_left');
+      assert.ok(srv14.rooms.has(oldRoomCode), 'Room remains alive when peer disconnects cleanly/unintended');
+      qReconn = await connectWsClient(port14);
+      await qReconn.waitFor('welcome');
+      qReconn.send({ type: 'resume_session', sessionToken: jb.room.players[1] ? '' : '', roomCode: 'NOPE' });
+      // Verify resume works with sessionToken from qb:
+      const wb = await connectWsClient(port14);
+      const wbWelcome = await wb.waitFor('welcome');
+      wb.send({ type: 'join_room', code: oldRoomCode, name: 'Ghost', charId: 'nghi' });
+      await wb.waitFor('room_joined');
+      wb.close();
+      await qa.waitFor('peer_left');
+      qReconn.send({ type: 'resume_session', sessionToken: wbWelcome.sessionToken, roomCode: oldRoomCode });
+      const resumed = await qReconn.waitFor('session_resumed');
+      assert.strictEqual(resumed.room.code, oldRoomCode, 'resume_session restores dropped socket back into its waiting room');
+      qReconn.close();
+      qa.close();
+
+      // A3: Silent dead client evicted by server pong watchdog
+      const deadClient = await connectWsClient(port14);
+      await deadClient.waitFor('welcome');
+      deadClient.send({ type: 'create_room', mode: 'pvp', name: 'GhostHost', charId: 'nghi' });
+      await deadClient.waitFor('room_joined');
+      assert.strictEqual(srv14.rooms.size, 1);
+      await new Promise((r) => setTimeout(r, 220));
+      assert.strictEqual(srv14.rooms.size, 0, 'Server heartbeat missed-pong watchdog evicts dead client and deletes ghost room');
+      deadClient.close();
+    } finally {
+      if (qa) qa.close();
+      if (qb) qb.close();
+      if (qReconn) qReconn.close();
+      srv14.server.close();
+    }
+
+    // E3 + D5 + A4 + A2 + B1-B6 + C1-C4 on client engine
+    const pkts14 = [];
+    window.onlineManager._testTransport = (pkt) => pkts14.push(pkt);
+
+    // E3: XSS payload escaped in rooms list, online players, and room slot card
+    window.onlineManager.clientId = 999;
+    window.onlineManager.rooms = [{
+      code: 'X1<',
+      roomName: '<img src=x onerror=alert(1)>',
+      mode: 'pvp',
+      status: 'waiting',
+      playerCount: 1,
+      hostName: '<script>evil()</script>'
+    }];
+    window.onlineManager._lastRoomsRenderSig = '';
+    window.onlineManager.renderRoomsList();
+    // Wait: mockElements['online-rooms-list'] has child .innerHTML strings pushed to children[]
+    const rListHtml = document.getElementById('online-rooms-list').children.map((c) => c.innerHTML).join('');
+    assert.ok(!rListHtml.includes('<img') && rListHtml.includes('&lt;img'), 'renderRoomsList escapes XSS payloads cleanly');
+    assert.ok(!rListHtml.includes('<script>') && rListHtml.includes('&lt;script&gt;'), 'renderRoomsList escapes hostName XSS payloads');
+
+    // D1 + D5: Quick Match schedules auto-start & joining new room clears chat log
+    const chatLogEl = document.getElementById('online-chat-log');
+    chatLogEl.innerHTML = '<div>Old Room Chat</div>';
+    window.onlineManager.slot = 1;
+    window.onlineManager.setQuickMatchState('searching');
+    window.onlineManager.handleServerMessage({
+      type: 'room_joined',
+      slot: 1,
+      room: {
+        code: 'QM99',
+        mode: 'pvp',
+        quickMatched: true,
+        status: 'waiting',
+        players: [
+          { id: 1, slot: 1, name: 'P1', charId: 'nghi', ready: true },
+          { id: 2, slot: 2, name: 'P2', charId: 'bichlam', ready: true }
+        ]
+      }
+    });
+    assert.strictEqual(chatLogEl.innerHTML, '', 'Joining a new room clears stale #online-chat-log');
+    assert.ok(window.onlineManager._qmAutoStartTimer !== null, 'Quick Match match_ready schedules 2s auto-start timer');
+    window.onlineManager._stopQmAutoStart();
+
+    // B1 + B3 + B4 + B5 + A4 + A2: PvP ack, no tenacity 0.18s i-frame, dodge reject ack, out-of-order seq, watchdog, peer_left keepRoom
+    pkts14.length = 0;
+    window.onlineManager.startPvPMatch({
+      code: 'ACK1',
+      mode: 'pvp',
+      players: [
+        { id: 1, slot: 1, name: 'Host', charId: 'nghi', skinId: 'default', ready: true },
+        { id: 2, slot: 2, name: 'Guest', charId: 'bichlam', skinId: 'default', ready: true }
+      ]
+    });
+    window.onlineManager._introLockTimer = 0;
+    window.onlineManager._roundOver = false;
+
+    const pLocal = window.game.player;
+    const rpAck = window.onlineManager.remotePlayer;
+
+    // B1: Tenacity during attack does NOT grant 0.18s invincibleTimer in PvP
+    pLocal.invincibleTimer = 0;
+    pLocal.hp = 800;
+    pLocal.isAttacking = true;
+    pLocal.state = 'punch_straight';
+    pLocal.armorThreshold = 55;
+    pLocal.takeDamage(25, 4, false);
+    assert.strictEqual(pLocal.invincibleTimer, 0, 'Lỳ Đòn (Tenacity) trong PvP không tạo i-frame 0.18s nuốt đòn kế tiếp');
+
+    // Guarding raw pvp_hit applies 0.2x once accurately
+    const hpBeforeGuard = pLocal.hp;
+    pLocal.isAttacking = false;
+    pLocal.invincibleTimer = 0;
+    pLocal.setState('guard', 0.5);
+    pkts14.length = 0;
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit', hitSeq: 51, damage: 100, knockbackX: 2, isKnockdown: false });
+    assert.strictEqual(pLocal.hp, hpBeforeGuard - 20, 'Đỡ đòn trong PvP giảm đúng 80% sát thương 1 lần duy nhất');
+    const guardAck = pkts14.find((p) => p.type === 'pvp_hit_ack' && p.hitSeq === 51);
+    assert.ok(guardAck && guardAck.accepted === true && guardAck.appliedDmg === 20, 'Defender sends pvp_hit_ack confirming exact applied damage');
+
+    // Dodging incoming pvp_hit returns accepted:false reason:'dodge' + attacker snaps HP immediately
+    pLocal.setState('dodge', 0.35);
+    pLocal.invincibleTimer = 0.28;
+    pkts14.length = 0;
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit', hitSeq: 52, damage: 100, knockbackX: 2, isKnockdown: false });
+    const dodgeAck = pkts14.find((p) => p.type === 'pvp_hit_ack' && p.hitSeq === 52);
+    assert.ok(dodgeAck && dodgeAck.accepted === false && dodgeAck.reason === 'dodge', 'Dodge during pvp_hit replies pvp_hit_ack(accepted:false, reason:dodge)');
+
+    // Attacker receiving pvp_hit_ack snaps RemotePlayer HP & clears optimistic lock immediately; lethal ack emits match_result
+    rpAck.invincibleTimer = 0;
+    rpAck.state = 'idle';
+    rpAck.hp = 500;
+    rpAck.takeDamage(120, 4, false);
+    const pendingSeq = rpAck._optimisticTargetHitSeq;
+    assert.ok(rpAck._optimisticHpLockTimer > 0);
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit_ack', hitSeq: pendingSeq, accepted: false, newHp: 500, isDead: false, reason: 'dodge' });
+    assert.strictEqual(rpAck._optimisticHpLockTimer, 0, 'pvp_hit_ack clears optimistic HP lock immediately');
+    assert.strictEqual(rpAck.hp, 500, 'pvp_hit_ack(dodge) snaps RemotePlayer HP back to true HP without stale lock');
+
+    // Out-of-order state seq ignored
+    rpAck._lastStateSeq = 10;
+    rpAck.netTargetX = 700;
+    rpAck.applyRemoteState({ seq: 8, x: 200 });
+    assert.strictEqual(rpAck.netTargetX, 700, 'Out-of-order player_state (seq 8 < 10) is ignored');
+
+    // A2: Watchdog triggers >5s peer silence banner
+    window.onlineManager._lastPeerPacketAt = Date.now() - 6000;
+    window.onlineManager._peerLostWarned = false;
+    window.onlineManager.update(0.05);
+    assert.strictEqual(window.onlineManager._peerLostWarned, true, 'Watchdog warns when peer packet gap exceeds 5s');
+
+    // A4: peer_left during active match returns survivor to room WITHOUT deleting survivor room
+    pkts14.length = 0;
+    window.onlineManager.room = {
+      code: 'KEEP1',
+      mode: 'pvp',
+      status: 'playing',
+      players: [
+        { id: 1, slot: 1, name: 'Host', charId: 'nghi', ready: false },
+        { id: 2, slot: 2, name: 'Guest', charId: 'bichlam', ready: false }
+      ]
+    };
+    window.onlineManager.handleServerMessage({
+      type: 'peer_left',
+      room: { code: 'KEEP1', mode: 'pvp', status: 'waiting', players: [{ id: 1, slot: 1, name: 'Host', charId: 'nghi', ready: false }] }
+    });
+    assert.strictEqual(window.onlineManager.isActive, false);
+    assert.ok(window.onlineManager.room && window.onlineManager.room.code === 'KEEP1', 'peer_left in active match preserves survivor waiting room');
+    assert.ok(!pkts14.some((p) => p.type === 'leave_room'), 'peer_left survivor does NOT echo leave_room back to delete room');
+
+    // C2 + C3 + C4 + C1: Co-op Stage 10 victory does NOT unlock Guest Campaign Stage 10 / giangmanh, grants Gold/Diamonds, coop_hit_ack & projectiles work
+    pkts14.length = 0;
+    window.saveManager.resetProgress();
+    const goldBeforeCoop = window.saveManager.getGold();
+    const diamBeforeCoop = window.saveManager.getDiamonds();
+    window.onlineManager.slot = 1;
+    window.onlineManager.startCoopMatch({
+      code: 'COOP10',
+      mode: 'coop',
+      stageId: 10,
+      players: [
+        { slot: 1, name: 'Host', charId: 'nghi', skinId: 'default' },
+        { slot: 2, name: 'Guest', charId: 'bichlam', skinId: 'default' }
+      ]
+    });
+    window.game.triggerStageVictory();
+    assert.strictEqual(window.saveManager.data.completedStages.includes(10), false, 'Co-op victory MUST NOT overwrite solo Campaign stage completions');
+    assert.ok(window.saveManager.getGold() > goldBeforeCoop && window.saveManager.getDiamonds() > diamBeforeCoop, 'Co-op victory rewards bonus Gold & Diamonds');
+
+    // C3 & C4: Host coop_hit_ack + enemy projectile hitting Co-op RemotePlayer
+    window.onlineManager.startCoopMatch({
+      code: 'COOP1',
+      mode: 'coop',
+      stageId: 1,
+      players: [
+        { slot: 1, name: 'Host', charId: 'nghi', skinId: 'default' },
+        { slot: 2, name: 'Guest', charId: 'bichlam', skinId: 'default' }
+      ]
+    });
+    pkts14.length = 0;
+    const ce = window.game.createEnemyInstance('brawler', 600, 580, 'general');
+    ce._netId = 'e_ack_test';
+    ce.hp = 300;
+    window.game.enemies = [ce];
+    window.onlineManager.handleServerMessage({ type: 'coop_hit_enemy', hitSeq: 12, netId: 'e_ack_test', damage: 80, knockbackX: 2 });
+    assert.ok(pkts14.some((p) => p.type === 'coop_hit_ack' && p.hitSeq === 12 && p.accepted === true && p.hp === ce.hp), 'Host responds coop_hit_ack with authoritative enemy HP');
+
+    // C4: Enemy projectile hits RemotePlayer in Co-op -> emits pvp_hit(fromCoopProjectile: true)
+    pkts14.length = 0;
+    window.game.projectiles = [];
+    const rpCoopTarget = window.onlineManager.remotePlayer;
+    rpCoopTarget.isDead = false;
+    rpCoopTarget.invincibleTimer = 0;
+    rpCoopTarget.state = 'idle';
+    rpCoopTarget.x = 500;
+    rpCoopTarget.y = 580;
+    rpCoopTarget.z = 0;
+    window.game.spawnProjectile(470, 580, 1, 300, 45, ce, 'stone');
+    assert.ok(pkts14.some((p) => p.type === 'vfx_event' && p.kind === 'enemy_projectile'), 'Host broadcasts enemy projectile VFX to Co-op Guest');
+    window.game.updateProjectiles(0.1);
+    assert.ok(pkts14.some((p) => p.type === 'pvp_hit' && p.fromCoopProjectile === true && p.damage === 45), 'Enemy projectile collides with Co-op RemotePlayer and relays hit');
+
+    // C1: Co-op defeat signal transitions active teammate to unified GAME_OVER
+    window.onlineManager._roundOver = false;
+    window.game.state = 'PLAYING';
+    window.onlineManager.handleServerMessage({ type: 'coop_stage_ended', result: 'defeat' });
+    assert.strictEqual(window.game.state, 'GAME_OVER', 'Receiving coop_stage_ended(defeat) unifies team Game Over screen');
+    window.onlineManager.leaveMatch(false);
+  }
+  console.log('✓ TEST 14: Groups A-E Overhaul (Connection Recovery, PvP Hit ACK, Co-op Sync/Rewards, Lobby UX & Security) passed');
 
   console.log('\n================================================');
   console.log('ALL ONLINE MULTIPLAYER TESTS PASSED 100%!');

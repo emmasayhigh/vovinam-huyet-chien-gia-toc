@@ -714,7 +714,10 @@ class CombatSystem {
             return;
           }
         }
-        damage = Math.round(damage * 0.2); // Giảm 80% sát thương khi thủ
+        const rawDamageForRemote = damage;
+        if (!isPvpTarget) {
+          damage = Math.round(damage * 0.2); // Giảm 80% sát thương khi thủ
+        }
         const blocksLeft = defender.type === 'player' ? Math.max(0, Math.ceil((defender.guardGauge || 0) / 16)) : 0;
         const blockLabel = defender.type === 'player' ? ('ĐỠ ĐÒN [' + blocksLeft + '/6]') : 'BLOCKED';
         if (window.audioManager) window.audioManager.playBlock();
@@ -737,7 +740,7 @@ class CombatSystem {
           }
         }
         defender.pendingHit = { weight: 'light', isCrit: false, blocked: true };
-        defender.takeDamage(damage, 0, false);
+        defender.takeDamage(isPvpTarget ? rawDamageForRemote : damage, 0, false);
         return;
       }
     }

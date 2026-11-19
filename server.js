@@ -53,7 +53,18 @@ function encodeWsFrame(payload, opcode = 0x1) {
   return Buffer.concat([header, data]);
 }
 
-function decodeWsFrames(buffer) {
+const MAX_WS_PAYLOAD_BYTES = 65536;
+const MAX_WS_RECV_BUF_BYTES = 131072;
+
+function sanitizeDisplayText(raw, fallback = '', maxLen = 24) {
+  const cleaned = String(raw == null ? '' : raw)
+    .replace(/[\x00-\x1f\x7f<>]/g, '')
+    .trim()
+    .slice(0, maxLen);
+  return cleaned || fallback;
+}
+
+function decodeWsFrames(buffer, maxPayload = MAX_WS_PAYLOAD_BYTES) {
   const frames = [];
   let offset = 0;
 
@@ -75,6 +86,10 @@ function decodeWsFrames(buffer) {
       const lo = buffer.readUInt32BE(cursor + 4);
       payloadLen = hi * 4294967296 + lo;
       cursor += 8;
+    }
+
+    if (!Number.isFinite(payloadLen) || payloadLen < 0 || payloadLen > maxPayload) {
+      return { frames: [], remaining: Buffer.alloc(0), error: 'PAYLOAD_TOO_LARGE' };
     }
 
     const maskLen = isMasked ? 4 : 0;
@@ -232,7 +247,10 @@ function sendJson(res, status, obj) {
 function createOnlineServer(rootDir = __dirname, options = {}) {
   const rooms = new Map();
   const clients = new Map();
+  const disconnectedSessions = new Map();
   let nextClientId = 1;
+  let lastLobbyRoomsSig = '';
+  let lastPlayersSig = '';
   const accountsFile = options.accountsFile || path.join(rootDir, 'data', 'accounts.json');
   const auth = createAuthHelpers(accountsFile);
 
@@ -253,6 +271,8 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       stageId: room.stageId,
       isPrivate: !!room.isPrivate,
       hasPassword: Boolean(room.password),
+      isQuickMatch: !!room.isQuickMatch,
+      quickMatched: !!room.quickMatched,
       status: room.status,
       scores: { p1: room.scores.p1, p2: room.scores.p2 },
       players: room.players.map((p) => ({
@@ -302,18 +322,27 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
     return out;
   }
 
-  function broadcastOnlinePlayers() {
+  function broadcastOnlinePlayers(force = false) {
     const list = getOnlinePlayersList();
+    const json = JSON.stringify({ type: 'online_players', players: list });
+    if (!force && json === lastPlayersSig) return;
+    lastPlayersSig = json;
+    const frame = encodeWsFrame(json, 0x1);
     for (const c of clients.values()) {
-      sendWs(c, { type: 'online_players', players: list });
+      if (!c || !c.socket || c.socket.destroyed) continue;
+      try { c.socket.write(frame); } catch (_) {}
     }
   }
 
-  function broadcastRoomsToLobby() {
+  function broadcastRoomsToLobby(force = false) {
     const list = getPublicRoomsList();
+    const json = JSON.stringify({ type: 'rooms_list', rooms: list });
+    if (!force && json === lastLobbyRoomsSig) return;
+    lastLobbyRoomsSig = json;
+    const frame = encodeWsFrame(json, 0x1);
     for (const c of clients.values()) {
-      if (!c.roomCode) {
-        sendWs(c, { type: 'rooms_list', rooms: list });
+      if (!c.roomCode && c.socket && !c.socket.destroyed) {
+        try { c.socket.write(frame); } catch (_) {}
       }
     }
   }
@@ -343,7 +372,7 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
     return String(Math.floor(1000 + Math.random() * 9000));
   }
 
-  function leaveCurrentRoom(client) {
+  function leaveCurrentRoom(client, reason = 'left') {
     if (!client || !client.roomCode) return;
     const room = rooms.get(client.roomCode);
     const oldCode = client.roomCode;
@@ -358,12 +387,14 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       rooms.delete(oldCode);
     } else {
       room.status = 'waiting';
+      room.quickMatched = false;
       room.players.forEach((p, idx) => {
         p.slot = idx + 1;
         p.rematchReady = false;
       });
       broadcastRoom(room, {
         type: 'peer_left',
+        reason,
         room: serializeRoom(room)
       });
       broadcastRoom(room, {
@@ -382,20 +413,19 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
     const code = (customCode && !rooms.has(customCode)) ? customCode : generateRoomCode();
     const mode = msg.mode === 'coop' ? 'coop' : 'pvp';
     const stageId = Math.max(1, Math.min(20, Number(msg.stageId) || 1));
+    const isQM = !!msg.fromQuickMatch;
 
-    client.name = (msg.name || client.name || 'Võ Sĩ 1').toString().slice(0, 24);
-    client.charId = (msg.charId || client.charId || 'nghi').toString();
-    client.skinId = (msg.skinId || client.skinId || 'default').toString();
-    client.allyId = (msg.allyId || client.allyId || 'auto').toString();
+    client.name = sanitizeDisplayText(msg.name, client.name || 'Võ Sĩ 1', 24);
+    client.charId = sanitizeDisplayText(msg.charId, client.charId || 'nghi', 24);
+    client.skinId = sanitizeDisplayText(msg.skinId, client.skinId || 'default', 24);
+    client.allyId = sanitizeDisplayText(msg.allyId, client.allyId || 'auto', 24);
     client.roomCode = code;
     client.slot = 1;
-    client.ready = true;
-    client.isSearching = !!msg.fromQuickMatch;
+    client.ready = isQM;
+    client.isSearching = isQM;
     client.rematchReady = false;
 
-    const cleanRoomName = typeof msg.roomName === 'string' && msg.roomName.trim()
-      ? msg.roomName.trim().slice(0, 32)
-      : `Võ Đài của ${client.name}`;
+    const cleanRoomName = sanitizeDisplayText(msg.roomName, `Võ Đài của ${client.name}`, 32);
     const isPrivate = !!msg.isPrivate;
     const password = (isPrivate && typeof msg.password === 'string') ? msg.password.trim().slice(0, 12) : '';
 
@@ -406,6 +436,8 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       stageId,
       isPrivate,
       password,
+      isQuickMatch: isQM,
+      quickMatched: false,
       status: 'waiting',
       scores: { p1: 0, p2: 0 },
       players: [client]
@@ -419,16 +451,21 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
 
   function joinRoomForClient(client, room, msg = {}) {
     leaveCurrentRoom(client);
-    client.name = (msg.name || client.name || 'Võ Sĩ 2').toString().slice(0, 24);
-    client.charId = (msg.charId || client.charId || 'bichlam').toString();
-    client.skinId = (msg.skinId || client.skinId || 'default').toString();
-    client.allyId = (msg.allyId || client.allyId || 'auto').toString();
+    const viaQM = !!msg.fromQuickMatch || !!room.isQuickMatch;
+    client.name = sanitizeDisplayText(msg.name, client.name || 'Võ Sĩ 2', 24);
+    client.charId = sanitizeDisplayText(msg.charId, client.charId || 'bichlam', 24);
+    client.skinId = sanitizeDisplayText(msg.skinId, client.skinId || 'default', 24);
+    client.allyId = sanitizeDisplayText(msg.allyId, client.allyId || 'auto', 24);
     client.roomCode = room.code;
     client.slot = 2;
-    client.ready = true;
+    client.ready = viaQM;
     client.isSearching = false;
     client.rematchReady = false;
-    room.players.forEach((p) => { p.isSearching = false; });
+    room.players.forEach((p) => {
+      p.isSearching = false;
+      if (viaQM) p.ready = true;
+    });
+    if (viaQM) room.quickMatched = true;
     room.players.push(client);
 
     const payload = serializeRoom(room);
@@ -450,17 +487,38 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
 
     switch (msg.type) {
       case 'hello': {
-        if (msg.name) client.name = String(msg.name).slice(0, 24);
-        if (msg.charId) client.charId = String(msg.charId);
-        if (msg.skinId) client.skinId = String(msg.skinId);
-        if (msg.allyId) client.allyId = String(msg.allyId);
+        if (msg.name) client.name = sanitizeDisplayText(msg.name, client.name, 24);
+        if (msg.charId) client.charId = sanitizeDisplayText(msg.charId, client.charId, 24);
+        if (msg.skinId) client.skinId = sanitizeDisplayText(msg.skinId, client.skinId, 24);
+        if (msg.allyId) client.allyId = sanitizeDisplayText(msg.allyId, client.allyId, 24);
         sendWs(client, {
           type: 'welcome',
           clientId: client.id,
+          sessionToken: client.sessionToken,
           rooms: getPublicRoomsList(),
           players: getOnlinePlayersList()
         });
         broadcastOnlinePlayers();
+        break;
+      }
+
+      case 'resume_session': {
+        const token = typeof msg.sessionToken === 'string' ? msg.sessionToken.trim() : '';
+        const prev = token ? disconnectedSessions.get(token) : null;
+        if (token) disconnectedSessions.delete(token);
+        if (prev && prev.expiresAt > Date.now() && prev.roomCode) {
+          const room = rooms.get(prev.roomCode);
+          if (room && room.players.length > 0 && room.players.length < 2) {
+            client.name = prev.name || client.name;
+            client.charId = prev.charId || client.charId;
+            client.skinId = prev.skinId || client.skinId;
+            client.allyId = prev.allyId || client.allyId;
+            joinRoomForClient(client, room, { fromQuickMatch: !!room.isQuickMatch });
+            sendWs(client, { type: 'session_resumed', room: serializeRoom(room), slot: client.slot });
+            break;
+          }
+        }
+        sendWs(client, { type: 'session_expired', roomCode: msg.roomCode || null });
         break;
       }
 
@@ -520,7 +578,7 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
           }
         }
         if (found) {
-          joinRoomForClient(client, found, msg);
+          joinRoomForClient(client, found, { ...msg, fromQuickMatch: true });
         } else {
           createRoomForClient(client, { ...msg, fromQuickMatch: true, isPrivate: false });
         }
@@ -528,13 +586,19 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       }
 
       case 'cancel_quick_match': {
-        client.isSearching = false;
         if (client.roomCode) {
           const r = rooms.get(client.roomCode);
+          if (r && r.players.length >= 2) {
+            client.isSearching = false;
+            sendWs(client, { type: 'room_joined', slot: client.slot, room: serializeRoom(r), cancelRejected: true });
+            broadcastOnlinePlayers();
+            break;
+          }
           if (r && r.players.length <= 1) {
             leaveCurrentRoom(client);
           }
         }
+        client.isSearching = false;
         sendWs(client, { type: 'search_cancelled' });
         broadcastOnlinePlayers();
         break;
@@ -542,10 +606,10 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
 
       case 'update_lobby': {
         const room = client.roomCode ? rooms.get(client.roomCode) : null;
-        if (msg.name) client.name = String(msg.name).slice(0, 24);
-        if (msg.charId) client.charId = String(msg.charId);
-        if (msg.skinId) client.skinId = String(msg.skinId);
-        if (msg.allyId) client.allyId = String(msg.allyId);
+        if (msg.name) client.name = sanitizeDisplayText(msg.name, client.name, 24);
+        if (msg.charId) client.charId = sanitizeDisplayText(msg.charId, client.charId, 24);
+        if (msg.skinId) client.skinId = sanitizeDisplayText(msg.skinId, client.skinId, 24);
+        if (msg.allyId) client.allyId = sanitizeDisplayText(msg.allyId, client.allyId, 24);
         if (typeof msg.ready === 'boolean') client.ready = msg.ready;
         if (!room) {
           broadcastOnlinePlayers();
@@ -554,7 +618,9 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
         if (client.slot === 1) {
           if (msg.mode === 'pvp' || msg.mode === 'coop') room.mode = msg.mode;
           if (msg.stageId) room.stageId = Math.max(1, Math.min(20, Number(msg.stageId) || 1));
-          if (typeof msg.roomName === 'string' && msg.roomName.trim()) room.roomName = msg.roomName.trim().slice(0, 32);
+          if (typeof msg.roomName === 'string' && msg.roomName.trim()) {
+            room.roomName = sanitizeDisplayText(msg.roomName, room.roomName, 32);
+          }
         }
         broadcastRoom(room, { type: 'room_updated', room: serializeRoom(room) });
         broadcastRoomsToLobby();
@@ -620,7 +686,8 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
 
       case 'leave_room': {
         client.isSearching = false;
-        leaveCurrentRoom(client);
+        leaveCurrentRoom(client, 'left');
+        sendWs(client, { type: 'rooms_list', rooms: getPublicRoomsList() });
         broadcastOnlinePlayers();
         break;
       }
@@ -681,12 +748,40 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
         break;
       }
 
-      case 'player_state':
-      case 'pvp_hit':
-      case 'coop_hit_enemy':
-      case 'coop_enemies_sync':
-      case 'vfx_event':
+      case 'pvp_hit': {
+        const room = client.roomCode ? rooms.get(client.roomCode) : null;
+        if (!room) return;
+        const now = Date.now();
+        if (!client._hitWindowStart || (now - client._hitWindowStart) > 1000) {
+          client._hitWindowStart = now;
+          client._hitWindowCount = 0;
+        }
+        client._hitWindowCount += 1;
+        if (client._hitWindowCount > 28) return;
+        msg.damage = Math.max(0, Math.min(600, Number(msg.damage) || 0));
+        msg.fromSlot = client.slot;
+        broadcastRoom(room, msg, client.id);
+        break;
+      }
+
       case 'chat_emote': {
+        const room = client.roomCode ? rooms.get(client.roomCode) : null;
+        if (!room) return;
+        msg.senderName = sanitizeDisplayText(msg.senderName, client.name || 'Võ Sĩ', 24);
+        msg.text = sanitizeDisplayText(msg.text, '', 90);
+        if (!msg.text) return;
+        msg.fromSlot = client.slot;
+        broadcastRoom(room, msg, client.id);
+        break;
+      }
+
+      case 'player_state':
+      case 'pvp_hit_ack':
+      case 'coop_hit_enemy':
+      case 'coop_hit_ack':
+      case 'coop_enemies_sync':
+      case 'coop_player_downed':
+      case 'vfx_event': {
         const room = client.roomCode ? rooms.get(client.roomCode) : null;
         if (!room) return;
         msg.fromSlot = client.slot;
@@ -930,6 +1025,7 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
 
     const client = {
       id: nextClientId++,
+      sessionToken: crypto.randomBytes(12).toString('hex'),
       socket,
       name: 'Võ Sĩ',
       charId: 'nghi',
@@ -940,6 +1036,8 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       ready: false,
       isSearching: false,
       rematchReady: false,
+      lastPongAt: Date.now(),
+      missedPongs: 0,
       recvBuf: Buffer.alloc(0)
     };
     clients.set(client.id, client);
@@ -947,14 +1045,25 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
     sendWs(client, {
       type: 'welcome',
       clientId: client.id,
+      sessionToken: client.sessionToken,
       rooms: getPublicRoomsList(),
       players: getOnlinePlayersList()
     });
     broadcastOnlinePlayers();
 
     socket.on('data', (chunk) => {
+      client.lastPongAt = Date.now();
+      client.missedPongs = 0;
+      if (client.recvBuf.length + chunk.length > MAX_WS_RECV_BUF_BYTES) {
+        try { socket.destroy(); } catch (_) {}
+        return;
+      }
       client.recvBuf = Buffer.concat([client.recvBuf, chunk]);
-      const parsed = decodeWsFrames(client.recvBuf);
+      const parsed = decodeWsFrames(client.recvBuf, MAX_WS_PAYLOAD_BYTES);
+      if (parsed.error === 'PAYLOAD_TOO_LARGE') {
+        try { socket.destroy(); } catch (_) {}
+        return;
+      }
       client.recvBuf = parsed.remaining;
 
       const textQueue = [];
@@ -966,6 +1075,9 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
         }
         if (f.opcode === 0x9) {
           socket.write(encodeWsFrame(f.payload, 0xA));
+          continue;
+        }
+        if (f.opcode === 0xA) {
           continue;
         }
         if (f.opcode === 0x1 || f.opcode === 0x0) {
@@ -1000,7 +1112,17 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
     const cleanup = () => {
       if (!clients.has(client.id)) return;
       clients.delete(client.id);
-      leaveCurrentRoom(client);
+      if (client.roomCode && client.sessionToken) {
+        disconnectedSessions.set(client.sessionToken, {
+          roomCode: client.roomCode,
+          name: client.name,
+          charId: client.charId,
+          skinId: client.skinId,
+          allyId: client.allyId,
+          expiresAt: Date.now() + 25000
+        });
+      }
+      leaveCurrentRoom(client, 'disconnect');
       broadcastOnlinePlayers();
     };
 
@@ -1012,14 +1134,27 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
     socket.on('error', cleanup);
   });
 
-  // Giữ kết nối WebSocket qua proxy cloud (Render / Railway / Cloudflare) không bị ngắt timeout sau 60s
+  // Giữ kết nối WebSocket qua proxy cloud & dọn kết nối chết không phản hồi pong (chống phòng ma 2/2)
+  const hbIntervalMs = Number(options.heartbeatIntervalMs) || 25000;
+  const maxMissedPongs = Number(options.maxMissedPongs) || 2;
   const heartbeat = setInterval(() => {
-    for (const c of clients.values()) {
-      if (c && c.socket && !c.socket.destroyed) {
-        try { c.socket.write(encodeWsFrame(Buffer.alloc(0), 0x9)); } catch (_) {}
-      }
+    const now = Date.now();
+    for (const [tok, sess] of disconnectedSessions.entries()) {
+      if (!sess || sess.expiresAt <= now) disconnectedSessions.delete(tok);
     }
-  }, 25000);
+    for (const c of Array.from(clients.values())) {
+      if (!c || !c.socket || c.socket.destroyed) continue;
+      if ((c.missedPongs || 0) >= maxMissedPongs) {
+        clients.delete(c.id);
+        leaveCurrentRoom(c, 'timeout');
+        broadcastOnlinePlayers();
+        try { c.socket.destroy(); } catch (_) {}
+        continue;
+      }
+      c.missedPongs = (c.missedPongs || 0) + 1;
+      try { c.socket.write(encodeWsFrame(Buffer.alloc(0), 0x9)); } catch (_) {}
+    }
+  }, hbIntervalMs);
   if (typeof heartbeat.unref === 'function') heartbeat.unref();
   server.on('close', () => clearInterval(heartbeat));
 

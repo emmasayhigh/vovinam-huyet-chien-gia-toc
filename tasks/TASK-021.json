@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-021",
+  "title": "Multiplayer Networking, PvP Hit Authority, Co-op Sync, Lobby UX & Security Overhaul (Groups A-E)",
+  "author": "Antigravity Senior Game Networking & Systems Engineer",
+  "date": "2026-11-19",
+  "objective": "Khắc phục triệt để 5 nhóm lỗi Multiplayer & WebSocket (A: Kết nối & Tự động nối lại, B: Đồng bộ sát thương/HP PvP Ack/Reject, C: Co-op 2P thống nhất kết thúc & thưởng Vàng/Kim Cương thay vì mở khóa chiến dịch Guest, D: Flow Lobby/Quick Match tự vào trận sau 2s & mặc định Chưa sẵn sàng, E: Chống XSS & Hardening hiệu năng/WS).",
+  "requestedBehavior": "1. Kết nối & phục hồi (A1-A5): Auto-reconnect có backoff, resume_session giữ phòng/slot khi rớt mạng, connection watchdog cảnh báo >5s mất gói đối thủ, server theo dõi pong timeout dọn phòng ma, peer_left không văng khỏi phòng host. 2. PvP Hit Authority (B1-B6): Bỏ i-frame 0.18s Lỳ Đòn ở PvP, chống giảm sát thương kép Guard 0.2x2, bổ sung pvp_hit_ack(accepted/rejected) + retry 1 lần giải phóng optimistic lock tức thời, cả 2 phía chốt round sạch. 3. Co-op 2P (C1-C4): Đồng bộ kết quả thắng/thua Co-op, thưởng Vàng/Kim Cương cho Guest thay vì recordStageProgress mở khóa màn chiến dịch hộ, bổ sung coop_hit_ack và đồng bộ đạn địch cho Guest & RemotePlayer. 4. Lobby & UX (D1-D5): Tự động bắt đầu trận sau 2s khi Tìm Nhanh ghép xong, mặc định ready=false ở phòng thủ công, fix race cancel_quick_match khi vừa ghép cặp, dọn tham chiếu DOM/text lỗi cũ, xóa chat log khi đổi phòng. 5. Bảo mật & Hiệu năng (E1-E5): Chống XSS toàn bộ lobby/phòng/chat qua escapeHtml, bẩn-kiểm tra DOM renderRoomsList/renderOnlinePlayers chống flicker, giới hạn frame/buffer WS và validate/rate-limit pvp_hit.",
+  "allowedFiles": [
+    "server.js",
+    "index.html",
+    "js/core/game.js",
+    "js/combat/combat.js",
+    "js/entities/player/playerDamage.js",
+    "js/core/gameFlow.js",
+    "js/core/gameWave.js",
+    "tests/test_online_multiplayer.js",
+    "tasks/TASK-021.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-ONL-001",
+    "FEAT-CMB-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "OnlineManager",
+    "RemotePlayer",
+    "CombatSystem",
+    "PlayerDamage",
+    "GameFlow",
+    "GameWave"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 175,
+    "authorizedRemovals": [
+      "Dead UI references in js/core/game.js to removed elements (#online-server-config-bar, #btn-online-toggle-server, #btn-online-reconnect) and stale npm start / server button error hints",
+      "Tenacity 0.18s invincibleTimer grant during active PvP matches in js/entities/player/playerDamage.js"
+    ]
+  },
+  "requiredTests": [
+    "tests/test_online_multiplayer.js",
+    "tests/test_combat.js",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tests/test_stage7_victory_flow.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "Auto-reconnect + resume_session phục hồi kết nối và watchdog báo khi >5s không nhận gói đối thủ; server dọn dead client qua pong timeout và giữ phòng cho người ở lại khi peer_left",
+    "PvP sử dụng pvp_hit_ack(accepted/rejected) cập nhật HP chính xác ngay lập tức, Lỳ Đòn không tạo i-frame 0.18s nuốt đòn ở PvP, né [L] & phản đòn [U+J]/[U+K] hoạt động chuẩn",
+    "Co-op không ghi đè mở khóa chiến dịch của Guest mà thưởng Vàng/Kim Cương; coop_hit_ack và đạn địch đồng bộ cho cả 2 người chơi",
+    "Quick Match tự vào trận sau 2s khi đủ 2 người, phòng thủ công mặc định ready=false, cancel_quick_match không lệch state khi đã ghép cặp, xóa chat log khi đổi phòng",
+    "Toàn bộ HTML động trong lobby thoát ký tự XSS bằng _escapeHtml; server chặn frame WS quá cỡ và rate-limit/clamp pvp_hit; 27/27 bộ test regression và browser smoke test đạt PASS"
+  ]
+}
