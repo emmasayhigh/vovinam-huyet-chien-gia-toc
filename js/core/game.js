@@ -2970,7 +2970,28 @@ class OnlineManager {
           if (em && em.createSlashArc) em.createSlashArc(msg.x, msg.y, msg.dir || 1, msg.radius || 75, msg.color || '#38bdf8', msg.thickness || 4);
           break;
         case 'flame_coin':
-          if (em && em.createFlameCoinSlash) em.createFlameCoinSlash(msg.x, msg.y, msg.dir || 1, msg.scale || 1);
+          if (em && em.createFlameCoinSlash) {
+            em.createFlameCoinSlash(
+              msg.x,
+              msg.y,
+              msg.dir || 1,
+              Number.isFinite(msg.angle) ? msg.angle : 0,
+              Number.isFinite(msg.radius) ? msg.radius : 72,
+              msg.theme ? { theme: msg.theme } : null
+            );
+          }
+          break;
+        case 'dimensional_slash':
+          if (em && em.createDimensionalSlash) {
+            em.createDimensionalSlash(
+              msg.x,
+              msg.y,
+              Number.isFinite(msg.angle) ? msg.angle : -0.3,
+              Number.isFinite(msg.length) ? msg.length : 220,
+              msg.color || '#38bdf8',
+              msg.darkCore ? { darkCore: true, width: msg.width || 6.5 } : null
+            );
+          }
           break;
         case 'shock_ring':
           if (em && em.createShockRing) em.createShockRing(msg.x, msg.y, msg.color || '#facc15', msg.maxRadius || 95);
@@ -3047,7 +3068,25 @@ class OnlineManager {
       wrapEm('createTigerBite', (x, y, dir, scale) => ({ kind: 'tiger_bite', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
       wrapEm('createTaoistFiend', (fiend) => fiend ? ({ kind: 'taoist_fiend', id: fiend.id, x: Math.round(fiend.x), y: Math.round(fiend.y), facing: fiend.facing || 1, life: fiend.life || 4.5, maxLife: fiend.maxLife || 4.5, summonKind: fiend.summonKind || 'imp' }) : null);
       wrapEm('createSlashArc', (x, y, dir, radius, color, thickness) => ({ kind: 'slash_arc', x: Math.round(x), y: Math.round(y), dir: dir || 1, radius, color, thickness }));
-      wrapEm('createFlameCoinSlash', (x, y, dir, scale) => ({ kind: 'flame_coin', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
+      wrapEm('createFlameCoinSlash', (x, y, dir, angle, radius, opts) => ({
+        kind: 'flame_coin',
+        x: Math.round(x),
+        y: Math.round(y),
+        dir: dir || 1,
+        angle: Number.isFinite(angle) ? +angle.toFixed(2) : 0,
+        radius: Math.round(radius || 72),
+        theme: (typeof opts === 'string' ? opts : (opts && opts.theme)) || 'flame'
+      }));
+      wrapEm('createDimensionalSlash', (x, y, angle, length, color, opts) => ({
+        kind: 'dimensional_slash',
+        x: Math.round(x),
+        y: Math.round(y),
+        angle: Number.isFinite(angle) ? +angle.toFixed(2) : -0.3,
+        length: Math.round(length || 220),
+        color: color || '#38bdf8',
+        darkCore: !!(opts && opts.darkCore),
+        width: (opts && opts.width) || 5
+      }));
       wrapEm('createShockRing', (x, y, color, maxRadius) => ({ kind: 'shock_ring', x: Math.round(x), y: Math.round(y), color, maxRadius }));
       wrapEm('createGroundSlam', (x, y, radius) => ({ kind: 'ground_slam', x: Math.round(x), y: Math.round(y), radius }));
       wrapEm('createDragonUppercut', (x, y, dir) => ({ kind: 'dragon_uppercut', x: Math.round(x), y: Math.round(y), dir: dir || 1 }));

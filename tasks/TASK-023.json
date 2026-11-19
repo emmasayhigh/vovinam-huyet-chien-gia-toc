@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-023",
+  "title": "Upgrade Thien Khanh Than Trung Skin: Obsidian Black & Purple Theme with Void Ultimate Slashes",
+  "author": "Antigravity Senior VFX & Character Systems Engineer",
+  "date": "2026-11-19",
+  "objective": "Nâng cấp toàn diện skin Thần Trùng của Châu Ngọc Thiên Khánh: chuyển tông hiệu ứng & trang phục sang Hắc Ám Đen-Tím U Minh và nâng cấp Tuyệt Kỹ (I) chém hàng loạt đường kiếm Đen-Tím cắt ngang chiến trường.",
+  "requestedBehavior": "1. Skin thantrung chuyển bảng màu trang phục, Kiếm Xu, vệt chém, tàn ảnh, vòng bùa Quạ sang Đen Tím Hắc Ám. 2. Đòn thường/chiêu thức sử dụng hiệu ứng chém Đen-Tím thay vì lửa cam đỏ. 3. Tuyệt kỹ (I) tung bão các đường chém Đen Tím (dimensionalSlashes darkCore) chéo ngang mục tiêu và nổ ulti Đen-Tím. 4. Đồng bộ VFX qua Online PvP/Co-op.",
+  "allowedFiles": [
+    "js/data/skins.js",
+    "js/entities/characters/thienkhanh.js",
+    "js/core/effects.js",
+    "js/entities/animation/animationArchetypes.js",
+    "js/entities/animation/animationBody.js",
+    "js/entities/animation/animationWeapon.js",
+    "js/entities/animation/animationRenderBase.js",
+    "js/core/game.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_vovinam_skin_skills.js",
+    "tasks/TASK-023.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-VFX-001",
+    "FEAT-ONL-001"
+  ],
+  "dependencies": [
+    "SkinRegistry",
+    "CharacterRegistry",
+    "EffectManager",
+    "SkeletalRenderer",
+    "OnlineManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 150,
+    "authorizedRemovals": [
+      "Red/orange palette literals on thantrung runtime style & VFX hooks replaced with obsidian black & deep purple values"
+    ]
+  },
+  "requiredTests": [
+    "tests/test_vovinam_skin_skills.js",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tests/test_online_multiplayer.js",
+    "tests/validate_index_scripts.js"
+  ],
+  "acceptanceCriteria": [
+    "Skin thantrung sử dụng bảng màu Đen-Tím ở runtime style, Kiếm Xu, vệt chém (darkVoid), và vòng Quạ Đen",
+    "createFlameCoinSlash hỗ trợ theme 'void' vẽ nét chém Đen đậm viền Tím sáng rõ nét",
+    "Tuyệt kỹ (I) của Thiên Khánh (skin thantrung) sinh ra chuỗi đường chém Đen-Tím (dimensionalSlashes có darkCore:true)",
+    "Tất cả 27/27 bộ test regression và browser smoke test đạt PASS 0 lỗi console"
+  ]
+}

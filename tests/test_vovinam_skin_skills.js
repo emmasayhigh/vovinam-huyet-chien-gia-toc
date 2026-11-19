@@ -260,5 +260,48 @@ const visibleShopIds = window.SkinRegistry.getShopSkins().map((s) => s.id);
 check(visibleShopIds.includes('namcheo') && visibleShopIds.includes('hoxam'), 'Shop Trang Phục hiển thị Ông Năm Chèo & Hổ Xám');
 check(!visibleShopIds.includes('thantrung') && !visibleShopIds.includes('chodoinon'), 'Shop Trang Phục tạm thời không hiển thị Thần Trùng & Chó Đội Nón');
 
+// TEST 10: Nâng cấp skin Thần Trùng (Châu Ngọc Thiên Khánh) sang tông Đen-Tím Hắc Ám + Ulti chém bão đường Đen-Tím
+console.log('\n--- TEST 10: Nâng cấp Skin Thần Trùng (Đen-Tím Hắc Ám & Ulti Chém Đường Đen-Tím) ---');
+window.saveManager.unlockCharacter('thienkhanh');
+window.saveManager.setSkinEquipped('thienkhanh', 'thantrung');
+player.setCharacter('thienkhanh');
+check(player.equippedSkin === 'thantrung', 'Thiên Khánh trang bị skin thantrung trực tiếp từ danh sách chọn');
+const ttStyle = window.skeletalRenderer.getStyle(player);
+check(ttStyle.coatColor === '#09090d' && ttStyle.coatTrim === '#a855f7' && ttStyle.aura === '#9333ea' && ttStyle.weaponVoid === true,
+      'Skin Thần Trùng dùng bảng màu Hắc Ám Đen-Tím (#09090d / #a855f7 / #9333ea)');
+const ttTrail = window.CharacterRegistry.getTrailProfile(player, ttStyle);
+check(ttTrail.darkVoid === true && ttTrail.primary === '#09090b' && ttTrail.secondary === '#9333ea',
+      'Vệt chém Thần Trùng dùng tông Đen-Tím (darkVoid=true)');
+
+window.effectManager.skillProps = [];
+window.effectManager.dimensionalSlashes = [];
+window.CharacterRegistry.emitSkillVFX(player, 'punch_straight', 0.25, 0.36, window.effectManager, []);
+check(window.effectManager.skillProps.some((sp) => sp.kind === 'flame_coin_slash' && sp.theme === 'void'),
+      'Đòn thường Thiên Khánh (Thần Trùng) sinh ra kiếm khí Đen-Tím (theme: void)');
+check(window.effectManager.dimensionalSlashes.some((ds) => ds.darkCore === true),
+      'Đòn đánh Thần Trùng kèm vết chém Đen-Tím sắc bén (darkCore=true)');
+
+window.effectManager.skillProps = [];
+window.effectManager.dimensionalSlashes = [];
+player.state = 'ultimate_precision';
+player._ultStep = 0;
+const ultCharDef = window.CharacterRegistry.get('thienkhanh');
+const dummyTarget = { id: 99, x: player.x + 120, y: 580, hp: 1000, isDead: false, takeDamage() {} };
+ultCharDef.ultimateRuntime.execute(player, null, 0.016, [dummyTarget], { p: 0.30, hitEnemy() {} });
+ultCharDef.ultimateRuntime.execute(player, null, 0.016, [dummyTarget], { p: 1.0, hitEnemy() {} });
+check(window.effectManager.dimensionalSlashes.length >= 8 && window.effectManager.dimensionalSlashes.every((ds) => ds.darkCore === true),
+      `Ulti Thần Trùng chém hàng loạt đường Đen-Tím cắt ngang màn hình (${window.effectManager.dimensionalSlashes.length} đường trảm)`);
+
+let ttRenderOk = true;
+try {
+  window.skeletalRenderer.render(dummyCtx, player, { x: 0, y: 0 });
+  window.effectManager.renderWorld(dummyCtx, { x: 0, y: 0 });
+} catch (err) {
+  ttRenderOk = false;
+  console.error('Render thantrung void error:', err);
+}
+check(ttRenderOk, 'Render Thiên Khánh Thần Trùng + Hiệu ứng chém Đen-Tím hoàn hảo không lỗi');
+window.saveManager.setSkinEquipped('thienkhanh', 'default');
+
 console.log(`\n🎉 TẤT CẢ ${passed} BÀI TEST VOVINAM COSMETIC & ÔNG NĂM CHÈO ĐỀU THÀNH CÔNG 100%!\n`);
 process.exit(0);

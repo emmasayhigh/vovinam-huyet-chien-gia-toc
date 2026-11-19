@@ -759,26 +759,27 @@ class SkeletalRendererWeapon extends window.SkeletalRendererRenderBase {
         this.capsule(ctx, a, swordTip, 4.2, 1.6, st._solid);
         return;
       }
-      // Chuôi đồng + dây đỏ tà đạo
-      this.capsule(ctx, a, swordBase, 4.2, 4.0, '#1c1917');
-      ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.8;
+      const isVoidSword = !!st.weaponVoid;
+      // Chuôi kiếm + dây tà đạo
+      this.capsule(ctx, a, swordBase, 4.2, 4.0, isVoidSword ? '#09090d' : '#1c1917');
+      ctx.strokeStyle = isVoidSword ? '#9333ea' : '#dc2626'; ctx.lineWidth = 1.8;
       ctx.beginPath();
       ctx.moveTo(a[0], a[1]);
       ctx.quadraticCurveTo(a[0] - dir[0] * 6 + 2, a[1] - dir[1] * 6 + 5, a[0] - dir[0] * 10, a[1] - dir[1] * 10 + 9);
       ctx.stroke();
 
-      // Hộ thủ đồng cổ chạm cánh
-      ctx.fillStyle = '#ca8a04';
+      // Hộ thủ chạm cánh
+      ctx.fillStyle = isVoidSword ? '#3b0764' : '#ca8a04';
       ctx.beginPath();
       ctx.moveTo(swordBase[0] - perp[0] * 6.8, swordBase[1] - perp[1] * 6.8);
       ctx.lineTo(swordBase[0] + dir[0] * 3.0, swordBase[1] + dir[1] * 3.0);
       ctx.lineTo(swordBase[0] + perp[0] * 6.8, swordBase[1] + perp[1] * 6.8);
       ctx.lineTo(swordBase[0] - dir[0] * 1.4, swordBase[1] - dir[1] * 1.4);
       ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = '#451a03'; ctx.lineWidth = 1.0; ctx.stroke();
+      ctx.strokeStyle = isVoidSword ? '#a855f7' : '#451a03'; ctx.lineWidth = 1.0; ctx.stroke();
 
-      // Dây sống đỏ xuyên chuỗi 7 đồng xu cổ
-      ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 2.4;
+      // Dây sống xuyên chuỗi 7 đồng xu cổ
+      ctx.strokeStyle = isVoidSword ? '#9333ea' : '#dc2626'; ctx.lineWidth = 2.4;
       ctx.beginPath(); ctx.moveTo(swordBase[0], swordBase[1]); ctx.lineTo(swordTip[0], swordTip[1]); ctx.stroke();
 
       const coinCount = 7;
@@ -787,19 +788,33 @@ class SkeletalRendererWeapon extends window.SkeletalRendererRenderBase {
         const cx = swordBase[0] + (swordTip[0] - swordBase[0]) * t;
         const cy = swordBase[1] + (swordTip[1] - swordBase[1]) * t;
         const r = 3.5 - i * 0.16;
-        ctx.fillStyle = '#eab308';
+        ctx.fillStyle = isVoidSword ? '#1e1b2e' : '#eab308';
         ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#78350f'; ctx.lineWidth = 0.85; ctx.stroke();
-        ctx.fillStyle = '#451a03';
+        ctx.strokeStyle = isVoidSword ? '#c084fc' : '#78350f'; ctx.lineWidth = 0.85; ctx.stroke();
+        ctx.fillStyle = isVoidSword ? '#9333ea' : '#451a03';
         ctx.fillRect(cx - r * 0.34, cy - r * 0.34, r * 0.68, r * 0.68);
       }
 
-      // Quầng lửa đỏ cam xoắn quanh Kiếm Xu
+      // Quầng kiếm khí xoắn quanh Kiếm Xu (Đen-Tím Hắc Ám hoặc Hỏa Diễm Đỏ Cam)
       ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.strokeStyle = 'rgba(249, 115, 22, 0.72)';
-      ctx.lineWidth = 2.6;
       const tPulse = Math.sin(performance.now() * 0.015) * 4.2;
+      if (isVoidSword) {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = 'rgba(9, 9, 13, 0.85)';
+        ctx.lineWidth = 3.4;
+        ctx.beginPath();
+        ctx.moveTo(swordBase[0], swordBase[1]);
+        ctx.quadraticCurveTo(
+          (swordBase[0] + swordTip[0]) * 0.5 + perp[0] * (8 + tPulse),
+          (swordBase[1] + swordTip[1]) * 0.5 + perp[1] * (8 + tPulse),
+          swordTip[0] + dir[0] * 4,
+          swordTip[1] + dir[1] * 4
+        );
+        ctx.stroke();
+      }
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = isVoidSword ? 'rgba(168, 85, 247, 0.82)' : 'rgba(249, 115, 22, 0.72)';
+      ctx.lineWidth = 2.6;
       ctx.beginPath();
       ctx.moveTo(swordBase[0], swordBase[1]);
       ctx.quadraticCurveTo(
@@ -809,7 +824,7 @@ class SkeletalRendererWeapon extends window.SkeletalRendererRenderBase {
         swordTip[1] + dir[1] * 4
       );
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.60)';
+      ctx.strokeStyle = isVoidSword ? 'rgba(126, 34, 206, 0.70)' : 'rgba(239, 68, 68, 0.60)';
       ctx.lineWidth = 1.9;
       ctx.beginPath();
       ctx.moveTo(swordBase[0], swordBase[1]);

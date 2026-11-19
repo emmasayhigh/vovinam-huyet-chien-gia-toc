@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-022",
-  "taskTitle": "Restore Than Trung & Cho Doi Non Skins to Selection Lists While Keeping Them Out of Shop",
-  "generatedAt": "2026-11-19T07:35:28.327Z",
+  "taskId": "TASK-023",
+  "taskTitle": "Upgrade Thien Khanh Than Trung Skin: Obsidian Black & Purple Theme with Void Ultimate Slashes",
+  "generatedAt": "2026-11-19T07:44:08.910Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 8,
+    "filesModifiedCount": 13,
     "filesDeletedCount": 0,
     "testsExecuted": 27,
     "testsPassed": 27,
@@ -13,25 +13,30 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-022.json"
+      "tasks/TASK-023.json"
     ],
     "filesModified": [
       "arness/reports/latest-test-run.json",
       "harness/reports/verification-report.json",
       "harness/reports/verification-report.md",
       "index.html",
-      "js/core/save.js",
+      "js/core/effects.js",
+      "js/core/game.js",
       "js/data/skins.js",
-      "tests/test_online_multiplayer.js",
-      "tests/test_skin_registry_and_cloud_auth.js"
+      "js/entities/animation/animationArchetypes.js",
+      "js/entities/animation/animationBody.js",
+      "js/entities/animation/animationRenderBase.js",
+      "js/entities/animation/animationWeapon.js",
+      "js/entities/characters/thienkhanh.js",
+      "tests/test_vovinam_skin_skills.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
       "FEAT-CHR-001",
-      "FEAT-UI-001",
-      "FEAT-SAV-001"
+      "FEAT-VFX-001",
+      "FEAT-ONL-001"
     ],
     "preserved": [
       "FEAT-CMB-001",

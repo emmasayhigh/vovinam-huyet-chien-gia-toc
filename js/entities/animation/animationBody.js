@@ -892,9 +892,12 @@ class SkeletalRendererBody extends _ParentRenderer {
       return;
     }
 
-    // 0B. Mũ Trùm Đỏ Thần Trùng Che Mặt Mắt Đỏ (Skin Chí Tôn Phẩm: Thiên Khánh)
+    // 0B. Mũ Trùm Hắc Ám Thần Trùng Che Mặt Mắt Phát Sáng (Skin Chí Tôn Phẩm: Thiên Khánh)
     if (st.thanTrungHood) {
-      ctx.fillStyle = this._c(st, '#991b1b');
+      const hoodCol = st.coatColor || '#09090d';
+      const trimCol = st.coatTrim || '#a855f7';
+      const eyeGlow = st.glowingEyes || '#a855f7';
+      ctx.fillStyle = this._c(st, hoodCol);
       ctx.beginPath();
       ctx.moveTo(-12.5, 10.5);
       ctx.quadraticCurveTo(-15.5, -4.5, -4.5, -16.5);
@@ -905,9 +908,9 @@ class SkeletalRendererBody extends _ParentRenderer {
       ctx.closePath();
       ctx.fill();
       if (!isSolid) {
-        ctx.strokeStyle = '#050508'; ctx.lineWidth = 1.3; ctx.stroke();
-        // Khe mũ tối đen che kín khuôn mặt + 2 con mắt đỏ rực kinh dị
-        ctx.fillStyle = '#040407';
+        ctx.strokeStyle = '#030206'; ctx.lineWidth = 1.3; ctx.stroke();
+        // Khe mũ tối đen che kín khuôn mặt + đôi mắt sáng tím u minh
+        ctx.fillStyle = '#020105';
         ctx.beginPath();
         ctx.moveTo(-4.0, -9.5);
         ctx.quadraticCurveTo(5.8, -11.5, 9.6, -2.5);
@@ -915,17 +918,17 @@ class SkeletalRendererBody extends _ParentRenderer {
         ctx.quadraticCurveTo(-3.2, 8.5, -5.5, 0.5);
         ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.15;
+        ctx.strokeStyle = trimCol; ctx.lineWidth = 1.3;
         ctx.beginPath();
         ctx.moveTo(-3.2, -15.5); ctx.quadraticCurveTo(6.5, -15.0, 10.6, -4.0);
         ctx.stroke();
-        // Đôi mắt đỏ lườm trong bóng tối
-        ctx.fillStyle = '#ef4444';
+        // Đôi mắt phát sáng trong bóng tối
+        ctx.fillStyle = eyeGlow;
         ctx.beginPath();
         ctx.moveTo(0.2, -2.2); ctx.lineTo(3.8, -0.6); ctx.lineTo(1.2, -0.2); ctx.closePath();
         ctx.moveTo(4.8, -2.0); ctx.lineTo(8.4, -0.8); ctx.lineTo(5.6, -0.2); ctx.closePath();
         ctx.fill();
-        ctx.fillStyle = '#fecaca';
+        ctx.fillStyle = '#f3e8ff';
         ctx.beginPath(); ctx.arc(2.4, -1.0, 0.7, 0, Math.PI * 2); ctx.arc(6.6, -1.1, 0.7, 0, Math.PI * 2); ctx.fill();
       }
       return;

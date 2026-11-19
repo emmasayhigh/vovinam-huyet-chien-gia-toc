@@ -69,7 +69,9 @@ class SkeletalRendererArchetypes extends window.SkeletalRendererWeapon {
       const cBotL = P(H, -28.0 + wind * 1.15, -39.0);
       const cBotM = P(H, -9.0 + wind * 0.85, -36.5);
       const cBotR = P(H, 11.5 + wind * 0.55, -38.0);
-      ctx.fillStyle = isSolid ? st._solid : this._materialFill(ctx, st, 'fabric', shL[0], shL[1], cBotL[0], cBotL[1], '#991b1b', false);
+      const cloakBase = st.coatColor || '#09090d';
+      const trimCol = st.coatTrim || '#a855f7';
+      ctx.fillStyle = isSolid ? st._solid : this._materialFill(ctx, st, 'fabric', shL[0], shL[1], cBotL[0], cBotL[1], cloakBase, false);
       ctx.beginPath();
       ctx.moveTo(shL[0], shL[1]);
       ctx.lineTo(shR[0], shR[1]);
@@ -79,8 +81,8 @@ class SkeletalRendererArchetypes extends window.SkeletalRendererWeapon {
       ctx.closePath();
       ctx.fill();
       if (!isSolid) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.lineWidth = 1.25; ctx.stroke();
-        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.1;
+        ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = 1.25; ctx.stroke();
+        ctx.strokeStyle = trimCol; ctx.lineWidth = 1.35;
         ctx.beginPath();
         ctx.moveTo(cBotL[0] + 2, cBotL[1] - 1);
         ctx.quadraticCurveTo(cBotM[0], cBotM[1] + 4.0, cBotR[0] - 2, cBotR[1] - 1);

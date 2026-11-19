@@ -751,13 +751,29 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
 
     if (e._trail.length < 2 && e._trail2.length < 2) return;
     ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
     const auraCol = prof.primary || st.aura || '#00f0ff';
     const coreCol = prof.core || '#ffffff';
     const baseW = prof.width || 11;
+
+    if (prof.darkVoid) {
+      ctx.globalCompositeOperation = 'source-over';
+      this._drawRibbonPoints(ctx, e._trail, camera, '#05030a', '#4c1d95', baseW + 3);
+      if (e._trail2.length >= 2) {
+        this._drawRibbonPoints(ctx, e._trail2, camera, '#09090d', '#6b21a8', Math.max(8, baseW * 0.85));
+      }
+      ctx.globalCompositeOperation = 'lighter';
+      this._drawRibbonPoints(ctx, e._trail, camera, prof.secondary || '#9333ea', coreCol, Math.max(5, baseW * 0.66));
+      if (e._trail2.length >= 2) {
+        this._drawRibbonPoints(ctx, e._trail2, camera, '#a855f7', coreCol, Math.max(4, baseW * 0.52));
+      }
+      ctx.restore();
+      return;
+    }
+
+    ctx.globalCompositeOperation = 'lighter';
     this._drawRibbonPoints(ctx, e._trail, camera, auraCol, coreCol, baseW);
     if (e._trail2.length >= 2) {
       this._drawRibbonPoints(ctx, e._trail2, camera, prof.secondary || auraCol, coreCol, Math.max(7, baseW * 0.78));

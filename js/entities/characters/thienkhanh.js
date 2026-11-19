@@ -59,7 +59,7 @@
     const fx = window.effectManager;
     if (fx) {
       if (typeof fx.createTaoistFiend === 'function') fx.createTaoistFiend(fiend);
-      if (typeof fx.createShockRing === 'function') fx.createShockRing(fiend.x, fiend.y, '#dc2626');
+      if (typeof fx.createShockRing === 'function') fx.createShockRing(fiend.x, fiend.y, isCrow ? '#9333ea' : '#dc2626');
       if (typeof fx.createHitSparks === 'function') fx.createHitSparks(fiend.x, fiend.y - 45, 10, true);
       if (typeof fx.addFloatingText === 'function') {
         fx.addFloatingText(isCrow ? '🦅 TRIỆU HỒI QUẠ THẦN TRÙNG!' : '👹 TRIỆU HỒI HỎA ÂM BINH!', fiend.x, fiend.y - 120, 'crit');
@@ -191,7 +191,16 @@
             }
           }
           if (fx) {
-            if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(f.x + f.facing * 24, f.y - 44, f.facing, (Math.random() - 0.5) * 0.6, 52);
+            if (typeof fx.createFlameCoinSlash === 'function') {
+              fx.createFlameCoinSlash(
+                f.x + f.facing * 24,
+                f.y - 44,
+                f.facing,
+                (Math.random() - 0.5) * 0.6,
+                52,
+                f.summonKind === 'crow' ? { theme: 'void' } : null
+              );
+            }
             if (!targetEvading) {
               if (typeof fx.createHitSparks === 'function') fx.createHitSparks(tx, ty - 64, 7, true);
               if (typeof fx.addFloatingText === 'function') {
@@ -475,25 +484,42 @@
         const cross = (t) => prevP < t && p >= t;
         const dir = e.facing || 1;
         const gx = e.x || 0, gy = e.y || 580;
+        const isVoid = isThanTrungSkin(e);
+        const slashOpts = isVoid ? { theme: 'void' } : null;
         if (st === 'dodge' && cross(0.06)) {
-          if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(gx, gy - 50, dir, 0.2, 54);
+          if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(gx, gy - 50, dir, 0.2, 54, slashOpts);
           fx.createHitSparks(gx, gy - 45, 9, true);
         } else if ((st === 'punch_straight' || st === 'punch_hook' || st === 'elbow_strike') && cross(0.32)) {
           if (typeof fx.createFlameCoinSlash === 'function') {
-            fx.createFlameCoinSlash(gx + dir * 48, gy - 68, dir, st === 'punch_hook' ? -0.32 : 0.18, 72);
+            fx.createFlameCoinSlash(gx + dir * 48, gy - 68, dir, st === 'punch_hook' ? -0.32 : 0.18, 72, slashOpts);
+          }
+          if (isVoid && typeof fx.createDimensionalSlash === 'function') {
+            fx.createDimensionalSlash(gx + dir * 64, gy - 68, st === 'punch_hook' ? -0.45 : 0.22, 130, '#9333ea', { darkCore: true, width: 5.5 });
           }
         } else if ((st === 'uppercut' || st === 'kick_roundhouse' || st === 'wk') && cross(0.36)) {
           if (typeof fx.createFlameCoinSlash === 'function') {
-            fx.createFlameCoinSlash(gx + dir * 52, gy - 72, dir, -0.55, 86);
+            fx.createFlameCoinSlash(gx + dir * 52, gy - 72, dir, -0.55, 86, slashOpts);
+          }
+          if (isVoid && typeof fx.createDimensionalSlash === 'function') {
+            fx.createDimensionalSlash(gx + dir * 68, gy - 72, -0.62 * dir, 155, '#a855f7', { darkCore: true, width: 6.2 });
           }
           fx.createHitSparks(gx + dir * 54, gy - 70, 10, true);
         } else if ((st === 'counter_hand_strike' || st === 'counter_leg_strike' || st === 'boss_riposte') && cross(0.30)) {
-          if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(gx + dir * 56, gy - 66, dir, 0, 95);
-          fx.createShockRing(gx + dir * 40, gy, '#dc2626');
+          if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(gx + dir * 56, gy - 66, dir, 0, 95, slashOpts);
+          if (isVoid && typeof fx.createDimensionalSlash === 'function') {
+            fx.createDimensionalSlash(gx + dir * 62, gy - 66, -0.35, 175, '#9333ea', { darkCore: true, width: 6.8 });
+          }
+          fx.createShockRing(gx + dir * 40, gy, isVoid ? '#9333ea' : '#dc2626');
         } else if (st === 'ultimate_precision') {
           if (cross(0.15) || cross(0.45) || cross(0.75)) {
             if (typeof fx.createFlameCoinSlash === 'function') {
-              fx.createFlameCoinSlash(gx + dir * 56, gy - 72, dir, (p - 0.5) * 1.4, 118);
+              fx.createFlameCoinSlash(gx + dir * 56, gy - 72, dir, (p - 0.5) * 1.4, 118, slashOpts);
+            }
+            if (isVoid && typeof fx.createDimensionalSlash === 'function') {
+              const baseX = gx + dir * 75;
+              const baseY = gy - 72;
+              fx.createDimensionalSlash(baseX, baseY, (p - 0.5) * 1.8, 250, '#9333ea', { darkCore: true, width: 7.5 });
+              fx.createDimensionalSlash(baseX + dir * 24, baseY - 14, -(p - 0.5) * 1.6 - 0.65, 220, '#a855f7', { darkCore: true, width: 6.8 });
             }
           }
         }
@@ -538,7 +564,14 @@
           player.startAttack('punch_hook', 0.42, 260);
         }
         if (window.effectManager && typeof window.effectManager.createFlameCoinSlash === 'function') {
-          window.effectManager.createFlameCoinSlash(player.x + (player.facing || 1) * 44, (player.y || 580) - 64, player.facing || 1, 0.15, 78);
+          window.effectManager.createFlameCoinSlash(
+            player.x + (player.facing || 1) * 44,
+            (player.y || 580) - 64,
+            player.facing || 1,
+            0.15,
+            78,
+            isThanTrungSkin(player) ? { theme: 'void' } : null
+          );
         }
         return true;
       },
@@ -574,7 +607,14 @@
           attacker.speedMul = Math.min(attacker.speedMul || 1, 0.45);
         }
         if (window.effectManager && typeof window.effectManager.createFlameCoinSlash === 'function') {
-          window.effectManager.createFlameCoinSlash(defender.x + (defender.facing || 1) * 44, (defender.y || 580) - 65, defender.facing || 1, 0.25, 92);
+          window.effectManager.createFlameCoinSlash(
+            defender.x + (defender.facing || 1) * 44,
+            (defender.y || 580) - 65,
+            defender.facing || 1,
+            0.25,
+            92,
+            isThanTrungSkin(defender) ? { theme: 'void' } : null
+          );
         }
       },
       onAttackHit(attacker, defender) {
@@ -612,10 +652,11 @@
       },
       execute(player, st, dt, enemies, { p, hitEnemy }) {
         const fx = window.effectManager;
+        const isVoid = isThanTrungSkin(player);
         const step = Math.floor(p * 4);
         if (step > 0 && step <= 3 && step !== player._ultStep) {
           player._ultStep = step;
-          // Mỗi nhịp của Tuyệt Kỹ gọi 1 Hỏa Âm Binh lao ra chiến đấu!
+          // Mỗi nhịp của Tuyệt Kỹ gọi 1 Quạ Đen / Hỏa Âm Binh lao ra chiến đấu!
           spawnTaoistFiend(player, player.x + (step - 2) * 32, player.y, 7.0, 24);
 
           let target = null;
@@ -627,22 +668,52 @@
           }
           if (target) {
             if (fx) {
-              fx.addGhostTrail(player, 'rgba(220, 38, 38, 0.85)');
+              fx.addGhostTrail(player, isVoid ? 'rgba(147, 51, 234, 0.85)' : 'rgba(220, 38, 38, 0.85)');
               if (typeof fx.createFlameCoinSlash === 'function') {
-                fx.createFlameCoinSlash(target.x, (target.y || 580) - 60, player.facing || 1, (step % 2 ? 0.35 : -0.35), 110);
+                fx.createFlameCoinSlash(target.x, (target.y || 580) - 60, player.facing || 1, (step % 2 ? 0.35 : -0.35), 110, isVoid ? { theme: 'void' } : null);
               }
-              fx.createShockRing(target.x, target.y, '#f97316');
+              if (isVoid && typeof fx.createDimensionalSlash === 'function') {
+                const ty = (target.y || 580) - 62;
+                fx.createDimensionalSlash(target.x, ty, -0.52 + (step - 1) * 0.25, 250, '#9333ea', { darkCore: true, width: 7.5 });
+                fx.createDimensionalSlash(target.x + 12, ty - 14, 0.72 - (step - 1) * 0.2, 230, '#a855f7', { darkCore: true, width: 7.0 });
+                fx.createDimensionalSlash(target.x - 10, ty + 8, (step % 2 ? 1.38 : -1.32), 205, '#7c3aed', { darkCore: true, width: 6.4 });
+              }
+              fx.createShockRing(target.x, target.y, isVoid ? '#9333ea' : '#f97316');
             }
             const maxW = window.stageManager ? window.stageManager.stageWidth - 30 : 2570;
             player.x = Math.max(30, Math.min(maxW, target.x - (player.facing || 1) * 62));
             player.y = target.y;
             hitEnemy(target, isPvpOnlineMatch() ? 58 : 74, 10, false);
             igniteTarget(player, target, isPvpOnlineMatch() ? 8 : 13, 3.2);
+          } else if (isVoid && fx && typeof fx.createDimensionalSlash === 'function') {
+            const cx = player.x + (player.facing || 1) * 110;
+            const cy = (player.y || 580) - 68;
+            fx.createDimensionalSlash(cx, cy, (step % 2 ? 0.55 : -0.55), 255, '#9333ea', { darkCore: true, width: 7.4 });
+            fx.createDimensionalSlash(cx + (player.facing || 1) * 35, cy - 16, (step % 2 ? -0.9 : 0.9), 225, '#a855f7', { darkCore: true, width: 6.8 });
           }
         }
         if (p >= 1) {
           if (fx) {
-            fx.createUltimateBlast(player.x + (player.facing || 1) * 40, (player.y || 580) - 60, {
+            if (isVoid && typeof fx.createDimensionalSlash === 'function') {
+              const bx = player.x + (player.facing || 1) * 70;
+              const by = (player.y || 580) - 66;
+              const voidAngles = [-0.28, 0.42, -0.88, 1.05, 0.08, -1.42];
+              voidAngles.forEach((ang, idx) => {
+                fx.createDimensionalSlash(
+                  bx + (idx - 2.5) * 26,
+                  by + (idx % 2 === 0 ? -12 : 10),
+                  ang,
+                  275 + (idx % 3) * 28,
+                  idx % 2 === 0 ? '#9333ea' : '#a855f7',
+                  { darkCore: true, width: 8.2 }
+                );
+              });
+            }
+            fx.createUltimateBlast(player.x + (player.facing || 1) * 40, (player.y || 580) - 60, isVoid ? {
+              primary: '#09090b',
+              secondary: '#a855f7',
+              flash: '#7c3aed'
+            } : {
               primary: '#dc2626',
               secondary: '#facc15',
               flash: '#f97316'

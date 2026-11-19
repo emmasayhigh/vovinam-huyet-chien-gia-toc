@@ -589,10 +589,13 @@ class EffectManager {
     });
   }
 
-  // Châu Ngọc Thiên Khánh: Vòng kiếm khí Kiếm Xu Đồng Đốt & Quái Hỏa Âm Binh triệu hồi
-  createFlameCoinSlash(x, y, dir = 1, angle = 0, radius = 72) {
+  // Châu Ngọc Thiên Khánh: Vòng kiếm khí Kiếm Xu (Hỏa Diễm hoặc Hắc Ám Đen-Tím skin Thần Trùng)
+  createFlameCoinSlash(x, y, dir = 1, angle = 0, radius = 72, opts = null) {
+    const theme = (typeof opts === 'string') ? opts : ((opts && opts.theme) || 'flame');
+    const isVoid = theme === 'void';
     this.skillProps.push({
       kind: 'flame_coin_slash',
+      theme,
       x,
       y,
       dir: dir || 1,
@@ -601,8 +604,9 @@ class EffectManager {
       rot: angle,
       spin: (dir || 1) * 4.6,
       radius,
-      color: '#f97316',
-      accent: '#dc2626',
+      color: isVoid ? '#09090b' : '#f97316',
+      accent: isVoid ? '#9333ea' : '#dc2626',
+      coreColor: isVoid ? '#e9d5ff' : '#facc15',
       life: 0.34,
       maxLife: 0.34,
       alpha: 1.0
@@ -865,21 +869,25 @@ class EffectManager {
     }
   }
 
-  // Vết cắt không gian băng giá / trảm kích (Dimensional Slash)
-  createDimensionalSlash(x, y, angle = -0.3, length = 220, color = '#38bdf8') {
+  // Vết cắt không gian (băng giá hoặc đường trảm Đen-Tím Hắc Ám)
+  createDimensionalSlash(x, y, angle = -0.3, length = 220, color = '#38bdf8', opts = null) {
+    const darkCore = !!(opts && opts.darkCore);
+    const width = (opts && opts.width) || (darkCore ? 7.2 : 5);
     this.dimensionalSlashes.push({
       x: x,
       y: y,
       angle: angle,
       length: length,
       color: color,
+      darkCore,
+      coreColor: (opts && opts.coreColor) || (darkCore ? '#e9d5ff' : '#ffffff'),
       alpha: 1.0,
-      life: 0.35,
-      maxLife: 0.35,
-      width: 5
+      life: darkCore ? 0.42 : 0.35,
+      maxLife: darkCore ? 0.42 : 0.35,
+      width
     });
 
-    // Tia băng vỡ vụn
+    // Tia năng lượng văng theo vết cắt
     for (let i = 0; i < 18; i++) {
       const pAngle = angle + (Math.random() - 0.5) * 1.2 + (Math.random() > 0.5 ? Math.PI : 0);
       const spd = 3 + Math.random() * 8;
@@ -889,7 +897,9 @@ class EffectManager {
         vx: Math.cos(pAngle) * spd,
         vy: Math.sin(pAngle) * spd,
         size: 2.5 + Math.random() * 3.5,
-        color: Math.random() > 0.4 ? color : '#ffffff',
+        color: darkCore
+          ? (i % 3 === 0 ? '#09090b' : (i % 2 === 0 ? '#9333ea' : '#c084fc'))
+          : (Math.random() > 0.4 ? color : '#ffffff'),
         alpha: 1.0,
         life: 0.3 + Math.random() * 0.25,
         maxLife: 0.55,
@@ -1434,14 +1444,62 @@ class EffectManager {
       ctx.restore();
     }
 
-    // 6. Vết chém không gian băng giá (Dimensional Slashes)
+    // 6. Vết chém không gian (băng giá hoặc đường trảm Đen-Tím Hắc Ám)
     for (const ds of this.dimensionalSlashes) {
       ctx.save();
       ctx.globalAlpha = Math.max(0, Math.min(1, ds.alpha));
-      ctx.globalCompositeOperation = 'lighter';
       ctx.translate(ds.x, ds.y);
       ctx.rotate(ds.angle);
       const half = ds.length * 0.5;
+
+      if (ds.darkCore) {
+        // Vệt cắt Đen tuyền sắc lẹm dưới source-over để nổi bật rực rỡ bên cạnh viền Tím
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#05030a';
+        ctx.beginPath();
+        ctx.moveTo(-half, 0);
+        ctx.quadraticCurveTo(0, -(ds.width * 1.15), half, 0);
+        ctx.quadraticCurveTo(0, ds.width * 1.15, -half, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = '#09090d';
+        ctx.lineWidth = ds.width * 1.35;
+        ctx.beginPath();
+        ctx.moveTo(-half, 0);
+        ctx.lineTo(half, 0);
+        ctx.stroke();
+
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = ds.color || '#9333ea';
+        ctx.lineWidth = ds.width * 0.85;
+        ctx.beginPath();
+        ctx.moveTo(-half * 0.96, -ds.width * 0.42);
+        ctx.quadraticCurveTo(0, -ds.width * 0.92, half * 0.96, -ds.width * 0.25);
+        ctx.moveTo(-half * 0.96, ds.width * 0.42);
+        ctx.quadraticCurveTo(0, ds.width * 0.92, half * 0.96, ds.width * 0.25);
+        ctx.stroke();
+
+        ctx.strokeStyle = ds.coreColor || '#e9d5ff';
+        ctx.lineWidth = Math.max(1.5, ds.width * 0.25);
+        ctx.beginPath();
+        ctx.moveTo(-half * 0.72, 0);
+        ctx.lineTo(half * 0.72, 0);
+        ctx.stroke();
+
+        ctx.fillStyle = '#a855f7';
+        ctx.beginPath();
+        ctx.moveTo(0, -8);
+        ctx.lineTo(10, 0);
+        ctx.lineTo(0, 8);
+        ctx.lineTo(-10, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        continue;
+      }
+
+      ctx.globalCompositeOperation = 'lighter';
 
       // Hào quang cắt
       ctx.strokeStyle = ds.color;
@@ -1452,7 +1510,7 @@ class EffectManager {
       ctx.stroke();
 
       // Lõi trắng sắc bén
-      ctx.strokeStyle = '#ffffff';
+      ctx.strokeStyle = ds.coreColor || '#ffffff';
       ctx.lineWidth = ds.width * 0.4;
       ctx.stroke();
 
@@ -2129,16 +2187,25 @@ class EffectManager {
         ctx.arc(4, 0, sp.radius * 0.85, -0.9, 0.9);
         ctx.stroke();
       } else if (sp.kind === 'flame_coin_slash') {
-        ctx.globalCompositeOperation = 'lighter';
+        const isVoid = sp.theme === 'void';
         ctx.scale(sp.dir || 1, 1);
         ctx.rotate(sp.rot);
-        ctx.strokeStyle = sp.accent || '#dc2626';
-        ctx.lineWidth = 6.2;
+        if (isVoid) {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = sp.color || '#05030a';
+          ctx.lineWidth = 9.4;
+          ctx.beginPath();
+          ctx.arc(0, 0, sp.radius, -1.18, 1.18);
+          ctx.stroke();
+        }
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = sp.accent || (isVoid ? '#9333ea' : '#dc2626');
+        ctx.lineWidth = isVoid ? 5.0 : 6.2;
         ctx.beginPath();
         ctx.arc(0, 0, sp.radius, -1.15, 1.15);
         ctx.stroke();
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 2.4;
+        ctx.strokeStyle = sp.coreColor || (isVoid ? '#e9d5ff' : '#facc15');
+        ctx.lineWidth = isVoid ? 2.0 : 2.4;
         ctx.beginPath();
         ctx.arc(3, 0, sp.radius * 0.88, -0.95, 0.95);
         ctx.stroke();
@@ -2146,11 +2213,11 @@ class EffectManager {
           const ang = k * 0.42;
           const cx = Math.cos(ang) * sp.radius;
           const cy = Math.sin(ang) * sp.radius;
-          ctx.fillStyle = '#eab308';
+          ctx.fillStyle = isVoid ? '#a855f7' : '#eab308';
           ctx.beginPath();
           ctx.arc(cx, cy, 3.6, 0, Math.PI * 2);
           ctx.fill();
-          ctx.fillStyle = '#1c1917';
+          ctx.fillStyle = isVoid ? '#09090d' : '#1c1917';
           ctx.fillRect(cx - 1.1, cy - 1.1, 2.2, 2.2);
         }
       } else if (sp.kind === 'taoist_fiend' && sp.fiend) {
@@ -2164,17 +2231,23 @@ class EffectManager {
         const tNow = performance.now();
         const bob = Math.sin(tNow * (isCrow ? 0.022 : 0.015) + (f.seed || 0)) * (isCrow ? 6.5 : 3.5);
         ctx.scale(dir, 1);
-        // Vòng bùa chú đỏ-lam dưới chân giúp Quạ / Tiểu Quỷ nổi bật rõ trên mọi sàn đấu
+        // Vòng bùa chú đen-tím (Quạ Thần Trùng) hoặc đỏ (Hỏa Âm Binh) dưới chân
+        if (isCrow) {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = 'rgba(9, 9, 13, 0.85)';
+          ctx.lineWidth = 4.0;
+          ctx.beginPath(); ctx.ellipse(0, 2, 28, 8, 0, 0, Math.PI * 2); ctx.stroke();
+        }
         ctx.globalCompositeOperation = 'lighter';
-        ctx.strokeStyle = isCrow ? 'rgba(220, 38, 38, 0.92)' : 'rgba(248, 113, 113, 0.9)';
+        ctx.strokeStyle = isCrow ? 'rgba(147, 51, 234, 0.94)' : 'rgba(248, 113, 113, 0.9)';
         ctx.lineWidth = 2.6;
         ctx.beginPath(); ctx.ellipse(0, 2, isCrow ? 28 : 24, 8, 0, 0, Math.PI * 2); ctx.stroke();
         if (isCrow) {
-          ctx.strokeStyle = 'rgba(37, 99, 235, 0.65)';
+          ctx.strokeStyle = 'rgba(192, 132, 252, 0.72)';
           ctx.lineWidth = 1.6;
           ctx.beginPath(); ctx.ellipse(0, 2, 19, 5.5, 0, 0, Math.PI * 2); ctx.stroke();
         }
-        ctx.fillStyle = isCrow ? 'rgba(185, 28, 28, 0.20)' : 'rgba(220, 38, 38, 0.22)';
+        ctx.fillStyle = isCrow ? 'rgba(126, 34, 206, 0.24)' : 'rgba(220, 38, 38, 0.22)';
         ctx.beginPath(); ctx.ellipse(0, (isCrow ? -48 : -34) + bob, 30, 36, 0, 0, Math.PI * 2); ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
 
@@ -2190,21 +2263,25 @@ class EffectManager {
             ctx.rotate(lunging ? 0.26 : -0.05);
             ctx.drawImage(crowSprite, -size * 0.5, -size * 0.5, size, size);
             if (lunging) {
+              ctx.globalCompositeOperation = 'source-over';
+              ctx.strokeStyle = '#09090d';
+              ctx.lineWidth = 5.0;
+              ctx.beginPath(); ctx.arc(28, 4, 24, -0.8, 0.8); ctx.stroke();
               ctx.globalCompositeOperation = 'lighter';
-              ctx.strokeStyle = '#ef4444';
-              ctx.lineWidth = 3.2;
+              ctx.strokeStyle = '#a855f7';
+              ctx.lineWidth = 2.8;
               ctx.beginPath();
               ctx.arc(28, 4, 24, -0.8, 0.8);
               ctx.stroke();
             }
             ctx.restore();
           } else {
-            // Vector Quạ Đen Mắt Đỏ fallback (chế độ headless)
+            // Vector Quạ Đen Tử Thần fallback (chế độ headless)
             const flap = Math.sin(tNow * 0.028 + (f.seed || 0)) * 12;
             ctx.save();
             ctx.translate(lunging ? 10 : 0, -48 + bob);
             ctx.fillStyle = '#09090b';
-            ctx.strokeStyle = '#dc2626';
+            ctx.strokeStyle = '#9333ea';
             ctx.lineWidth = 1.6;
             ctx.beginPath();
             ctx.ellipse(0, 0, 18, 9, -0.15, 0, Math.PI * 2);
