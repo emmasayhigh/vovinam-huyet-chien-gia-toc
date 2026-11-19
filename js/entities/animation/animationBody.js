@@ -135,6 +135,47 @@ class SkeletalRendererBody extends _ParentRenderer {
           ctx.fillStyle = '#1e293b'; ctx.fillRect(-1.25, -0.25, 2.5, 0.55);
           ctx.restore();
         }
+        // Họa tiết vằn da Hổ Xám & Cổ lông hổ trên võ phục (Ngô Nhất Nghị — Hổ Xám Sơn Lâm)
+        if (st.tigerStripes) {
+          ctx.save();
+          path(); ctx.clip();
+          ctx.fillStyle = '#111827';
+          const stripeRows = [
+            [[-12.5, -5.0], [-4.2, -7.2], [-11.5, -9.0]],
+            [[-11.8, -13.5], [-3.8, -15.2], [-10.8, -17.5]],
+            [[-10.2, -22.0], [-3.2, -23.5], [-9.2, -25.8]],
+            [[13.0, -5.5], [4.5, -8.0], [11.8, -9.8]],
+            [[11.8, -14.0], [4.2, -16.0], [10.6, -18.2]],
+            [[10.0, -22.2], [3.5, -24.0], [9.0, -26.0]]
+          ];
+          for (const [a, b, cPt] of stripeRows) {
+            const pA = P(sh, a[0], a[1]), pB = P(sh, b[0], b[1]), pC = P(sh, cPt[0], cPt[1]);
+            ctx.beginPath();
+            ctx.moveTo(pA[0], pA[1]);
+            ctx.quadraticCurveTo(pB[0], pB[1], pC[0], pC[1]);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+        if (st.tigerFurCollar) {
+          ctx.fillStyle = '#e2e8f0';
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 1.05;
+          for (const side of [-1, 1]) {
+            const s0 = P(sh, side * 4.2, 2.5);
+            const s1 = P(sh, side * (shW + 2.5), 3.0);
+            const s2 = P(sh, side * (shW + 3.2), -5.0);
+            const s3 = P(sh, side * 6.8, -4.5);
+            ctx.beginPath();
+            ctx.moveTo(s0[0], s0[1]);
+            ctx.lineTo(s1[0], s1[1]);
+            ctx.lineTo(s2[0], s2[1]);
+            ctx.lineTo(s3[0], s3[1]);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+          }
+        }
       }
     } else if (arch === 'mafia_overcoat') {
       // Phó Văn Anh: Sơ mi đen cổ bẻ + Cà vạt lụa vàng có kẹp + Gile đỏ rượu vang thêu chỉ vàng cổ chữ V 5 cúc + Ve măng-tô khoác vai
@@ -1537,6 +1578,7 @@ class SkeletalRendererBody extends _ParentRenderer {
     const w = canvas.width, h = canvas.height;
     const isVovinam = (skinId === 'vovinam');
     const isNamCheo = (skinId === 'namcheo');
+    const isHoXam = (skinId === 'hoxam');
     const isThanTrung = (skinId === 'thantrung');
     const isChoDoiNon = (skinId === 'chodoinon');
     const styleType = charObj.styleType || 'player';
@@ -1565,6 +1607,10 @@ class SkeletalRendererBody extends _ParentRenderer {
       bg.addColorStop(0, '#083344');
       bg.addColorStop(0.55, '#0e7490');
       bg.addColorStop(1, '#051923');
+    } else if (isHoXam) {
+      bg.addColorStop(0, '#334155');
+      bg.addColorStop(0.55, '#1e293b');
+      bg.addColorStop(1, '#090d16');
     } else if (isThanTrung) {
       bg.addColorStop(0, '#450a0a');
       bg.addColorStop(0.55, '#1e3a8a');

@@ -123,9 +123,12 @@ class UIManager {
     
     const charKey = char.charId || char.characterId || (window.saveManager && window.saveManager.data && window.saveManager.data.selectedCharacter) || 'nghi';
     const pType = char.styleType || this.portraitType(charKey);
-    const equippedSkin = charKey !== 'nghi' && window.saveManager && typeof window.saveManager.getEquippedSkin === 'function'
-      ? window.saveManager.getEquippedSkin(charKey)
-      : (charKey !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(charKey, 'vovinam') ? 'vovinam' : 'default');
+    const rawEqSkin = (typeof char.equippedSkin === 'string' && char.equippedSkin)
+      ? char.equippedSkin
+      : (window.saveManager && typeof window.saveManager.getEquippedSkin === 'function'
+        ? window.saveManager.getEquippedSkin(charKey)
+        : (charKey !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(charKey, 'vovinam') ? 'vovinam' : 'default'));
+    const equippedSkin = (charKey === 'nghi' && rawEqSkin === 'vovinam') ? 'default' : (rawEqSkin || 'default');
     const isVovinam = equippedSkin === 'vovinam';
     
     if (window.skeletalRenderer && this.playerPortrait) {
@@ -180,9 +183,10 @@ class UIManager {
       if (this.playerPortrait) {
         const curChar = (window.saveManager && window.saveManager.data && window.saveManager.data.selectedCharacter) || 'nghi';
         const pType = this.portraitType(curChar);
-        const eqSkin = curChar !== 'nghi' && window.saveManager && typeof window.saveManager.getEquippedSkin === 'function'
+        const rawEq = window.saveManager && typeof window.saveManager.getEquippedSkin === 'function'
           ? window.saveManager.getEquippedSkin(curChar)
           : (curChar !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(curChar, 'vovinam') ? 'vovinam' : 'default');
+        const eqSkin = (curChar === 'nghi' && rawEq === 'vovinam') ? 'default' : (rawEq || 'default');
         window.skeletalRenderer.drawPortrait(this.playerPortrait, pType, false, eqSkin === 'vovinam', eqSkin);
       }
     }
@@ -650,7 +654,10 @@ class UIManager {
 
     // Avatar: chân dung vẽ canvas, nhân vật phản diện quay mặt về phía anh hùng
     if (window.skeletalRenderer) {
-      window.skeletalRenderer.drawPortrait(this.dialogueAvatar, this.portraitType(avatarType), avatarType !== 'nghi');
+      const dlgSkin = (avatarType === 'nghi' && window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
+        ? window.saveManager.getEquippedSkin('nghi')
+        : null;
+      window.skeletalRenderer.drawPortrait(this.dialogueAvatar, this.portraitType(avatarType), avatarType !== 'nghi', dlgSkin === 'vovinam', dlgSkin);
     }
 
     // Typewriter effect

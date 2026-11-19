@@ -304,9 +304,8 @@ class TrainingManagerOverlay extends window.TrainingManagerModes {
       const hero = uniqueChars.find(c => c.id === charId) || uniqueChars[0];
       const slot = (window.CHAR_SLOTS && window.CHAR_SLOTS.find(s => s.id === charId)) || null;
       const sm = window.saveManager;
-      const eqSkinId = (charId === 'nghi')
-        ? 'default'
-        : ((sm && typeof sm.getEquippedSkin === 'function') ? (sm.getEquippedSkin(charId) || 'default') : 'default');
+      const rawEq = (sm && typeof sm.getEquippedSkin === 'function') ? (sm.getEquippedSkin(charId) || 'default') : 'default';
+      const eqSkinId = (charId === 'nghi' && rawEq === 'vovinam') ? 'default' : rawEq;
       const skins = getTrainingSkins(charId, slot);
       const activeSkin = skins.find(s => s.id === eqSkinId) || skins[0];
 
@@ -358,9 +357,8 @@ class TrainingManagerOverlay extends window.TrainingManagerModes {
       if (!skinGrid) return;
       const slot = (window.CHAR_SLOTS && window.CHAR_SLOTS.find(s => s.id === charId)) || null;
       const sm = window.saveManager;
-      const eqSkinId = (charId === 'nghi')
-        ? 'default'
-        : ((sm && typeof sm.getEquippedSkin === 'function') ? (sm.getEquippedSkin(charId) || 'default') : 'default');
+      const rawEq = (sm && typeof sm.getEquippedSkin === 'function') ? (sm.getEquippedSkin(charId) || 'default') : 'default';
+      const eqSkinId = (charId === 'nghi' && rawEq === 'vovinam') ? 'default' : rawEq;
       const skins = getTrainingSkins(charId, slot);
       if (countBadge) countBadge.textContent = String(skins.length || 1);
 
@@ -388,7 +386,7 @@ class TrainingManagerOverlay extends window.TrainingManagerModes {
             <span class="cs-skin-status-pill">${isSelected ? '✔ ĐANG MẶC' : 'NHẤN ĐỂ THAY'}</span>
           </div>`;
         card.addEventListener('click', () => {
-          const targetSkin = (charId === 'nghi') ? 'default' : sk.id;
+          const targetSkin = (charId === 'nghi' && sk.id === 'vovinam') ? 'default' : sk.id;
           if (sm && typeof sm.setSkinEquipped === 'function') {
             sm.setSkinEquipped(charId, targetSkin);
           }
@@ -516,9 +514,8 @@ class TrainingManagerOverlay extends window.TrainingManagerModes {
       const hero = uniqueChars.find(c => c.id === charId) || uniqueChars[0];
       const slot = (window.CHAR_SLOTS && window.CHAR_SLOTS.find(s => s.id === charId)) || null;
       const sm = window.saveManager;
-      const eqSkinId = (charId === 'nghi')
-        ? 'default'
-        : ((sm && typeof sm.getEquippedSkin === 'function') ? (sm.getEquippedSkin(charId) || 'default') : 'default');
+      const rawEq = (sm && typeof sm.getEquippedSkin === 'function') ? (sm.getEquippedSkin(charId) || 'default') : 'default';
+      const eqSkinId = (charId === 'nghi' && rawEq === 'vovinam') ? 'default' : rawEq;
       const resolvedHeroImg = (window.SkinRegistry && typeof window.SkinRegistry.resolveImage === 'function')
         ? (window.SkinRegistry.resolveImage(slot || charId, eqSkinId) || hero.image)
         : hero.image;

@@ -722,7 +722,7 @@ class MenuManagerCharSelectDeployment extends window.MenuManagerCharSelectDemo {
 
   setDeploymentSkin(skinType) {
     const slot = window.CHAR_SLOTS.find(s => s.id === this.selectedChar) || window.CHAR_SLOTS[0];
-    if ((slot && slot.id === 'nghi') || (slot && slot.isLocked)) {
+    if ((slot && slot.id === 'nghi' && skinType === 'vovinam') || (slot && slot.isLocked)) {
       skinType = 'default';
     }
     if (window.saveManager && typeof window.saveManager.setSkinEquipped === 'function') {

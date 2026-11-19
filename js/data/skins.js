@@ -201,7 +201,7 @@
 
       if (slot.id === 'nghi') {
         const d = this.defaults.nghi;
-        return [
+        const nghiSkins = [
           {
             id: 'default',
             charId: 'nghi',
@@ -215,6 +215,15 @@
             toast: d.toast
           }
         ];
+        const extras = this.customByChar.nghi || [];
+        for (const ex of extras) {
+          if (ex && !ex.hidden) {
+            nghiSkins.push(Object.assign({}, ex, {
+              image: ex.image || slot[`${ex.id}Image`] || slot.image
+            }));
+          }
+        }
+        return nghiSkins;
       }
 
       const defMeta = this.defaults[slot.id] || {
@@ -254,9 +263,11 @@
 
       const extras = this.customByChar[slot.id] || [];
       for (const ex of extras) {
-        skins.push(Object.assign({}, ex, {
-          image: ex.image || slot[`${ex.id}Image`] || slot.image
-        }));
+        if (ex && !ex.hidden) {
+          skins.push(Object.assign({}, ex, {
+            image: ex.image || slot[`${ex.id}Image`] || slot.image
+          }));
+        }
       }
       return skins;
     }
@@ -283,7 +294,7 @@
         const slot = resolveSlot(charId);
         const list = this.customByChar[charId] || [];
         for (const sk of list) {
-          if (sk && sk.shopSkin) {
+          if (sk && sk.shopSkin && !sk.hidden) {
             out.push(Object.assign({}, sk, {
               charId,
               heroName: (slot && (slot.fullName || slot.slotName)) || charId.toUpperCase(),
@@ -418,7 +429,8 @@
     themeClass: SKIN_TIERS.chiton.themeClass,
     image: 'assets/images/characters/char_thienkhanh_thantrung.png',
     styleKey: 'thienkhanh_thantrung',
-    shopSkin: true,
+    shopSkin: false,
+    hidden: true,
     shopKey: 'skin_thienkhanh_thantrung',
     shopCurrency: 'diamond',
     shopPrice: 150,
@@ -507,7 +519,8 @@
     themeClass: SKIN_TIERS.chiton.themeClass,
     image: 'assets/images/characters/char_huavudai_chodoinon.png',
     styleKey: 'huavudai_chodoinon',
-    shopSkin: true,
+    shopSkin: false,
+    hidden: true,
     shopKey: 'skin_huavudai_chodoinon',
     shopCurrency: 'diamond',
     shopPrice: 150,
@@ -582,6 +595,89 @@
       accent: '#f8fafc',
       style: 'command',
       duration: 1.35
+    }
+  });
+
+  // =========================================================================
+  // TRANG PHỤC CHÍ TÔN PHẨM: HỔ XÁM SƠN LÂM (NGÔ NHẤT NGHỊ)
+  // =========================================================================
+  registry.register('nghi', {
+    id: 'hoxam',
+    name: 'Hổ Xám Sơn Lâm — Bạch Hổ Quyền',
+    shortName: 'Hổ Xám 🐯',
+    tier: SKIN_TIERS.chiton.tier,
+    tierKey: 'chiton',
+    badgeClass: SKIN_TIERS.chiton.badgeClass,
+    rarity: SKIN_TIERS.chiton.rarity,
+    themeClass: SKIN_TIERS.chiton.themeClass,
+    image: 'assets/images/characters/char_nghi_hoxam.png',
+    styleKey: 'nghi_hoxam',
+    shopSkin: true,
+    shopKey: 'skin_nghi_hoxam',
+    shopCurrency: 'diamond',
+    shopPrice: 150,
+    shopRibbon: '🔥 CHÍ TÔN PHẨM • NGÔ NHẤT NGHỊ',
+    shopRoleSub: 'TRANG PHỤC CHÍ TÔN PHẨM (ĐỎ) • HỔ XÁM VỒ MỒI & ĐẤM HỔ NGOẠM',
+    quote: '“Khoác da hổ xám, giữ trọn hình nhân — một quyền tung ra mãnh hổ gầm vang!”',
+    bio: 'Trang phục Chí Tôn Phẩm dành riêng cho Ngô Nhất Nghị: giữ nguyên dung mạo võ sĩ Việt Võ Đạo, khoác bộ võ phục da Hổ Xám vằn đen oai phong; mỗi cú đấm tung ra bóng Hổ Xám ngoạm mồi và Tuyệt Kỹ (I) lao vồ như mãnh hổ kèm linh thú Hổ Xám vồ phía sau!',
+    skillsGrid: [
+      { key: 'J / W+J / Shift+J', name: 'Quyền Cước Hổ Xám Ngoạm' },
+      { key: 'U+J / W+U', name: 'Mãnh Hổ Hộ Thân & Phản Trảo' },
+      { key: 'W+K', name: 'Song Phi Mãnh Hổ Vồ' },
+      { key: 'I', name: 'Tuyệt Kỹ: Mãnh Hổ Xuất Sơn Vồ' }
+    ],
+    passiveNote: {
+      icon: '🐯',
+      title: 'Thay Đổi Toàn Bộ Hiệu Ứng Hổ Xám:',
+      desc: 'Đấm thường & Đấm Móc tung ra Mõm Hổ Xám Ngoạm; Tuyệt Kỹ (I) biến thành dáng Vồ Như Hổ có Bóng Hổ Xám khổng lồ lao vồ phía sau!'
+    },
+    fx: ['🔥 Chí Tôn Phẩm (Đỏ)', '🐯 Võ Phục Da Hổ Xám', '🦷 Đấm Ra Hổ Ngoạm + Ulti Hổ Vồ'],
+    sub: 'Trang phục Chí Tôn Phẩm (Bậc Đỏ tối thượng) cho Ngô Nhất Nghị: khoác chiến phục họa tiết da Hổ Xám vằn đen (vẫn giữ hình người), đấm ra Hổ Xám ngoạm và Tuyệt Kỹ vồ như hổ có Hổ Xám vồ sau lưng!',
+    toast: '🐯 Đã trang bị: Hổ Xám Sơn Lâm — Ngô Nhất Nghị!'
+  });
+
+  registry.registerRuntimeStyle('nghi', 'hoxam', {
+    style: {
+      archetype: 'vovinam_master',
+      tigerPelt: true,
+      tigerFurCollar: true,
+      tigerStripes: true,
+      baggyPants: true,
+      bareVChest: true,
+      bareForearms: true,
+      patch: false,
+      nameTag: false,
+      thighDragon: false,
+      gi: '#9ca3af',
+      giD: '#4b5563',
+      giL: '#d1d5db',
+      pants: '#6b7280',
+      pantsD: '#374151',
+      belt: '#18181b',
+      beltD: '#09090b',
+      beltTrim: '#e5e7eb',
+      cuffTrim: '#1f2937',
+      legStripe: '#18181b',
+      shoes: 'kungfu',
+      shoeColor: '#18181b',
+      eyeColor: '#d97706',
+      aura: '#e2e8f0'
+    },
+    trailProfile: {
+      primary: '#cbd5e1',
+      secondary: '#18181b',
+      core: '#ffffff',
+      width: 15,
+      dual: true,
+      dodgeGhost: 'rgba(203, 213, 225, 0.56)'
+    },
+    cinematic: {
+      title: 'CHÍ TÔN PHẨM • HỔ XÁM SƠN LÂM',
+      ult: 'MÃNH HỔ XUẤT SƠN — BẠCH HỔ VỒ MỒI',
+      color: '#e2e8f0',
+      accent: '#f59e0b',
+      style: 'lightning',
+      duration: 1.4
     }
   });
 

@@ -229,7 +229,7 @@ class SaveManager {
 
     out.shopPurchases = this.cleanArray(raw.shopPurchases, 'string');
     out.shopPurchases.forEach((pId) => {
-      if (pId && !pId.startsWith('skin_') && !['namcheo', 'thantrung', 'chodoinon'].includes(pId) && !out.unlockedCharacters.includes(pId)) {
+      if (pId && !pId.startsWith('skin_') && !['namcheo', 'thantrung', 'chodoinon', 'hoxam'].includes(pId) && !out.unlockedCharacters.includes(pId)) {
         out.unlockedCharacters.push(pId);
       }
     });
@@ -585,9 +585,11 @@ class SaveManager {
   }
 
   getEquippedSkin(charId) {
-    if (!charId || charId === 'nghi') return 'default';
+    if (!charId) return 'default';
     if (!this.data || !this.data.equippedSkins) return 'default';
-    return this.data.equippedSkins[charId] || 'default';
+    const eq = this.data.equippedSkins[charId] || 'default';
+    if (charId === 'nghi' && eq === 'vovinam') return 'default';
+    return eq;
   }
 
   isSkinEquipped(charId, skinName) {
@@ -603,7 +605,8 @@ class SaveManager {
 
   setSkinEquipped(charId, skinName) {
     if (!this.data.equippedSkins) this.data.equippedSkins = {};
-    this.data.equippedSkins[charId] = charId === 'nghi' ? 'default' : (skinName || 'default');
+    const resolved = skinName || 'default';
+    this.data.equippedSkins[charId] = (charId === 'nghi' && resolved === 'vovinam') ? 'default' : resolved;
     this.persist();
   }
 

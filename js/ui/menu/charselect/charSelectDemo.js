@@ -332,16 +332,16 @@ class MenuManagerCharSelectDemo extends window.MenuManagerCharSelectCore {
 
         const slot = window.CHAR_SLOTS.find(s => s.id === this.selectedChar) || window.CHAR_SLOTS[0];
         if (slot && !slot.isLocked && window.skeletalRenderer) {
-          const eqSkin = slot.id === 'nghi'
-            ? 'default'
-            : ((window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
-              ? window.saveManager.getEquippedSkin(slot.id)
-              : ((window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default'));
+          const rawDemoEq = (window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
+            ? window.saveManager.getEquippedSkin(slot.id)
+            : ((slot.id !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default');
+          const eqSkin = (slot.id === 'nghi' && rawDemoEq === 'vovinam') ? 'default' : (rawDemoEq || 'default');
           const isVovinam = eqSkin === 'vovinam';
           const isNamCheo = eqSkin === 'namcheo';
+          const isHoXam = eqSkin === 'hoxam';
           const isHorrorChiTon = (eqSkin === 'thantrung' || eqSkin === 'chodoinon');
           const styleType = this.getStyleTypeForChar(slot.id);
-          const accent = isNamCheo ? '#0ea5e9' : (isHorrorChiTon ? '#ef4444' : (isVovinam ? '#1e88e5' : (slot.color || '#d4a017')));
+          const accent = isNamCheo ? '#0ea5e9' : (isHoXam ? '#e2e8f0' : (isHorrorChiTon ? '#ef4444' : (isVovinam ? '#1e88e5' : (slot.color || '#d4a017'))));
 
           // Hào quang pháp trận võ đài dưới chân và sau lưng
           ctx.save();

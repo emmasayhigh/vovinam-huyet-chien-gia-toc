@@ -205,6 +205,13 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
     if (isNamCheoUlt && typeof this.drawNamCheoBoat === 'function') {
       this.drawNamCheoBoat(ctx, jt, st, p, now, 'back');
     }
+    const isHoXamUlt = !ghost && !isSil && state === 'ultimate_flurry' && (
+      e.equippedSkin === 'hoxam' ||
+      (window.CharacterRegistry && typeof window.CharacterRegistry.getEquippedSkin === 'function' && window.CharacterRegistry.getEquippedSkin(e) === 'hoxam')
+    );
+    if (isHoXamUlt && typeof this.drawGreyTigerPhantom === 'function') {
+      this.drawGreyTigerPhantom(ctx, jt, st, p, now);
+    }
     const shieldInFront = st.shield && (state === 'guard' || state === 'boss_bash' || state === 'elbow_strike' || (state === 'ultimate_bash' && p < 0.58));
     if (typeof this.drawBackLayers === 'function') this.drawBackLayers(ctx, jt, st, motion);
     this.drawLeg(ctx, jt.fHip, jt.fKnee, jt.fAnk, jt.fFoot, st, true);
@@ -918,6 +925,28 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
       ctx.fillStyle = '#fde047';
       ctx.beginPath(); ctx.arc(5.4, -0.5, 1.45, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
+    }
+    if (!isSolid && !far && st.tigerStripes) {
+      // Vằn hổ xám đen chạy ngang đùi & bắp chân (Ngô Nhất Nghị — Hổ Xám Sơn Lâm)
+      const drawLimbStripes = (a, b, count, wSpan) => {
+        const ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+        const nx = -Math.sin(ang), ny = Math.cos(ang);
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 2.0 * bulk;
+        ctx.lineCap = 'round';
+        for (let i = 1; i <= count; i++) {
+          const t = i / (count + 1);
+          const cx = a[0] + (b[0] - a[0]) * t;
+          const cy = a[1] + (b[1] - a[1]) * t;
+          const s = (i % 2 === 0 ? 1 : -1);
+          ctx.beginPath();
+          ctx.moveTo(cx - nx * wSpan * 0.68, cy - ny * wSpan * 0.68 - s * 1.4);
+          ctx.quadraticCurveTo(cx, cy + s * 1.8, cx + nx * wSpan * 0.72, cy + ny * wSpan * 0.72);
+          ctx.stroke();
+        }
+      };
+      drawLimbStripes(hip, knee, 3, (thW0 + thW1) * 0.5);
+      drawLimbStripes(knee, ank, 3, (cfW0 + cfW1) * 0.5);
     }
 
     // Bảo hộ / Xà cạp / Ủng cao cổ ôm cẳng chân đa tầng vật liệu (từ 20%-96% bắp chân)
@@ -1772,6 +1801,68 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
     ctx.arc(-74, 4, 16, -0.4, 1.35);
     ctx.stroke();
 
+    ctx.restore();
+  }
+
+  // ==========================================================================
+  // TUYỆT KỸ HỔ XÁM SƠN LÂM — NGÔ NHẤT NGHỊ: MÃNH HỔ XÁM VỒ SAU LƯNG
+  // ==========================================================================
+  drawGreyTigerPhantom(ctx, jt, st, p, now) {
+    const prog = Math.max(0, Math.min(1, p || 0));
+    const shimmer = 0.72 + 0.16 * Math.sin(now * 0.018);
+    const arcY = -Math.abs(Math.sin(prog * Math.PI * 2.5)) * 22;
+    const leapX = -46 + prog * 48;
+    const leapY = -104 + arcY;
+    const tilt = prog < 0.16 ? -0.18 : (prog > 0.84 ? 0.14 : -0.06 + Math.sin(prog * Math.PI * 3) * 0.10);
+
+    ctx.save();
+    ctx.globalAlpha *= shimmer;
+
+    // Hào quang bạc-xám mãnh hổ gầm sau lưng
+    const aura = ctx.createRadialGradient(leapX + 10, leapY + 12, 16, leapX + 10, leapY + 12, 148);
+    aura.addColorStop(0, 'rgba(226, 232, 240, 0.44)');
+    aura.addColorStop(0.5, 'rgba(100, 116, 139, 0.28)');
+    aura.addColorStop(1, 'rgba(15, 23, 42, 0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath();
+    ctx.arc(leapX + 10, leapY + 12, 148, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Vệt gió mãnh hổ lao vồ
+    ctx.strokeStyle = 'rgba(241, 245, 249, 0.65)';
+    ctx.lineWidth = 2.6;
+    ctx.lineCap = 'round';
+    for (let k = -1; k <= 1; k++) {
+      ctx.beginPath();
+      ctx.moveTo(leapX - 130, leapY + k * 24);
+      ctx.quadraticCurveTo(leapX - 55, leapY + k * 18 - 8, leapX + 18, leapY + k * 14);
+      ctx.stroke();
+    }
+
+    const tigerSprite = (window.effectManager && typeof window.effectManager._getEffectSprite === 'function')
+      ? window.effectManager._getEffectSprite('grey_tiger_pounce', 'assets/images/effects/grey_tiger_pounce.png')
+      : null;
+
+    ctx.translate(leapX, leapY);
+    ctx.rotate(tilt);
+    if (tigerSprite) {
+      const w = 264;
+      const h = 158;
+      ctx.drawImage(tigerSprite, -w * 0.52, -h * 0.52, w, h);
+    } else {
+      // Vector fallback Hổ Xám Vồ (headless Node)
+      ctx.fillStyle = 'rgba(156, 163, 175, 0.85)';
+      ctx.strokeStyle = '#111827';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.ellipse(-6, 0, 62, 26, -0.08, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+      // Đuôi & đầu hổ vồ
+      ctx.beginPath(); ctx.moveTo(-64, -4); ctx.quadraticCurveTo(-96, -24, -112, -8); ctx.stroke();
+      ctx.beginPath(); ctx.arc(58, -10, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath(); ctx.arc(68, -14, 3.2, 0, Math.PI * 2); ctx.fill();
+    }
     ctx.restore();
   }
 }

@@ -22,18 +22,17 @@ class MenuManagerCollections extends window.MenuManagerCharSelect {
     const slot = (window.CHAR_SLOTS && window.CHAR_SLOTS.find(s => s.id === curCharId)) || (window.CHAR_SLOTS && window.CHAR_SLOTS[0]) || {
       id: 'nghi', fullName: 'Ngô Nhất Nghị', slotName: 'Nhất Nghị', title: 'Sát Thần Việt Võ Đạo', image: 'assets/images/characters/char_hero_nghi.png'
     };
-    const eqSkin = slot.id === 'nghi'
-      ? 'default'
-      : ((sm && typeof sm.getEquippedSkin === 'function')
-        ? sm.getEquippedSkin(slot.id)
-        : ((sm && typeof sm.isSkinEquipped === 'function' && sm.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default'));
+    const rawEq = (sm && typeof sm.getEquippedSkin === 'function')
+      ? sm.getEquippedSkin(slot.id)
+      : ((slot.id !== 'nghi' && sm && typeof sm.isSkinEquipped === 'function' && sm.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default');
+    const eqSkin = (slot.id === 'nghi' && rawEq === 'vovinam') ? 'default' : (rawEq || 'default');
     const heroImg = typeof this.resolveHeroSkinImage === 'function'
       ? this.resolveHeroSkinImage(slot, eqSkin)
       : ((eqSkin === 'vovinam' && slot.vovinamImage) ? slot.vovinamImage : (slot.image || 'assets/images/characters/char_hero_nghi.png'));
     const skinInfo = (window.SkinRegistry && typeof window.SkinRegistry.getSkin === 'function')
       ? window.SkinRegistry.getSkin(slot, eqSkin)
       : null;
-    const skinLabel = (slot.id === 'nghi' || eqSkin === 'vovinam')
+    const skinLabel = ((slot.id === 'nghi' && eqSkin === 'default') || eqSkin === 'vovinam')
       ? 'Lam Võ Phục Vovinam 🥋'
       : ((skinInfo && (skinInfo.shortName || skinInfo.name)) || 'Trang Phục Nguyên Bản 👘');
 
@@ -213,7 +212,7 @@ class MenuManagerCollections extends window.MenuManagerCharSelect {
     this.hideAll();
     this._shopReturnTarget = keepReturn;
     this._bindShopTabs();
-    if (focusCharId && (String(focusCharId).startsWith('skin_') || ['namcheo', 'thantrung', 'chodoinon', 'skins'].includes(focusCharId))) {
+    if (focusCharId && (String(focusCharId).startsWith('skin_') || ['namcheo', 'thantrung', 'chodoinon', 'hoxam', 'skins'].includes(focusCharId))) {
       this.activeShopTab = 'skins';
     } else if (focusCharId === 'heroes' || focusCharId) {
       this.activeShopTab = 'heroes';
@@ -897,11 +896,10 @@ class MenuManagerCollections extends window.MenuManagerCharSelect {
       });
     }
 
-    const equippedId = slot.id === 'nghi'
-      ? 'default'
-      : ((window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
-        ? window.saveManager.getEquippedSkin(slot.id)
-        : ((window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default'));
+    const rawEqId = (window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
+      ? window.saveManager.getEquippedSkin(slot.id)
+      : ((slot.id !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default');
+    const equippedId = (slot.id === 'nghi' && rawEqId === 'vovinam') ? 'default' : (rawEqId || 'default');
     const skins = typeof this.getSkinsForChar === 'function' ? this.getSkinsForChar(slot) : [];
     const activeSkin = skins.find((sk) => sk.id === equippedId) || skins[0];
 

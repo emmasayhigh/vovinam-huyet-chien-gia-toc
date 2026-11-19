@@ -436,11 +436,10 @@ function connectWsClient(port) {
   // -------------------------------------------------------------------------
   const prevPropsCount = window.effectManager.skillProps.length;
   window.onlineManager.handleServerMessage({ type: 'vfx_event', kind: 'croc_bite', x: 640, y: 580, dir: 1, scale: 1.0 });
-  window.onlineManager.handleServerMessage({ type: 'vfx_event', kind: 'dog_bite', x: 720, y: 580, dir: 1, scale: 1.0 });
-  window.onlineManager.handleServerMessage({ type: 'vfx_event', kind: 'taoist_fiend', x: 520, y: 580, facing: 1, life: 4, maxLife: 5, summonKind: 'crow' });
-  assert.ok(window.effectManager.skillProps.length >= prevPropsCount + 3, 'vfx_event spawns Cá Sấu, Mõm Chó Trắng & Quạ Thần Trùng on remote client');
-  assert.ok(window.effectManager.skillProps.some((sp) => sp.kind === 'dog_bite'), 'vfx_event dog_bite creates Dog Jaws Bite effect');
-  assert.ok(window.effectManager.skillProps.some((sp) => sp.kind === 'taoist_fiend' && sp.summonKind === 'crow'), 'vfx_event preserves crow summonKind for Thần Trùng');
+  window.onlineManager.handleServerMessage({ type: 'vfx_event', kind: 'tiger_bite', x: 700, y: 520, dir: 1, scale: 0.9 });
+  window.onlineManager.handleServerMessage({ type: 'vfx_event', kind: 'taoist_fiend', x: 520, y: 580, facing: 1, life: 4, maxLife: 5 });
+  assert.ok(window.effectManager.skillProps.length >= prevPropsCount + 3, 'vfx_event spawns Cá Sấu, Hổ Xám Ngoạm & Tiểu Quỷ on remote client');
+  assert.ok(window.effectManager.skillProps.some((sp) => sp.kind === 'tiger_bite'), 'vfx_event tiger_bite creates Grey Tiger Bite effect');
 
   sentPackets.length = 0;
   window.onlineManager.applyRemoteVfx({ kind: 'croc_bite', x: 400, y: 580, dir: 1, scale: 1.0 });
@@ -481,8 +480,13 @@ function connectWsClient(port) {
   charSel.value = 'huavudai';
   window.onlineManager._populateSkinOptions();
   const huaSkins = skinSel.children.map((o) => o.value);
-  assert.ok(!huaSkins.includes('namcheo'), 'Hứa Vũ Đại không hiển thị skin Ông Năm Chèo của Đình Bích Lâm');
-  assert.ok(huaSkins.includes('default') && huaSkins.includes('vovinam') && huaSkins.includes('chodoinon'), 'Hứa Vũ Đại chỉ hiển thị skin hợp lệ của bản thân (kèm Chó Đội Nón)');
+  assert.ok(!huaSkins.includes('namcheo') && !huaSkins.includes('chodoinon'), 'Hứa Vũ Đại không hiển thị skin ngoài hoặc skin đang tạm ẩn');
+  assert.ok(huaSkins.includes('default') && huaSkins.includes('vovinam'), 'Hứa Vũ Đại chỉ hiển thị skin hợp lệ của bản thân');
+
+  charSel.value = 'nghi';
+  window.onlineManager._populateSkinOptions();
+  const nghiSkins = skinSel.children.map((o) => o.value);
+  assert.ok(nghiSkins.includes('default') && nghiSkins.includes('hoxam') && !nghiSkins.includes('vovinam'), 'Ngô Nhất Nghị hiển thị Mặc Định & Hổ Xám (không trùng lặp vovinam)');
 
   charSel.value = 'bichlam';
   window.onlineManager._populateSkinOptions();

@@ -223,54 +223,42 @@ try {
 check(tkRenderOk, 'Render Thiên Khánh Lam Võ Phục Vovinam chạy an toàn không lỗi');
 window.saveManager.setSkinEquipped('thienkhanh', 'default');
 
-// TEST 8: Skin THẦN TRÙNG (Châu Ngọc Thiên Khánh) triệu hồi Quạ thay Tiểu Quỷ
-console.log('\n--- TEST 8: Skin THẦN TRÙNG (Thiên Khánh gọi Quạ) ---');
+// TEST 8: Skin HỔ XÁM SƠN LÂM (Ngô Nhất Nghị) — Giữ hình người + Vằn hổ xám + Đấm hổ ngoạm + Ulti vồ như hổ
+console.log('\n--- TEST 8: Skin HỔ XÁM SƠN LÂM (Ngô Nhất Nghị) ---');
 window.saveManager.addDiamonds(400);
-const buyTtRes = window.saveManager.buyShopSkin('skin_thienkhanh_thantrung', 'thienkhanh', 'thantrung', 'diamond', 150);
-check(buyTtRes.ok === true && window.saveManager.isSkinUnlocked('thienkhanh', 'thantrung') === true, 'Mua thành công skin Thần Trùng bằng 150 Kim Cương');
-check(!window.saveManager.data.unlockedCharacters.includes('skin_thienkhanh_thantrung') && !window.saveManager.data.unlockedCharacters.includes('thantrung'), 'Không nhầm Thần Trùng thành character');
-player.setCharacter('thienkhanh');
-check(player.equippedSkin === 'thantrung', 'Thiên Khánh trang bị skin thantrung');
-const ttStyle = window.skeletalRenderer.getStyle(player);
-check(ttStyle.thanTrungHood === true && ttStyle.pants === '#1d4ed8' && ttStyle.gi === '#991b1b', 'Skin Thần Trùng có mũ trùm đỏ + quần lam (#991b1b / #1d4ed8)');
+const buyTigerRes = window.saveManager.buyShopSkin('skin_nghi_hoxam', 'nghi', 'hoxam', 'diamond', 150);
+check(buyTigerRes.ok === true && window.saveManager.isSkinUnlocked('nghi', 'hoxam') === true, 'Mua thành công skin Hổ Xám bằng 150 Kim Cương');
+check(!window.saveManager.data.unlockedCharacters.includes('skin_nghi_hoxam') && !window.saveManager.data.unlockedCharacters.includes('hoxam'), 'Không nhầm Hổ Xám thành character');
+player.setCharacter('nghi');
+check(player.equippedSkin === 'hoxam' && player.isVovinamSkin === false, 'Ngô Nhất Nghị trang bị skin hoxam');
+const tigerStyle = window.skeletalRenderer.getStyle(player);
+check(tigerStyle.tigerPelt === true && tigerStyle.tigerStripes === true && tigerStyle.jawStyle === 'youth' && tigerStyle.hairStyle === 'nghi_hero', 'Skin Hổ Xám đổi trang phục vằn hổ xám nhưng vẫn giữ hình người Ngô Nhất Nghị');
 window.effectManager.skillProps = [];
-player._summonedFiends = [];
-player._fiendSummonCd = 0;
-player.stanceSkillCooldown = 0;
-window.CharacterRegistry.tryStanceSpecial(player, []);
-check(player._summonedFiends.length === 1 && player._summonedFiends[0].summonKind === 'crow', 'Chiêu W+U của Thiên Khánh (Thần Trùng) triệu hồi Quạ (summonKind="crow") thay cho Tiểu Quỷ');
-check(window.effectManager.skillProps.some((sp) => sp.kind === 'taoist_fiend' && sp.summonKind === 'crow'), 'EffectManager tạo hiệu ứng Quạ Thần Trùng');
-let ttRenderOk = true;
+window.CharacterRegistry.emitSkillVFX(player, 'punch_straight', 0.28, 0.40, window.effectManager, []);
+check(window.effectManager.skillProps.some((sp) => sp.kind === 'tiger_bite'), 'Đấm thẳng Ngô Nhất Nghị (Hổ Xám) tung ra hiệu ứng Hổ Ngoạm (tiger_bite)');
+window.effectManager.skillProps = [];
+player.state = 'ultimate_flurry';
+player.stateTimer = 0.45;
+player.stateDuration = 1.4;
+window.CharacterRegistry.emitSkillVFX(player, 'ultimate_flurry', 0.25, 0.36, window.effectManager, []);
+check(window.effectManager.skillProps.some((sp) => sp.kind === 'tiger_bite'), 'Tuyệt kỹ (I) Hổ Xám kích hoạt Hổ Ngoạm & Bóng Hổ Vồ');
+const tigerHud = window.CharacterRegistry.getPassiveHudStatus(player, []);
+check(tigerHud.icon === '🐯' && tigerHud.name.includes('MÃNH HỔ'), 'Cục nội tại HUD đổi thành 🐯 MÃNH HỔ XUẤT SƠN');
+let tigerRenderOk = true;
 try {
   window.skeletalRenderer.render(dummyCtx, player, { x: 0, y: 0 });
 } catch (err) {
-  ttRenderOk = false;
-  console.error('Render thantrung error:', err);
+  tigerRenderOk = false;
+  console.error('Render hoxam error:', err);
 }
-check(ttRenderOk, 'Render nhân vật Thiên Khánh skin Thần Trùng không lỗi');
-window.saveManager.setSkinEquipped('thienkhanh', 'default');
+check(tigerRenderOk, 'Render Ngô Nhất Nghị skin Hổ Xám (dáng vồ + bóng Hổ Xám vồ phía sau) không lỗi');
+window.saveManager.setSkinEquipped('nghi', 'default');
 
-// TEST 9: Skin CHÓ TRẮNG MŨI ĐỎ ĐỘI NÓN (Hứa Vũ Đại) & Ult Mõm Chó mọc lên cắn
-console.log('\n--- TEST 9: Skin CHÓ TRẮNG MŨI ĐỎ ĐỘI NÓN (Hứa Vũ Đại Ult Mõm Chó) ---');
-window.saveManager.unlockCharacter('huavudai');
-const buyDogRes = window.saveManager.buyShopSkin('skin_huavudai_chodoinon', 'huavudai', 'chodoinon', 'diamond', 150);
-check(buyDogRes.ok === true && window.saveManager.isSkinUnlocked('huavudai', 'chodoinon') === true, 'Mua thành công skin Chó Trắng Mũi Đỏ Đội Nón bằng 150 Kim Cương');
-player.setCharacter('huavudai');
-check(player.equippedSkin === 'chodoinon', 'Hứa Vũ Đại trang bị skin chodoinon');
-const dogStyle = window.skeletalRenderer.getStyle(player);
-check(dogStyle.dogHead === true && dogStyle.conicalHat === true && dogStyle.woodCane === true, 'Skin Chó Đội Nón có đầu chó trắng mũi đỏ, nón lá và gậy gỗ');
-window.effectManager.skillProps = [];
-window.CharacterRegistry.emitSkillVFX(player, 'ultimate_command', 0.25, 0.30, window.effectManager, []);
-check(window.effectManager.skillProps.some((sp) => sp.kind === 'dog_bite'), 'Tuyệt kỹ (I) Hứa Vũ Đại skin Chó Đội Nón gọi mõm chó trồi lên cắn (dog_bite)');
-let dogRenderOk = true;
-try {
-  window.skeletalRenderer.render(dummyCtx, player, { x: 0, y: 0 });
-} catch (err) {
-  dogRenderOk = false;
-  console.error('Render chodoinon error:', err);
-}
-check(dogRenderOk, 'Render nhân vật Hứa Vũ Đại skin Chó Đội Nón không lỗi');
-window.saveManager.setSkinEquipped('huavudai', 'default');
+// TEST 9: Đảm bảo 2 skin Thần Trùng & Chó Đội Nón tạm thời chưa mở bán trong Shop
+console.log('\n--- TEST 9: Xác nhận tạm ẩn 2 skin Thần Trùng & Chó Đội Nón khỏi Shop ---');
+const visibleShopIds = window.SkinRegistry.getShopSkins().map((s) => s.id);
+check(visibleShopIds.includes('namcheo') && visibleShopIds.includes('hoxam'), 'Shop Trang Phục hiển thị Ông Năm Chèo & Hổ Xám');
+check(!visibleShopIds.includes('thantrung') && !visibleShopIds.includes('chodoinon'), 'Shop Trang Phục tạm thời không hiển thị Thần Trùng & Chó Đội Nón');
 
 console.log(`\n🎉 TẤT CẢ ${passed} BÀI TEST VOVINAM COSMETIC & ÔNG NĂM CHÈO ĐỀU THÀNH CÔNG 100%!\n`);
 process.exit(0);

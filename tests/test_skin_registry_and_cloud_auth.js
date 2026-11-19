@@ -99,21 +99,17 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
   );
   assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'namcheo' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê đúng Ông Năm Chèo');
 
-  // Đăng ký thử 1 skin mới động hoàn toàn
-  assert.ok(window.SkinRegistry.getForCharacter('thienkhanh').some((s) => s.id === 'thantrung'), 'Thiên Khánh có skin Thần Trùng đăng ký sẵn');
-  assert.ok(window.SkinRegistry.getForCharacter('huavudai').some((s) => s.id === 'chodoinon'), 'Hứa Vũ Đại có skin Chó Trắng Mũi Đỏ Đội Nón đăng ký sẵn');
+  // Kiểm tra skin Hổ Xám cho Ngô Nhất Nghị & tạm ẩn 2 skin Thần Trùng / Chó Đội Nón khỏi Shop
+  assert.ok(window.SkinRegistry.getForCharacter('nghi').some((s) => s.id === 'hoxam'), 'Ngô Nhất Nghị có skin Hổ Xám đăng ký trong SkinRegistry');
   assert.strictEqual(
-    window.SkinRegistry.resolveImage('thienkhanh', 'thantrung'),
-    'assets/images/characters/char_thienkhanh_thantrung.png',
-    'SkinRegistry.resolveImage trả đúng ảnh Thần Trùng'
+    window.SkinRegistry.resolveImage('nghi', 'hoxam'),
+    'assets/images/characters/char_nghi_hoxam.png',
+    'SkinRegistry.resolveImage trả đúng ảnh Hổ Xám cho Ngô Nhất Nghị'
   );
-  assert.strictEqual(
-    window.SkinRegistry.resolveImage('huavudai', 'chodoinon'),
-    'assets/images/characters/char_huavudai_chodoinon.png',
-    'SkinRegistry.resolveImage trả đúng ảnh Chó Đội Nón'
-  );
-  assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'thantrung' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê Thần Trùng');
-  assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'chodoinon' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê Chó Trắng Mũi Đỏ Đội Nón');
+  assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'hoxam' && s.shopCurrency === 'diamond'), 'ShopSkins liệt kê đúng Hổ Xám (Ngô Nhất Nghị)');
+  assert.ok(!window.SkinRegistry.getShopSkins().some((s) => s.id === 'thantrung' || s.id === 'chodoinon'), '2 skin Thần Trùng & Chó Đội Nón tạm thời chưa mở bán trong Shop');
+  assert.ok(!window.SkinRegistry.getForCharacter('thienkhanh').some((s) => s.id === 'thantrung'), 'Skin Thần Trùng tạm ẩn khỏi danh sách hiển thị');
+  assert.ok(!window.SkinRegistry.getForCharacter('huavudai').some((s) => s.id === 'chodoinon'), 'Skin Chó Đội Nón tạm ẩn khỏi danh sách hiển thị');
 
   window.SkinRegistry.register('thienkhanh', {
     id: 'test_huyet_linh',
@@ -125,13 +121,12 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     image: 'assets/images/characters/char_thienkhanh.png'
   });
   const tkSkins = window.SkinRegistry.getForCharacter('thienkhanh');
-  assert.strictEqual(tkSkins.length, 4, 'SkinRegistry.register tự thêm skin vào danh sách nhân vật (default, vovinam, thantrung, test_huyet_linh)');
+  assert.strictEqual(tkSkins.length, 3, 'SkinRegistry.register tự thêm skin vào danh sách nhân vật (default, vovinam, test_huyet_linh)');
   assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'test_huyet_linh'), 'Skin mới đăng ký tự động xuất hiện trong ShopSkins');
 
   // Kiểm chứng runtime skin styles đã tách hoàn toàn khỏi file nhân vật
   assert.ok(window.SkinRegistry.getRuntimeStyle('bichlam', 'namcheo').style.scarfColor === '#0ea5e9', 'SkinRegistry giữ runtime style Ông Năm Chèo');
-  assert.ok(window.SkinRegistry.getRuntimeStyle('thienkhanh', 'thantrung').style.thanTrungHood === true, 'SkinRegistry giữ runtime style Thần Trùng');
-  assert.ok(window.SkinRegistry.getRuntimeStyle('huavudai', 'chodoinon').style.dogHead === true, 'SkinRegistry giữ runtime style Chó Đội Nón');
+  assert.ok(window.SkinRegistry.getRuntimeStyle('nghi', 'hoxam').style.tigerPelt === true, 'SkinRegistry giữ runtime style Hổ Xám Ngô Nhất Nghị');
   assert.ok(window.SkinRegistry.getRuntimeStyle('thienkhanh', 'vovinam').style.coinVeil === true, 'SkinRegistry giữ runtime style Vovinam Thiên Khánh');
   const bichlamSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/characters/bichlam.js'), 'utf8');
   const thienkhanhSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/characters/thienkhanh.js'), 'utf8');

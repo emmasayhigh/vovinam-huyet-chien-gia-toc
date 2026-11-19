@@ -5,6 +5,13 @@
  */
 
 (function () {
+  function isHoXamSkin(entity) {
+    return !!(entity && (
+      entity.equippedSkin === 'hoxam' ||
+      (window.CharacterRegistry && typeof window.CharacterRegistry.getEquippedSkin === 'function' && window.CharacterRegistry.getEquippedSkin(entity) === 'hoxam')
+    ));
+  }
+
   window.CharacterRegistry.register({
     id: 'nghi',
     uiSlotOrder: 0,
@@ -339,7 +346,38 @@
           P.fA = U.lerp(-1.45, 0.35, rec); P.fE = U.lerp(0.35, 1.95, rec);
           return true;
         },
-        ultimate_flurry(P, { U, p, t }) {
+        ultimate_flurry(P, { U, p, t, style }) {
+          if (style && style.tigerPelt) {
+            // Dáng VỒ NHƯ HỔ (Hổ Xám Sơn Lâm): Nạp thế rình mồi thấp -> Bật vồ chồm 2 tay cào xé -> Vồ chốt hạ
+            if (p < 0.14) {
+              const w = U.easeInOut(p / 0.14);
+              P.torso = U.lerp(0.14, 0.54, w); P.head = -0.26 * w; P.hx = -5 * w; P.lift = 14 * w;
+              P.nT = U.lerp(0.62, 1.18, w); P.nS = U.lerp(-0.82, -1.68, w);
+              P.fT = U.lerp(-0.55, -0.96, w); P.fS = U.lerp(0.15, 0.42, w);
+              P.nA = U.lerp(0.7, -0.55, w); P.nE = 1.92;
+              P.fA = U.lerp(0.35, -0.48, w); P.fE = 1.95;
+              return true;
+            }
+            if (p < 0.80) {
+              const u = (p - 0.14) / 0.66;
+              const leapWave = Math.sin(u * Math.PI * 3.0);
+              const clawAlt = Math.sin(u * Math.PI * 6.0);
+              const air = Math.abs(leapWave);
+              P.torso = 0.56 + 0.14 * air; P.head = -0.30; P.hx = 9 + 6 * air; P.lift = 8 - 18 * air;
+              P.nA = 1.38 + 0.34 * clawAlt; P.nE = 0.24 - 0.12 * Math.max(0, clawAlt);
+              P.fA = 1.38 - 0.34 * clawAlt; P.fE = 0.24 - 0.12 * Math.max(0, -clawAlt);
+              P.nT = 0.96 + 0.38 * air; P.nS = -1.28 + 0.55 * air;
+              P.fT = -0.88 - 0.36 * air; P.fS = 0.28 + 0.22 * air;
+              return true;
+            }
+            const rec = U.easeInOutQuart((p - 0.80) / 0.20);
+            P.torso = U.lerp(0.62, 0.14, rec); P.head = U.lerp(-0.28, -0.05, rec); P.hx = U.lerp(12, 0, rec); P.lift = U.lerp(10, 0, rec);
+            P.nA = U.lerp(1.58, 0.72, rec); P.nE = U.lerp(0.12, 1.82, rec);
+            P.fA = U.lerp(1.52, 0.38, rec); P.fE = U.lerp(0.14, 1.95, rec);
+            P.nT = U.lerp(1.02, 0.62, rec); P.nS = U.lerp(-1.35, -0.82, rec);
+            P.fT = U.lerp(-0.92, -0.55, rec); P.fS = U.lerp(0.32, 0.15, rec);
+            return true;
+          }
           // 5 giai đoạn Long Hổ Xuất Sơn:
           // Stg 1 (0..0.16): Mã Bộ nạp khí Long Hổ hai tay ép hông
           // Stg 2 (0.16..0.68): Liên hoàn 6 chiêu Quyền Cước tốc biến
@@ -387,40 +425,68 @@
         const cross = (t) => prevP < t && p >= t;
         const dir = e.facing || 1;
         const gx = e.x || 0, gy = e.y || 580, gz = e.z || 0;
+        const isTiger = isHoXamSkin(e);
         if (st === 'dodge' && cross(0.08)) {
           fx.createDust(gx, gy, 7, 36);
           fx.createEnergySparks(gx, gy + gz - 52, 6);
         } else if (st === 'counter_hand_strike') {
-          if (cross(0.05)) fx.createShockRing(gx, gy - 55, '#38bdf8');
+          if (cross(0.05)) fx.createShockRing(gx, gy - 55, isTiger ? '#e2e8f0' : '#38bdf8');
           if (cross(0.36)) {
-            fx.createDragonTigerLotus(gx + dir * 48, gy + gz - 60, dir, 96, 0.42);
-            fx.createSonicBoomCone(gx + dir * 32, gy + gz - 62, dir, '#38bdf8');
+            if (isTiger && typeof fx.createTigerBite === 'function') {
+              fx.createTigerBite(gx + dir * 78, gy + gz - 64, dir, 1.0);
+            } else {
+              fx.createDragonTigerLotus(gx + dir * 48, gy + gz - 60, dir, 96, 0.42);
+              fx.createSonicBoomCone(gx + dir * 32, gy + gz - 62, dir, '#38bdf8');
+            }
           }
         } else if (st === 'counter_leg_strike' && cross(0.38)) {
           fx.createDragonTigerLotus(gx + dir * 44, gy - 30, dir, 86, 0.38);
-          fx.createGroundCrack(gx + dir * 36, gy, 70, '#38bdf8');
+          fx.createGroundCrack(gx + dir * 36, gy, 70, isTiger ? '#cbd5e1' : '#38bdf8');
         } else if (st === 'scissor_kick') {
           if (cross(0.16)) fx.createDust(gx, gy, 10, 42);
           if (cross(0.42)) fx.createDragonTigerLotus(gx + dir * 25, gy + gz - 72, dir, 110, 0.48);
           if (cross(0.68)) fx.createShockRing(gx + dir * 30, gy - 32, '#facc15');
         } else if (st === 'ultimate_flurry') {
-          if (cross(0.06)) fx.createDragonTigerLotus(gx, gy - 48, dir, 92, 0.42);
-          if (cross(0.68)) {
-            fx.createSonicBoomCone(gx + dir * 56, gy - 62, dir, '#facc15');
-            fx.createDragonTigerLotus(gx + dir * 58, gy - 62, dir, 130, 0.52);
+          if (isTiger && typeof fx.createTigerBite === 'function') {
+            if (cross(0.08)) fx.createShockRing(gx, gy - 20, '#e2e8f0', 110);
+            if (cross(0.32)) fx.createTigerBite(gx + dir * 82, gy - 62, dir, 1.05);
+            if (cross(0.66)) {
+              fx.createTigerBite(gx + dir * 92, gy - 66, dir, 1.24);
+              fx.createSonicBoomCone(gx + dir * 56, gy - 62, dir, '#e2e8f0');
+            }
+          } else {
+            if (cross(0.06)) fx.createDragonTigerLotus(gx, gy - 48, dir, 92, 0.42);
+            if (cross(0.68)) {
+              fx.createSonicBoomCone(gx + dir * 56, gy - 62, dir, '#facc15');
+              fx.createDragonTigerLotus(gx + dir * 58, gy - 62, dir, 130, 0.52);
+            }
           }
         } else if (st === 'punch_straight' && cross(0.34)) {
-          fx.createEnergySparks(gx + dir * 48, gy - 78, 5);
+          if (isTiger && typeof fx.createTigerBite === 'function') {
+            fx.createTigerBite(gx + dir * 92, gy + gz - 66, dir, 0.58);
+          } else {
+            fx.createEnergySparks(gx + dir * 48, gy - 78, 5);
+          }
         } else if (st === 'punch_hook' && cross(0.36)) {
-          fx.createSonicBoomCone(gx + dir * 36, gy - 76, dir, '#38bdf8');
+          if (isTiger && typeof fx.createTigerBite === 'function') {
+            fx.createTigerBite(gx + dir * 98, gy + gz - 64, dir, 0.68);
+          } else {
+            fx.createSonicBoomCone(gx + dir * 36, gy - 76, dir, '#38bdf8');
+          }
         } else if (st === 'wk') {
           if (cross(0.16)) fx.createDust(gx, gy, 8, 38);
           if (cross(0.34)) fx.createDragonTigerLotus(gx + dir * 44, gy + gz - 66, dir, 92, 0.38);
         } else if (st === 'kick_sweep' && cross(0.42)) {
           fx.createDust(gx + dir * 32, gy, 10, 46);
-          fx.createGroundCrack(gx + dir * 40, gy, 72, '#38bdf8');
-        } else if (cross(0.36) && (st === 'uppercut' || st === 'hook_run' || st === 'kick_roundhouse')) {
-          fx.createSonicBoomCone(gx + dir * 34, gy + gz - 56, dir, '#38bdf8');
+          fx.createGroundCrack(gx + dir * 40, gy, 72, isTiger ? '#cbd5e1' : '#38bdf8');
+        } else if (cross(0.36) && (st === 'uppercut' || st === 'hook_run' || st === 'air_punch')) {
+          if (isTiger && typeof fx.createTigerBite === 'function') {
+            fx.createTigerBite(gx + dir * 98, gy + gz - 72, dir, 0.72);
+          } else {
+            fx.createSonicBoomCone(gx + dir * 34, gy + gz - 56, dir, '#38bdf8');
+          }
+        } else if (cross(0.36) && st === 'kick_roundhouse') {
+          fx.createSonicBoomCone(gx + dir * 34, gy + gz - 56, dir, isTiger ? '#cbd5e1' : '#38bdf8');
         }
       }
     },
@@ -553,12 +619,16 @@
         style: 'lightning',
         duration: 1.4
       },
-      execute(player, st, dt, enemies) {
+      execute(player, st, dt, enemies, { p }) {
+        const isTiger = isHoXamSkin(player);
         player.invincibleTimer = 0.2;
-        player.vx = player.facing * 430;
+        player.vx = player.facing * (isTiger ? 500 : 430);
+        if (isTiger) {
+          player.z = (p > 0.14 && p < 0.84) ? -Math.abs(Math.sin(p * Math.PI * 2.5)) * 30 : 0;
+        }
         if (window.effectManager) {
-          if (Math.random() < 0.7) window.effectManager.addGhostTrail(player, 'rgba(0, 230, 255, 0.75)');
-          if (Math.random() < 0.45) window.effectManager.createLightningArc(player.x - player.facing * 30, player.y - 50, player.x + player.facing * 75, player.y - 45 + (Math.random() - 0.5) * 40, '#00f0ff', 1);
+          if (Math.random() < 0.7) window.effectManager.addGhostTrail(player, isTiger ? 'rgba(203, 213, 225, 0.78)' : 'rgba(0, 230, 255, 0.75)');
+          if (!isTiger && Math.random() < 0.45) window.effectManager.createLightningArc(player.x - player.facing * 30, player.y - 50, player.x + player.facing * 75, player.y - 45 + (Math.random() - 0.5) * 40, '#00f0ff', 1);
           if (Math.random() < 0.4) window.effectManager.createEnergySparks(player.x, player.y - 45, 4);
         }
 
@@ -587,7 +657,7 @@
               if (window.audioManager) window.audioManager.playPunch();
               if (window.effectManager) {
                 window.effectManager.createHitSparks(enemy.x, enemy.y - 50, 8, true);
-                window.effectManager.createDimensionalSlash(enemy.x, enemy.y - 50, (Math.random() - 0.5) * 0.8, 110, '#00f0ff');
+                window.effectManager.createDimensionalSlash(enemy.x, enemy.y - 50, (Math.random() - 0.5) * 0.8, 110, isTiger ? '#e2e8f0' : '#00f0ff');
               }
               if (window.combatSystem) window.combatSystem.registerHit(true, enemy, 35, true);
             }
@@ -595,13 +665,18 @@
         }
 
         if (player.stateTimer >= player.stateDuration) {
+          player.z = 0;
           if (window.effectManager) {
-            window.effectManager.createUltimateBlast(player.x + player.facing * 40, player.y - 50, { primary: '#38bdf8', secondary: '#facc15', flash: '#38bdf8' });
-            window.effectManager.createGroundCrack(player.x + player.facing * 40, player.y, 180, '#00f0ff');
-            window.effectManager.createGroundCrack(player.x + player.facing * 40, player.y, 130, '#ffd700');
-            window.effectManager.createShockRing(player.x + player.facing * 40, player.y, '#ffd700');
+            window.effectManager.createUltimateBlast(player.x + player.facing * 40, player.y - 50, isTiger ? { primary: '#e2e8f0', secondary: '#f59e0b', flash: '#e2e8f0' } : { primary: '#38bdf8', secondary: '#facc15', flash: '#38bdf8' });
+            window.effectManager.createGroundCrack(player.x + player.facing * 40, player.y, 180, isTiger ? '#cbd5e1' : '#00f0ff');
+            window.effectManager.createGroundCrack(player.x + player.facing * 40, player.y, 130, isTiger ? '#18181b' : '#ffd700');
+            window.effectManager.createShockRing(player.x + player.facing * 40, player.y, isTiger ? '#f8fafc' : '#ffd700');
+            if (isTiger && typeof window.effectManager.createTigerBite === 'function') {
+              window.effectManager.createTigerBite(player.x + player.facing * 88, player.y - 62, player.facing || 1, 1.32);
+              window.effectManager.addFloatingText('🐯 MÃNH HỔ VỒ!', player.x + player.facing * 50, player.y - 175, 'crit');
+            }
             window.effectManager.triggerScreenShake(24, 0.55);
-            window.effectManager.triggerFlash('#00f0ff', 0.75);
+            window.effectManager.triggerFlash(isTiger ? '#e2e8f0' : '#00f0ff', 0.75);
           }
           for (const enemy of enemies) {
             if (!enemy.isDead && (Math.abs(enemy.x - player.x) < 185 || player.hitTargets.has(enemy.id))) {

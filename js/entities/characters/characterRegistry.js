@@ -115,25 +115,26 @@
     getEquippedSkin(entity) {
       if (!entity) return 'default';
       const id = entity.charId || entity.characterId || entity.characterKey;
-      if (id === 'nghi') return 'default';
-      if (typeof entity.equippedSkin === 'string' && entity.equippedSkin) return entity.equippedSkin;
-      if (entity.vovinamSkin === true || entity.isVovinamSkin === true) return 'vovinam';
-      if (entity.namcheoSkin === true) return 'namcheo';
-      if (id && window.saveManager && typeof window.saveManager.getEquippedSkin === 'function') {
-        return window.saveManager.getEquippedSkin(id);
+      let skin = 'default';
+      if (typeof entity.equippedSkin === 'string' && entity.equippedSkin) skin = entity.equippedSkin;
+      else if (entity.vovinamSkin === true || entity.isVovinamSkin === true) skin = 'vovinam';
+      else if (entity.namcheoSkin === true) skin = 'namcheo';
+      else if (id && window.saveManager && typeof window.saveManager.getEquippedSkin === 'function') {
+        skin = window.saveManager.getEquippedSkin(id);
+      } else if (id && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function') {
+        if (window.saveManager.isSkinEquipped(id, 'namcheo')) skin = 'namcheo';
+        else if (window.saveManager.isSkinEquipped(id, 'vovinam')) skin = 'vovinam';
       }
-      if (id && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function') {
-        if (window.saveManager.isSkinEquipped(id, 'namcheo')) return 'namcheo';
-        if (window.saveManager.isSkinEquipped(id, 'vovinam')) return 'vovinam';
-      }
-      return 'default';
+      if (id === 'nghi' && skin === 'vovinam') return 'default';
+      return skin || 'default';
     }
 
     isVovinamEquipped(entity) {
       if (!entity) return false;
       const id = entity.charId || entity.characterId || entity.characterKey;
-      if (id === 'nghi') return true;
-      return this.getEquippedSkin(entity) === 'vovinam';
+      const eq = this.getEquippedSkin(entity);
+      if (id === 'nghi') return eq === 'default';
+      return eq === 'vovinam';
     }
 
     resolveDefinitionForPlayer(player) {
@@ -739,16 +740,17 @@
       if (charId === 'nghi') {
         const mod5 = combo > 0 ? (combo % 5 || 5) : 0;
         const speedOn = !!(player && player._cuongNhuSpeedTimer > 0);
+        const isTiger = (skinId === 'hoxam');
         out = {
-          icon: '☯️',
-          name: 'CƯƠNG NHU PHỐI TRIỂN',
+          icon: isTiger ? '🐯' : '☯️',
+          name: isTiger ? 'MÃNH HỔ XUẤT SƠN' : 'CƯƠNG NHU PHỐI TRIỂN',
           pipsMax: 5,
           pipsFilled: speedOn ? 5 : mod5,
           statusText: speedOn
             ? `⚡ TỐC +15% (${player._cuongNhuSpeedTimer.toFixed(1)}s)`
-            : (hasAura ? `🛡️ GIÁP (${player.auraArmorTimer.toFixed(1)}s)` : `COMBO ${mod5}/5`),
+            : (hasAura ? `🛡️ GIÁP (${player.auraArmorTimer.toFixed(1)}s)` : (isTiger ? `HỔ KHÍ ${mod5}/5` : `COMBO ${mod5}/5`)),
           isBuffActive: speedOn || hasAura,
-          accentColor: '#38bdf8'
+          accentColor: isTiger ? '#e2e8f0' : '#38bdf8'
         };
       } else if (charId === 'bichlam') {
         const isNamCheo = (skinId === 'namcheo');
@@ -890,6 +892,11 @@
         out.handCounterLabel = 'MÁI CHÈO';
         out.legCounterLabel = 'ĐẠP SÓNG';
         out.dodgeLabel = 'LƯỚT SÓNG';
+      } else if (charId === 'nghi' && skinId === 'hoxam') {
+        out.wuLabel = 'HỔ KHÍ';
+        out.handCounterLabel = 'HỔ TRẢO';
+        out.legCounterLabel = 'MÃNH HỔ CƯỚC';
+        out.dodgeLabel = 'HỔ BỘ';
       } else if (charId === 'thienkhanh' && skinId === 'thantrung') {
         out.wuLabel = 'GỌI QUẠ';
         out.handCounterLabel = 'QUẠ BÁO OÁN';

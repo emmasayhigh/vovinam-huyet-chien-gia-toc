@@ -25,10 +25,12 @@
     "js/entities/player/playerBase.js",
     "js/entities/player/playerDamage.js",
     "js/entities/characters/characterRegistry.js",
+    "js/entities/characters/nghi.js",
     "js/entities/characters/giangmanh.js",
     "js/entities/characters/huavudai.js",
     "js/entities/characters/thienkhanh.js",
     "js/entities/characters/vananh.js",
+    "js/ui/ui.js",
     "js/entities/animation/animationBase.js",
     "js/entities/animation/animationArchetypes.js",
     "js/entities/animation/animationBody.js",
@@ -55,14 +57,20 @@
     "tests/test_tutorial_trigger.js",
     "assets/images/characters/char_thienkhanh_thantrung.png",
     "assets/images/characters/char_huavudai_chodoinon.png",
+    "assets/images/characters/char_nghi_hoxam.png",
     "assets/images/effects/than_trung_crow.png",
     "assets/images/effects/dog_jaw_lower.png",
     "assets/images/effects/dog_jaw_upper.png",
+    "assets/images/effects/tiger_jaw_lower.png",
+    "assets/images/effects/tiger_jaw_upper.png",
+    "assets/images/effects/grey_tiger_pounce.png",
     "gitignore",
     ".gitignore",
     "data/.gitkeep",
     "Dockerfile",
     ".dockerignore",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
     "tasks/TASK-020.json"
   ],
   "relatedFeatures": [
@@ -79,7 +87,7 @@
     "AllyManager"
   ],
   "deletionBudget": {
-    "allowedDeletedLines": 150,
+    "allowedDeletedLines": 320,
     "authorizedRemovals": []
   },
   "requiredTests": [

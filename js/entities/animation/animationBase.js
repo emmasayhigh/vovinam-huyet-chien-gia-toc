@@ -42,13 +42,13 @@ class SkeletalRendererBase {
     const charKey = e.characterId || e.charId || (e.type === 'player' ? (window.saveManager && window.saveManager.data && window.saveManager.data.selectedCharacter) || 'nghi' : null);
     let skinId = 'default';
     if (e.namcheoSkin === true) skinId = 'namcheo';
-    else if (e.vovinamSkin === true || e.isVovinamSkin === true) skinId = 'vovinam';
     else if (typeof e.equippedSkin === 'string' && e.equippedSkin) skinId = e.equippedSkin;
-    else if ((e.type === 'player' || e.isAlly) && charKey && charKey !== 'nghi' && window.saveManager) {
+    else if (e.vovinamSkin === true || e.isVovinamSkin === true) skinId = 'vovinam';
+    else if ((e.type === 'player' || e.isAlly) && charKey && window.saveManager) {
       if (typeof window.saveManager.getEquippedSkin === 'function') skinId = window.saveManager.getEquippedSkin(charKey);
-      else if (typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(charKey, 'vovinam')) skinId = 'vovinam';
+      else if (charKey !== 'nghi' && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(charKey, 'vovinam')) skinId = 'vovinam';
     }
-    if (charKey === 'nghi') skinId = 'default';
+    if (charKey === 'nghi' && skinId === 'vovinam') skinId = 'default';
     const isVovinam = (skinId === 'vovinam');
     if (skinId && skinId !== 'default') {
       const k = type + '!' + skinId;

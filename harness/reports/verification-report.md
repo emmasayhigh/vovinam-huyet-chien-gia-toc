@@ -1,7 +1,7 @@
 # TASK VERIFICATION REPORT: TASK-020
 
 > **Title**: Commercial Redesign of Võ Đường Character Select (Hero/Skin/Support/Loadout) & Online Multiplayer Platform  
-> **Timestamp**: 2026-11-19T01:53:37.637Z  
+> **Timestamp**: 2026-11-19T06:30:55.911Z  
 > **Final Classification**: **`PASS`**
 
 ## 1. QUALITY GATES SUMMARY
@@ -16,8 +16,8 @@
 
 ## 2. MODIFIED FILES AUDIT
 
-- **Files Added** (5): `assets/images/characters/char_huavudai_chodoinon.png`, `assets/images/characters/char_thienkhanh_thantrung.png`, `assets/images/effects/dog_jaw_lower.png`, `assets/images/effects/dog_jaw_upper.png`, `assets/images/effects/than_trung_crow.png`
-- **Files Modified** (23): `gitignore`, `data/.gitkeep`, `harness/reports/latest-test-run.json`, `harness/reports/verification-report.json`, `harness/reports/verification-report.md`, `index.html`, `js/core/effects.js`, `js/core/game.js`, `js/core/save.js`, `js/data/skins.js`, `js/entities/animation/animationArchetypes.js`, `js/entities/animation/animationBody.js`, `js/entities/animation/animationRenderBase.js`, `js/entities/characters/characterRegistry.js`, `js/entities/characters/huavudai.js`, `js/entities/characters/thienkhanh.js`, `js/ui/menu/charselect/charSelectCore.js`, `js/ui/menu/charselect/charSelectDemo.js`, `js/ui/menu/collections.js`, `tasks/TASK-020.json`, `tests/test_online_multiplayer.js`, `tests/test_skin_registry_and_cloud_auth.js`, `tests/test_vovinam_skin_skills.js`
+- **Files Added** (4): `assets/images/characters/char_nghi_hoxam.png`, `assets/images/effects/grey_tiger_pounce.png`, `assets/images/effects/tiger_jaw_lower.png`, `assets/images/effects/tiger_jaw_upper.png`
+- **Files Modified** (24): `arness/reports/latest-test-run.json`, `harness/reports/verification-report.json`, `harness/reports/verification-report.md`, `index.html`, `js/core/effects.js`, `js/core/game.js`, `js/core/save.js`, `js/data/skins.js`, `js/entities/animation/animationBase.js`, `js/entities/animation/animationBody.js`, `js/entities/animation/animationRenderBase.js`, `js/entities/characters/characterRegistry.js`, `js/entities/characters/nghi.js`, `js/entities/player/playerBase.js`, `js/ui/menu/charselect/charSelectCore.js`, `js/ui/menu/charselect/charSelectDemo.js`, `js/ui/menu/charselect/charSelectDeployment.js`, `js/ui/menu/collections.js`, `js/ui/training/trainingManagerOverlay.js`, `js/ui/ui.js`, `tasks/TASK-020.json`, `tests/test_online_multiplayer.js`, `tests/test_skin_registry_and_cloud_auth.js`, `tests/test_vovinam_skin_skills.js`
 - **Files Deleted** (0): None (Zero deletion budget respected)
 
 ## 3. FEATURE IMPACT & PRESERVATION

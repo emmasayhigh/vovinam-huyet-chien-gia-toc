@@ -162,11 +162,10 @@ class MenuManagerCharSelectCore extends window.MenuManagerBase {
     const slot = window.CHAR_SLOTS.find(s => s.id === this.selectedChar) || window.CHAR_SLOTS[0];
     if (!slot) return;
 
-    const equippedSkinId = slot.id === 'nghi'
-      ? 'default'
-      : ((window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
-        ? window.saveManager.getEquippedSkin(slot.id)
-        : ((window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default'));
+    const rawEqSkin = (window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
+      ? window.saveManager.getEquippedSkin(slot.id)
+      : ((slot.id !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default');
+    const equippedSkinId = (slot.id === 'nghi' && rawEqSkin === 'vovinam') ? 'default' : (rawEqSkin || 'default');
     const skins = this.getSkinsForChar(slot);
 
     const skinCountBadge = document.getElementById('cs-tab-skin-count');
@@ -379,11 +378,10 @@ class MenuManagerCharSelectCore extends window.MenuManagerBase {
     set('char-detail-mechanic', slot.mechanic);
 
     // Cập nhật ảnh toàn thân theo Trang Phục đang chọn và ánh sáng hào quang trung tâm
-    const eqSkin = slot.id === 'nghi'
-      ? 'default'
-      : ((window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
-        ? window.saveManager.getEquippedSkin(slot.id)
-        : ((window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default'));
+    const rawCsEq = (window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
+      ? window.saveManager.getEquippedSkin(slot.id)
+      : ((slot.id !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default');
+    const eqSkin = (slot.id === 'nghi' && rawCsEq === 'vovinam') ? 'default' : (rawCsEq || 'default');
     const targetHeroImg = this.resolveHeroSkinImage(slot, eqSkin);
     const heroImg = document.getElementById('cs-hero-img');
     if (heroImg) {
@@ -861,7 +859,7 @@ class MenuManagerCharSelectCore extends window.MenuManagerBase {
 
   setWardrobeSkin(skinType) {
     const slot = window.CHAR_SLOTS.find(s => s.id === this.selectedChar) || window.CHAR_SLOTS[0];
-    if (slot && slot.id === 'nghi') {
+    if (slot && slot.id === 'nghi' && skinType === 'vovinam') {
       skinType = 'default';
     }
     if (slot && skinType && skinType !== 'default' && skinType !== 'vovinam' && window.saveManager && typeof window.saveManager.isSkinUnlocked === 'function' && !window.saveManager.isSkinUnlocked(slot.id, skinType)) {
@@ -881,10 +879,10 @@ class MenuManagerCharSelectCore extends window.MenuManagerBase {
     const skinDef = (window.SkinRegistry && typeof window.SkinRegistry.getSkin === 'function' && slot)
       ? window.SkinRegistry.getSkin(slot.id, skinType)
       : null;
-    if (slot && slot.id === 'nghi') {
-      this.showToast('Ngô Nhất Nghị mặc định đã khoác Lam Võ Phục Vovinam Chính Thống 🥋');
-    } else if (skinDef && skinDef.toast) {
+    if (skinDef && skinDef.toast) {
       this.showToast(skinDef.toast);
+    } else if (slot && slot.id === 'nghi') {
+      this.showToast('Ngô Nhất Nghị mặc định đã khoác Lam Võ Phục Vovinam Chính Thống 🥋');
     } else if (skinType === 'namcheo') {
       this.showToast('🌊 Đã trang bị: Ông Năm Chèo — Thủy Bá Bến Cảng (Đổi hiệu ứng Sóng Nước)!');
     } else {
@@ -897,11 +895,10 @@ class MenuManagerCharSelectCore extends window.MenuManagerBase {
   updateWardrobeButtons() {
     const slot = window.CHAR_SLOTS.find(s => s.id === this.selectedChar) || window.CHAR_SLOTS[0];
     const isNghi = slot && slot.id === 'nghi';
-    const equippedSkin = isNghi
-      ? 'default'
-      : ((window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
-        ? window.saveManager.getEquippedSkin(this.selectedChar)
-        : ((window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(this.selectedChar, 'vovinam')) ? 'vovinam' : 'default'));
+    const rawW = (window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
+      ? window.saveManager.getEquippedSkin(this.selectedChar)
+      : ((!isNghi && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(this.selectedChar, 'vovinam')) ? 'vovinam' : 'default');
+    const equippedSkin = (isNghi && rawW === 'vovinam') ? 'default' : (rawW || 'default');
     const isVovinam = !isNghi && equippedSkin === 'vovinam';
     const defBtn = document.getElementById('btn-cs-skin-default');
     const vovBtn = document.getElementById('btn-cs-skin-vovinam');
@@ -1047,11 +1044,10 @@ class MenuManagerCharSelectCore extends window.MenuManagerBase {
     const slot = window.CHAR_SLOTS.find((s) => s.id === this.selectedChar) || window.CHAR_SLOTS[0];
     if (!slot) return;
     const sm = window.saveManager;
-    const equippedSkin = slot.id === 'nghi'
-      ? 'default'
-      : ((sm && typeof sm.getEquippedSkin === 'function')
-        ? sm.getEquippedSkin(slot.id)
-        : ((sm && typeof sm.isSkinEquipped === 'function' && sm.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default'));
+    const rawSum = (sm && typeof sm.getEquippedSkin === 'function')
+      ? sm.getEquippedSkin(slot.id)
+      : ((slot.id !== 'nghi' && sm && typeof sm.isSkinEquipped === 'function' && sm.isSkinEquipped(slot.id, 'vovinam')) ? 'vovinam' : 'default');
+    const equippedSkin = (slot.id === 'nghi' && rawSum === 'vovinam') ? 'default' : (rawSum || 'default');
     const skins = this.getSkinsForChar(slot);
     const activeSkin = skins.find((s) => s.id === equippedSkin) || skins[0];
 

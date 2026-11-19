@@ -54,11 +54,12 @@ class RemotePlayer extends (window.Player || Object) {
     this.isRemotePlayer = true;
     const resolvedSkin = skinId || 'default';
     this.equippedSkin = resolvedSkin;
-    this.isVovinamSkin = (this.charId === 'nghi' || resolvedSkin === 'vovinam');
+    this.isVovinamSkin = (this.charId === 'nghi' ? resolvedSkin === 'default' : resolvedSkin === 'vovinam');
     this.vovinamSkin = (resolvedSkin === 'vovinam');
     this.namcheoSkin = (resolvedSkin === 'namcheo');
     this.thanTrungSkin = (resolvedSkin === 'thantrung');
     this.choDoiNonSkin = (resolvedSkin === 'chodoinon');
+    this.hoXamSkin = (resolvedSkin === 'hoxam');
     if (window.CharacterRegistry) {
       const def = window.CharacterRegistry.get(this.charId);
       if (def && def.appearance && def.appearance.skins && def.appearance.skins[resolvedSkin] && def.appearance.skins[resolvedSkin].styleKey) {
@@ -637,11 +638,13 @@ class OnlineManager {
     }
     if (skinEl && skinEl.value) {
       let nextSkin = skinEl.value;
-      if (this.charId === 'nghi') {
+      if (this.charId === 'nghi' && nextSkin === 'vovinam') {
         nextSkin = 'default';
       } else if (window.SkinRegistry && typeof window.SkinRegistry.getSkin === 'function' && nextSkin !== 'default' && nextSkin !== 'vovinam') {
         if (!window.SkinRegistry.getSkin(this.charId, nextSkin)) nextSkin = 'default';
       } else if (nextSkin === 'namcheo' && this.charId !== 'bichlam') {
+        nextSkin = 'default';
+      } else if (nextSkin === 'hoxam' && this.charId !== 'nghi') {
         nextSkin = 'default';
       } else if (nextSkin === 'thantrung' && this.charId !== 'thienkhanh') {
         nextSkin = 'default';
@@ -1947,7 +1950,7 @@ class OnlineManager {
     const mySkin = myInfo.skinId || this.skinId || 'default';
     g.player.setCharacter(myChar);
     g.player.equippedSkin = mySkin;
-    g.player.isVovinamSkin = (myChar === 'nghi' || mySkin === 'vovinam');
+    g.player.isVovinamSkin = (myChar === 'nghi' ? mySkin === 'default' : mySkin === 'vovinam');
 
     const myX = mode === 'pvp' ? (myInfo.slot === 2 ? 920 : 340) : (myInfo.slot === 2 ? 220 : 140);
     const myFacing = mode === 'pvp' ? (myInfo.slot === 2 ? -1 : 1) : 1;
@@ -2604,6 +2607,9 @@ class OnlineManager {
         case 'dog_bite':
           if (em && em.createDogJawsBite) em.createDogJawsBite(msg.x, msg.y, msg.dir || 1, msg.scale || 1);
           break;
+        case 'tiger_bite':
+          if (em && em.createTigerBite) em.createTigerBite(msg.x, msg.y, msg.dir || 1, msg.scale || 1);
+          break;
         case 'taoist_fiend':
           if (em && em.createTaoistFiend) {
             const remoteKind = msg.summonKind || (this.remotePlayer && this.remotePlayer.equippedSkin === 'thantrung' ? 'crow' : 'imp');
@@ -2713,6 +2719,7 @@ class OnlineManager {
       };
       wrapEm('createCrocodileBite', (x, y, dir, scale) => ({ kind: 'croc_bite', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
       wrapEm('createDogJawsBite', (x, y, dir, scale) => ({ kind: 'dog_bite', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
+      wrapEm('createTigerBite', (x, y, dir, scale) => ({ kind: 'tiger_bite', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));
       wrapEm('createTaoistFiend', (fiend) => fiend ? ({ kind: 'taoist_fiend', id: fiend.id, x: Math.round(fiend.x), y: Math.round(fiend.y), facing: fiend.facing || 1, life: fiend.life || 4.5, maxLife: fiend.maxLife || 4.5, summonKind: fiend.summonKind || 'imp' }) : null);
       wrapEm('createSlashArc', (x, y, dir, radius, color, thickness) => ({ kind: 'slash_arc', x: Math.round(x), y: Math.round(y), dir: dir || 1, radius, color, thickness }));
       wrapEm('createFlameCoinSlash', (x, y, dir, scale) => ({ kind: 'flame_coin', x: Math.round(x), y: Math.round(y), dir: dir || 1, scale: scale || 1 }));

@@ -50,6 +50,9 @@ class EffectManager {
     this._getEffectSprite('croc_upper', 'assets/images/effects/croc_upper_jaw.png');
     this._getEffectSprite('dog_lower', 'assets/images/effects/dog_jaw_lower.png');
     this._getEffectSprite('dog_upper', 'assets/images/effects/dog_jaw_upper.png');
+    this._getEffectSprite('tiger_lower', 'assets/images/effects/tiger_jaw_lower.png');
+    this._getEffectSprite('tiger_upper', 'assets/images/effects/tiger_jaw_upper.png');
+    this._getEffectSprite('grey_tiger_pounce', 'assets/images/effects/grey_tiger_pounce.png');
   }
 
   /**
@@ -655,6 +658,41 @@ class EffectManager {
         life: 0.45 + Math.random() * 0.22,
         maxLife: 0.67,
         gravity: 0.16,
+        isStreak: true
+      });
+    }
+  }
+
+  // 12. Hiệu ứng Hổ Xám Ngoạm (Ngô Nhất Nghị Skin Hổ Xám — Đấm ra hổ xám ngoạm)
+  createTigerBite(x, y, dir = 1, scale = 1.0) {
+    this.skillProps.push({
+      kind: 'tiger_bite',
+      x,
+      y,
+      dir: dir || 1,
+      scale: scale || 1.0,
+      rot: 0,
+      spin: 0,
+      radius: 98 * (scale || 1.0),
+      color: '#cbd5e1',
+      accent: '#18181b',
+      life: 0.48,
+      maxLife: 0.48,
+      alpha: 1.0
+    });
+    this.createShockRing(x, y, '#e2e8f0', 88 * (scale || 1.0));
+    for (let i = 0; i < 14; i++) {
+      this._pushParticle({
+        x: x + (Math.random() - 0.5) * 32 * scale,
+        y: y + (Math.random() - 0.5) * 32 * scale,
+        vx: (dir || 1) * (3.2 + Math.random() * 4.5),
+        vy: (Math.random() - 0.5) * 4.8,
+        size: 2.8 + Math.random() * 3.4,
+        color: i % 4 === 0 ? '#f59e0b' : '#e2e8f0',
+        alpha: 1.0,
+        life: 0.32 + Math.random() * 0.16,
+        maxLife: 0.48,
+        gravity: 0.04,
         isStreak: true
       });
     }
@@ -1967,6 +2005,93 @@ class EffectManager {
           ctx.moveTo(tx - 3 * sc, 2 * sc); ctx.lineTo(tx, -10 * sc); ctx.lineTo(tx + 3 * sc, 2 * sc);
           ctx.closePath(); ctx.fill();
         }
+        ctx.restore();
+        ctx.restore();
+      } else if (sp.kind === 'tiger_bite') {
+        const sc = sp.scale || 1.0;
+        const prog = Math.max(0, Math.min(1, 1 - (sp.life / (sp.maxLife || 0.48))));
+        const thrust = prog < 0.32 ? (1 - Math.pow(1 - prog / 0.32, 2)) : 1;
+        const tigerLower = this._getEffectSprite('tiger_lower', 'assets/images/effects/tiger_jaw_lower.png');
+        const tigerUpper = this._getEffectSprite('tiger_upper', 'assets/images/effects/tiger_jaw_upper.png');
+
+        ctx.save();
+        ctx.scale(sp.dir || 1, 1);
+
+        // Hào quang bạc-xám mãnh hổ bung về trước tại vị trí đấm
+        const roarGlow = ctx.createRadialGradient(8 * sc, 0, 4 * sc, 8 * sc, 0, 68 * sc);
+        roarGlow.addColorStop(0, 'rgba(241, 245, 249, 0.45)');
+        roarGlow.addColorStop(0.55, 'rgba(100, 116, 139, 0.25)');
+        roarGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = roarGlow;
+        ctx.beginPath();
+        ctx.arc(8 * sc, 0, 68 * sc, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (tigerLower && tigerUpper) {
+          const size = 186 * sc;
+          ctx.translate((-24 + thrust * 30) * sc, 8 * sc);
+          ctx.rotate(-0.14);
+
+          const drawX = -size * 0.50;
+          const drawY = -size * 0.48;
+          const hx = drawX + 0.49 * size;
+          const hy = drawY + 0.27 * size;
+
+          // Mở rộng hàm trên khi lao tới (0..0.38), sau đó sập chặt ngoạm mục tiêu (0.38..0.66)
+          const jawAngle = prog < 0.38
+            ? (-0.24 + prog * 0.14)
+            : Math.min(0.26, -0.18 + (prog - 0.38) * 2.8);
+
+          ctx.drawImage(tigerLower, drawX, drawY, size, size);
+          ctx.save();
+          ctx.translate(hx, hy);
+          ctx.rotate(jawAngle);
+          ctx.drawImage(tigerUpper, -0.43 * size, -0.54 * size, size, size);
+          ctx.restore();
+
+          if (prog >= 0.38 && prog <= 0.78) {
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 4.2;
+            ctx.beginPath();
+            ctx.arc(hx + 38 * sc, hy + 10 * sc, 28 * sc, -0.95, 0.95);
+            ctx.stroke();
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.arc(hx + 38 * sc, hy + 10 * sc, 18 * sc, -1.2, 1.2);
+            ctx.stroke();
+          }
+          ctx.restore();
+          ctx.restore();
+          continue;
+        }
+
+        // Vector fallback Hổ Xám Ngoạm (headless Node)
+        const jawOpen = prog < 0.38 ? (0.58 - prog * 0.3) : Math.max(0.05, 0.46 - (prog - 0.38) * 2.5);
+        ctx.translate((-18 + thrust * 24) * sc, 0);
+        ctx.save();
+        ctx.rotate(-jawOpen);
+        ctx.fillStyle = '#9ca3af';
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        ctx.moveTo(-24 * sc, -24 * sc); ctx.quadraticCurveTo(18 * sc, -28 * sc, 56 * sc, -8 * sc);
+        ctx.lineTo(50 * sc, 0); ctx.lineTo(-14 * sc, 2 * sc); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.moveTo(36 * sc, 0); ctx.lineTo(41 * sc, 14 * sc); ctx.lineTo(46 * sc, 0); ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.rotate(jawOpen * 0.5);
+        ctx.fillStyle = '#d1d5db';
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        ctx.moveTo(-16 * sc, 2 * sc); ctx.lineTo(48 * sc, 2 * sc); ctx.lineTo(40 * sc, 16 * sc); ctx.lineTo(-14 * sc, 20 * sc);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.moveTo(32 * sc, 2 * sc); ctx.lineTo(37 * sc, -12 * sc); ctx.lineTo(42 * sc, 2 * sc); ctx.fill();
         ctx.restore();
         ctx.restore();
       } else if (sp.kind === 'croc_tail_sweep') {

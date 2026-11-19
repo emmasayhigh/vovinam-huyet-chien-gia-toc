@@ -198,14 +198,13 @@ class PlayerBase {
     this.title = (c && c.title) || 'SÁT THẦN VIỆT VÕ ĐẠO';
     this.styleType = (c && c.styleType) || 'player';
 
-    // Trang phục (Võ Phục Vovinam / Skin đặc biệt): chỉ thay đổi ngoại hình, giữ nguyên toàn bộ bộ chiêu thức & chỉ số gốc của nhân vật
-    const equippedSkin = (this.charId === 'nghi')
-      ? 'default'
-      : ((window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
-        ? window.saveManager.getEquippedSkin(this.charId)
-        : ((window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(this.charId, 'vovinam')) ? 'vovinam' : 'default'));
+    // Trang phục (Võ Phục Vovinam / Skin đặc biệt): chỉ thay đổi ngoại hình & hiệu ứng, giữ nguyên chỉ số gốc của nhân vật
+    let equippedSkin = (window.saveManager && typeof window.saveManager.getEquippedSkin === 'function')
+      ? window.saveManager.getEquippedSkin(this.charId)
+      : ((this.charId !== 'nghi' && window.saveManager && typeof window.saveManager.isSkinEquipped === 'function' && window.saveManager.isSkinEquipped(this.charId, 'vovinam')) ? 'vovinam' : 'default');
+    if (this.charId === 'nghi' && equippedSkin === 'vovinam') equippedSkin = 'default';
     this.equippedSkin = equippedSkin;
-    this.isVovinamSkin = (this.charId === 'nghi' || equippedSkin === 'vovinam');
+    this.isVovinamSkin = (this.charId === 'nghi' ? equippedSkin === 'default' : equippedSkin === 'vovinam');
 
     this.maxHp = combat.hp || 1000;
     this.hp = this.maxHp;
