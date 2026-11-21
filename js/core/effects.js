@@ -15,6 +15,7 @@ class EffectManager {
     this.groundCracks = [];
     this.lightningArcs = [];
     this.dimensionalSlashes = [];
+    this.serpentFx = [];
     this.magmaCraters = [];
     this.sonicCones = [];
     this.thunderStrikes = [];
@@ -281,6 +282,7 @@ class EffectManager {
     this.groundCracks.length = 0;
     this.lightningArcs.length = 0;
     this.dimensionalSlashes.length = 0;
+    if (this.serpentFx) this.serpentFx.length = 0;
     this.magmaCraters.length = 0;
     this.sonicCones.length = 0;
     this.thunderStrikes.length = 0;
@@ -761,6 +763,7 @@ class EffectManager {
     this.groundCracks = [];
     this.lightningArcs = [];
     this.dimensionalSlashes = [];
+    this.serpentFx = [];
     this.magmaCraters = [];
     this.sonicCones = [];
     this.thunderStrikes = [];
@@ -870,6 +873,37 @@ class EffectManager {
   }
 
   // Vết cắt không gian (băng giá hoặc đường trảm Đen-Tím Hắc Ám)
+  createSerpentTidalSlash(x, y, dir = 1, scale = 1.0) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'tidal_slash',
+      x, y, dir: dir >= 0 ? 1 : -1,
+      scale: scale || 1.0,
+      t: 0,
+      life: 0.36, maxLife: 0.36, alpha: 1
+    });
+  }
+
+  createSerpentWaterPillar(x, y, height = 270, radius = 64) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'water_pillar',
+      x, y, height, radius,
+      t: 0,
+      life: 0.68, maxLife: 0.68, alpha: 1
+    });
+  }
+
+  createSerpentDashWake(x, y, dir = 1) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'dash_wake',
+      x, y, dir: dir >= 0 ? 1 : -1,
+      t: 0,
+      life: 0.42, maxLife: 0.42, alpha: 1
+    });
+  }
+
   createDimensionalSlash(x, y, angle = -0.3, length = 220, color = '#38bdf8', opts = null) {
     const darkCore = !!(opts && opts.darkCore);
     const width = (opts && opts.width) || (darkCore ? 7.2 : 5);
@@ -1312,6 +1346,20 @@ class EffectManager {
       ds.alpha = ds.life / ds.maxLife;
     }
 
+    // Cập nhật Hiệu ứng Thủy Quái Thuồng Luồng (Thủy Long Trảm, Cột Sóng Thần, Sóng Rẽ Nước)
+    if (Array.isArray(this.serpentFx)) {
+      for (let i = this.serpentFx.length - 1; i >= 0; i--) {
+        const sf = this.serpentFx[i];
+        sf.life -= dt;
+        sf.t = (sf.t || 0) + dt;
+        if (sf.life <= 0) {
+          this.serpentFx.splice(i, 1);
+          continue;
+        }
+        sf.alpha = Math.max(0, Math.min(1, sf.life / sf.maxLife));
+      }
+    }
+
     // Cập nhật Hố nứt dung nham (Magma Craters)
     for (let i = this.magmaCraters.length - 1; i >= 0; i--) {
       const mc = this.magmaCraters[i];
@@ -1445,6 +1493,94 @@ class EffectManager {
     }
 
     // 6. Vết chém không gian (băng giá hoặc đường trảm Đen-Tím Hắc Ám)
+    if (Array.isArray(this.serpentFx) && this.serpentFx.length > 0) {
+      for (const sf of this.serpentFx) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, sf.alpha));
+        const prog = 1 - (sf.life / sf.maxLife);
+        if (sf.kind === 'tidal_slash') {
+          ctx.translate(sf.x, sf.y);
+          ctx.scale(sf.dir * sf.scale, sf.scale);
+          const r = 46 + prog * 36;
+          // Lưỡi sóng xanh ngọc lục bảo rực rỡ
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.strokeStyle = '#06b6d4';
+          ctx.lineWidth = Math.max(2, (1 - prog) * 18);
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.arc(-10, 0, r, -1.15, 0.95);
+          ctx.stroke();
+          // Sóng bọt trắng sắc lẹm bên trong
+          ctx.strokeStyle = '#e0f2fe';
+          ctx.lineWidth = Math.max(1.5, (1 - prog) * 8);
+          ctx.beginPath();
+          ctx.arc(-8, 0, r * 0.92, -1.05, 0.85);
+          ctx.stroke();
+          // Viền gai vây đỏ thẫm rẽ sóng ngoài cùng
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = Math.max(1.2, (1 - prog) * 5.5);
+          ctx.beginPath();
+          ctx.arc(-12, 0, r * 1.09, -0.95, 0.72);
+          ctx.stroke();
+        } else if (sf.kind === 'water_pillar') {
+          const h = sf.height * Math.min(1, prog * 3.2);
+          const rad = sf.radius * (0.75 + prog * 0.55);
+          const g = ctx.createLinearGradient(sf.x, sf.y, sf.x, sf.y - h);
+          g.addColorStop(0, 'rgba(6, 182, 212, 0.78)');
+          g.addColorStop(0.55, 'rgba(15, 118, 110, 0.52)');
+          g.addColorStop(1, 'rgba(224, 242, 254, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.moveTo(sf.x - rad * 0.75, sf.y);
+          ctx.quadraticCurveTo(sf.x - rad * 0.38, sf.y - h * 0.5, sf.x - rad * 0.55, sf.y - h);
+          ctx.lineTo(sf.x + rad * 0.55, sf.y - h);
+          ctx.quadraticCurveTo(sf.x + rad * 0.38, sf.y - h * 0.5, sf.x + rad * 0.75, sf.y);
+          ctx.closePath();
+          ctx.fill();
+          // 2 dải xoắn ốc nước xanh ngọc & vây đỏ quấn quanh cột sóng
+          ctx.globalCompositeOperation = 'lighter';
+          for (let s = 0; s < 2; s++) {
+            ctx.strokeStyle = s === 0 ? '#67e8f9' : '#ef4444';
+            ctx.lineWidth = s === 0 ? 4.2 : 2.8;
+            ctx.beginPath();
+            for (let k = 0; k <= 12; k++) {
+              const u = k / 12;
+              const px = sf.x + Math.sin(u * 8 + sf.t * 16 + s * Math.PI) * rad * (0.68 - u * 0.25);
+              const py = sf.y - u * h;
+              if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+          }
+          // Vòng bọt sóng trắng vỡ tung dưới chân cột
+          ctx.strokeStyle = 'rgba(224, 242, 254, 0.85)';
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.ellipse(sf.x, sf.y, rad * (0.9 + prog * 0.6), 16, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (sf.kind === 'dash_wake') {
+          ctx.translate(sf.x, sf.y);
+          ctx.scale(sf.dir, 1);
+          const len = 70 + prog * 75;
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.strokeStyle = '#22d3ee';
+          ctx.lineWidth = Math.max(2, (1 - prog) * 10);
+          ctx.beginPath();
+          ctx.moveTo(10, 0);
+          ctx.quadraticCurveTo(-len * 0.45, -24 - prog * 18, -len, -34 - prog * 24);
+          ctx.moveTo(10, 0);
+          ctx.quadraticCurveTo(-len * 0.45, 22 + prog * 16, -len, 30 + prog * 22);
+          ctx.stroke();
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = Math.max(1.5, (1 - prog) * 4.5);
+          ctx.beginPath();
+          ctx.moveTo(4, -4); ctx.lineTo(-len * 0.85, -20 - prog * 12);
+          ctx.moveTo(4, 4); ctx.lineTo(-len * 0.85, 18 + prog * 12);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
     for (const ds of this.dimensionalSlashes) {
       ctx.save();
       ctx.globalAlpha = Math.max(0, Math.min(1, ds.alpha));

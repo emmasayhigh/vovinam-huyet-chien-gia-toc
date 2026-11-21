@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-034",
-  "taskTitle": "Add Mythic Thuong Luong Sea-Serpent Skin & Transformation Ultimate for Pho Van Anh",
-  "generatedAt": "2026-11-21T19:20:34.495Z",
+  "taskId": "TASK-035",
+  "taskTitle": "Account Local Mirror Auto-Recovery + Thuong Luong Origin-Return Ult & Premium Sea-Serpent VFX",
+  "generatedAt": "2026-11-21T19:32:04.387Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 2,
-    "filesModifiedCount": 9,
+    "filesAddedCount": 1,
+    "filesModifiedCount": 6,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,16 +13,12 @@
   },
   "scope": {
     "filesAdded": [
-      "assets/images/characters/char_vananh_thuongluong.png",
-      "tasks/TASK-034.json"
+      "tasks/TASK-035.json"
     ],
     "filesModified": [
       "ndex.html",
-      "js/core/game.js",
-      "js/core/save.js",
-      "js/data/skins.js",
-      "js/entities/animation/animationArchetypes.js",
-      "js/entities/animation/animationBody.js",
+      "js/core/account.js",
+      "js/core/effects.js",
       "js/entities/animation/animationRenderBase.js",
       "js/entities/characters/vananh.js",
       "tests/test_skin_registry_and_cloud_auth.js"
@@ -31,9 +27,9 @@
   },
   "features": {
     "affected": [
+      "FEAT-SAV-001",
       "FEAT-CHR-001",
-      "FEAT-CMB-001",
-      "FEAT-NET-001"
+      "FEAT-CMB-001"
     ],
     "preserved": [
       "FEAT-CMB-001",

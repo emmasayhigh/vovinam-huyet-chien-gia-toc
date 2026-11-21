@@ -58,6 +58,50 @@
       } catch (_) {}
     }
 
+    _scoreSave(save) {
+      if (!save || typeof save !== 'object') return -1;
+      const stages = Array.isArray(save.completedStages) ? save.completedStages.length : 0;
+      const chars = Array.isArray(save.unlockedCharacters) ? save.unlockedCharacters.length : 0;
+      const purchases = Array.isArray(save.shopPurchases) ? save.shopPurchases.length : 0;
+      const curStage = Number(save.currentStage || 1);
+      const gold = Number(save.gold || 0);
+      const diamonds = Number(save.diamonds || 0);
+      return stages * 10000 + curStage * 1000 + chars * 500 + purchases * 250 + diamonds * 20 + gold;
+    }
+
+    _pickRicherSave(...candidates) {
+      let best = null;
+      let bestScore = -1;
+      for (const s of candidates) {
+        const sc = this._scoreSave(s);
+        if (sc > bestScore) {
+          bestScore = sc;
+          best = s;
+        }
+      }
+      return best;
+    }
+
+    _mirrorAccountToLocal(username, displayName, save, userMeta = null, password = null) {
+      const u = this.normalizeUsername(username);
+      if (!u) return null;
+      const accounts = this._loadLocalAccounts();
+      const prev = accounts[u] || {};
+      const bestSave = this._pickRicherSave(save, prev.save);
+      const merged = {
+        username: u,
+        displayName: String(displayName || (userMeta && userMeta.displayName) || prev.displayName || u).trim().slice(0, 24) || u,
+        password: (password !== null && password !== undefined && String(password).length >= 3) ? String(password) : (prev.password || ''),
+        pvpWins: Math.max(Number((userMeta && userMeta.pvpWins) || 0), Number(prev.pvpWins || 0)),
+        pvpMatches: Math.max(Number((userMeta && userMeta.pvpMatches) || 0), Number(prev.pvpMatches || 0)),
+        save: bestSave || null,
+        updatedAt: Date.now()
+      };
+      accounts[u] = merged;
+      this._saveLocalAccounts(accounts);
+      return merged;
+    }
+
     _localSanitizeUser(acc) {
       const save = acc.save || {};
       return {
@@ -268,6 +312,13 @@
         }
       }
       if (!res || !res.ok) {
+        if (res && res.userNotFound) {
+          const localAccounts = this._loadLocalAccounts();
+          const backup = localAccounts[cleanUser];
+          if (backup && (!backup.password || String(backup.password) === String(password || ''))) {
+            res.localBackup = backup;
+          }
+        }
         if (!opts.silentError) {
           this._toast(res && res.error ? res.error : 'Đăng nhập thất bại!');
         }
@@ -275,17 +326,20 @@
       }
       this._saveSession(res.token, res.user);
       const sm = root.saveManager;
-      if (sm && res.save && typeof res.save === 'object') {
-        const localStages = (sm.data && Array.isArray(sm.data.completedStages)) ? sm.data.completedStages.length : 0;
-        const cloudStages = Array.isArray(res.save.completedStages) ? res.save.completedStages.length : 0;
-        if (cloudStages >= localStages) {
-          sm.data = sm.sanitize(res.save);
+      const localAccounts = this._loadLocalAccounts();
+      const backupSave = (localAccounts[cleanUser] && localAccounts[cleanUser].save) ? localAccounts[cleanUser].save : null;
+      if (sm) {
+        const bestSave = this._pickRicherSave(res.save, sm.data, backupSave);
+        if (bestSave && bestSave !== sm.data) {
+          sm.data = sm.sanitize(bestSave);
           sm.persist(true);
-        } else {
+        }
+        this._mirrorAccountToLocal(cleanUser, res.user && res.user.displayName, sm.data, res.user, password);
+        if (this._scoreSave(sm.data) > this._scoreSave(res.save)) {
           await this.syncToCloud(true);
         }
-      } else if (sm && sm.data) {
-        await this.syncToCloud(true);
+      } else {
+        this._mirrorAccountToLocal(cleanUser, res.user && res.user.displayName, res.save, res.user, password);
       }
       const onName = this._el('online-player-name');
       if (onName && res.user.displayName) onName.value = res.user.displayName;
@@ -301,7 +355,13 @@
     async register(username, password, displayName, opts = {}) {
       const cleanUser = this.normalizeUsername(username);
       const sm = root.saveManager;
-      const initialSave = (sm && sm.data) ? sm.data : null;
+      const localAccounts = this._loadLocalAccounts();
+      const backupSave = (opts && opts.restoredSave) || (localAccounts[cleanUser] && localAccounts[cleanUser].save) || null;
+      const initialSave = this._pickRicherSave(backupSave, (sm && sm.data) ? sm.data : null);
+      if (sm && initialSave && initialSave !== sm.data) {
+        sm.data = sm.sanitize(initialSave);
+        sm.persist(true);
+      }
       let res;
       if (this._isLocalModePreferred()) {
         res = this._localAuthRegister(cleanUser, password, displayName, initialSave);
@@ -323,14 +383,17 @@
         return res;
       }
       this._saveSession(res.token, res.user);
+      this._mirrorAccountToLocal(cleanUser, res.user && res.user.displayName, initialSave, res.user, password);
       const onName = this._el('online-player-name');
       if (onName && res.user.displayName) onName.value = res.user.displayName;
       if (root.menuManager && typeof root.menuManager.updateMenuPlayerBar === 'function') {
         root.menuManager.updateMenuPlayerBar();
       }
-      this._toast(res.local
-        ? `🎉 Đã tạo tài khoản ${res.user.displayName} (Lưu nội bộ)!`
-        : `🎉 Đã tạo tài khoản ${res.user.displayName} & sao lưu Cloud!`);
+      this._toast(opts && opts.restoredSave
+        ? `♻️ Đã khôi phục tiến trình ${res.user.displayName} từ sao lưu cục bộ & đồng bộ Cloud!`
+        : (res.local
+          ? `🎉 Đã tạo tài khoản ${res.user.displayName} (Lưu nội bộ)!`
+          : `🎉 Đã tạo tài khoản ${res.user.displayName} & sao lưu Cloud!`));
       return res;
     }
 
@@ -407,6 +470,9 @@
         save: sm.data,
         displayName: this.user && this.user.displayName
       });
+      if (this.user && this.user.username) {
+        this._mirrorAccountToLocal(this.user.username, this.user.displayName, sm.data, (res && res.user) || this.user);
+      }
       if (res && res.ok && res.user) {
         this._saveSession(this.token, res.user);
         if (!silent) this._toast('☁️ Đã đồng bộ tiến trình & kho đồ lên Cloud!');
@@ -553,8 +619,16 @@
           setFb('⏳ Đang xác thực đăng nhập...', false);
           res = await this.login(u, p, { silentError: true });
           if ((!res || !res.ok) && res && res.userNotFound) {
-            setFb('⏳ Tài khoản mới — đang tự động tạo & vào game...', false);
-            res = await this.register(u, p, d || rawU || u, { silentError: true });
+            if (res.localBackup && res.localBackup.save) {
+              setFb('♻️ Phát hiện bản sao lưu cục bộ — đang khôi phục tiến trình lên Cloud...', false);
+              res = await this.register(u, p, res.localBackup.displayName || d || rawU || u, {
+                silentError: true,
+                restoredSave: res.localBackup.save
+              });
+            } else {
+              setFb('⏳ Tài khoản mới — đang tự động tạo & vào game...', false);
+              res = await this.register(u, p, d || rawU || u, { silentError: true });
+            }
           }
           if (!res || !res.ok) {
             this._toast((res && res.error) || 'Đăng nhập thất bại!');

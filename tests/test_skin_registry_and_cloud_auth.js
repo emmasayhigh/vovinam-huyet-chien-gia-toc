@@ -331,7 +331,48 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     const tlRuntime = window.SkinRegistry.getRuntimeStyle('vananh', 'thuongluong');
     assert.ok(tlRuntime && tlRuntime.style && tlRuntime.style.serpentSuit && tlRuntime.style.serpentTail && tlRuntime.style.serpentSpines, 'Runtime style Thuồng Luồng có đầy đủ bộ đồ vảy, đuôi và vây đỏ');
 
-    console.log('✓ TEST 4 & 5: InputManager typing guard, AccountManager auth gate & Thuong Luong skin passed');
+    // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
+    {
+      const amRec = new window.AccountManager();
+      const richSave = {
+        completedStages: [1, 2, 3, 4, 5],
+        currentStage: 6,
+        unlockedCharacters: ['nghi', 'bichlam', 'vananh'],
+        shopPurchases: ['vananh'],
+        gold: 4200,
+        diamonds: 180
+      };
+      amRec._mirrorAccountToLocal('old_hero_99', 'Cao Thủ Cũ', richSave, { pvpWins: 7, pvpMatches: 10 }, 'secret123');
+      let registeredSavePayload = null;
+      const prevFetch = global.fetch;
+      const prevLoc = global.window.location;
+      global.window.location = { protocol: 'http:', origin: 'http://127.0.0.1:9999' };
+      global.fetch = async (url, init = {}) => {
+        if (String(url).includes('/api/auth/login')) {
+          return { status: 401, text: async () => JSON.stringify({ ok: false, userNotFound: true, error: 'Tài khoản chưa tồn tại!' }) };
+        }
+        if (String(url).includes('/api/auth/register')) {
+          const body = JSON.parse(init.body || '{}');
+          registeredSavePayload = body.save;
+          return { status: 201, text: async () => JSON.stringify({ ok: true, token: 'tok_restored', user: { username: body.username, displayName: body.displayName }, save: body.save }) };
+        }
+        return { status: 200, text: async () => JSON.stringify({ ok: true }) };
+      };
+      try {
+        const loginRes = await amRec.login('old_hero_99', 'secret123', { silentError: true });
+        assert.ok(loginRes && loginRes.userNotFound && loginRes.localBackup && loginRes.localBackup.save, 'Login trả về localBackup khi Cloud mất data sau redeploy');
+        const regRes = await amRec.register('old_hero_99', 'secret123', loginRes.localBackup.displayName, { silentError: true, restoredSave: loginRes.localBackup.save });
+        assert.strictEqual(regRes.ok, true, 'Tự đăng ký lại lên Cloud thành công với bản sao lưu cục bộ');
+        assert.deepStrictEqual(registeredSavePayload.completedStages, [1, 2, 3, 4, 5], 'Tiến trình 5 màn cũ được đẩy ngược lên Cloud nguyên vẹn');
+        assert.strictEqual(registeredSavePayload.gold, 4200, 'Vàng cũ được khôi phục nguyên vẹn');
+      } finally {
+        global.fetch = prevFetch;
+        if (prevLoc === undefined) delete global.window.location;
+        else global.window.location = prevLoc;
+      }
+    }
+
+    console.log('✓ TEST 4, 5 & 6: Auth gate, Thuong Luong skin & Account Local Mirror auto-recovery passed');
   } finally {
     server.close();
     try { fs.unlinkSync(tmpFile); } catch (_) {}

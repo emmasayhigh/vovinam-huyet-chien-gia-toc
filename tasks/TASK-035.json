@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-035",
+  "title": "Account Local Mirror Auto-Recovery + Thuong Luong Origin-Return Ult & Premium Sea-Serpent VFX",
+  "author": "Antigravity Senior Game Engine & VFX Engineer",
+  "date": "2026-11-22",
+  "objective": "1. Triển khai cơ chế sao lưu kép Local Mirror & tự động khôi phục tiến trình tài khoản khi Render redeploy làm mất data/accounts.json (js/core/account.js). 2. Chỉnh Tuyệt Kỹ Thuồng Luồng của Phó Văn Anh theo đúng choreography: hóa Thuồng Luồng hất xuyên siêu nhanh qua người kẻ địch (12 nhịp chuẩn bão đạn Văn Anh) -> bay vút lên trời -> lao đầu đáp lại ĐÚNG CHỖ ban đầu đập mạnh xuống đất bùng nổ sóng thần; đồng thời nâng cấp toàn bộ hiệu ứng đặc sắc (Thủy Long Trảm, Cột Sóng Thần xoắn ốc, Sóng Rẽ Nước, tạo hình Thuồng Luồng 14 đốt vảy rồng + vây màng đỏ + râu rồng).",
+  "requestedBehavior": "1. AccountManager tự động mirror save/displayName/pvpWins/pvpMatches vào vovinam_local_accounts_v1 theo username, dùng _pickRicherSave tránh ghi đè tiến trình cao hơn, và tự khôi phục bản sao lưu cục bộ đẩy ngược lên Cloud nếu server trả userNotFound sau redeploy. 2. EffectManager bổ sung createSerpentTidalSlash, createSerpentWaterPillar, createSerpentDashWake với vòng update/render hoàn chỉnh. 3. vananh.js thực thi Tuyệt Kỹ Thuồng Luồng giữ đúng vị trí gốc (_tlOriginX), hất xuyên 12 nhịp -> bay vút trời quay về -> đáp lại đúng chỗ đập mạnh mặt đất + dùng bộ VFX mới cho mọi chiêu thức. 4. Nâng cấp drawThuongLuongBeastForm (14 đốt vảy rồng, màng vây đỏ, râu rồng, luồng thủy khí) và vảy/vây trang phục trong animationArchetypes.js. 5. Bổ sung test hồi quy cho Local Mirror recovery & Thuồng Luồng VFX/Ult.",
+  "allowedFiles": [
+    "js/core/account.js",
+    "js/core/effects.js",
+    "js/entities/characters/vananh.js",
+    "js/entities/animation/animationRenderBase.js",
+    "js/entities/animation/animationArchetypes.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tasks/TASK-035.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-SAV-001",
+    "FEAT-CHR-001",
+    "FEAT-CMB-001"
+  ],
+  "dependencies": [
+    "AccountManager",
+    "SaveManager",
+    "EffectManager",
+    "CharacterRegistry",
+    "SkeletalRendererRenderBase",
+    "SkeletalRendererArchetypes"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 195,
+    "authorizedRemovals": [
+      "Upgrading drawThuongLuongBeastForm in animationRenderBase.js with higher-detail 14-segment sea serpent",
+      "Updating Thuong Luong ultimate choreography in vananh.js to dash through enemies and land back at origin",
+      "Updating cache-bust query strings in index.html"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-035.json"
+  ]
+}
