@@ -212,6 +212,15 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
     if (isHoXamUlt && typeof this.drawGreyTigerPhantom === 'function') {
       this.drawGreyTigerPhantom(ctx, jt, st, p, now);
     }
+    const isThuongLuongUlt = !ghost && !isSil && state === 'ultimate_barrage' && (
+      e.equippedSkin === 'thuongluong' ||
+      (window.CharacterRegistry && typeof window.CharacterRegistry.getEquippedSkin === 'function' && window.CharacterRegistry.getEquippedSkin(e) === 'thuongluong')
+    );
+    if (isThuongLuongUlt && typeof this.drawThuongLuongBeastForm === 'function') {
+      this.drawThuongLuongBeastForm(ctx, jt, st, p, now);
+      ctx.restore();
+      return;
+    }
     const shieldInFront = st.shield && (state === 'guard' || state === 'boss_bash' || state === 'elbow_strike' || (state === 'ultimate_bash' && p < 0.58));
     if (typeof this.drawBackLayers === 'function') this.drawBackLayers(ctx, jt, st, motion);
     this.drawLeg(ctx, jt.fHip, jt.fKnee, jt.fAnk, jt.fFoot, st, true);
@@ -1881,6 +1890,136 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
       ctx.fillStyle = '#f59e0b';
       ctx.beginPath(); ctx.arc(68, -14, 3.2, 0, Math.PI * 2); ctx.fill();
     }
+    ctx.restore();
+  }
+
+  // ==========================================================================
+  // TUYỆT KỸ THUỒNG LUỒNG — PHÓ VĂN ANH: HÓA HÌNH THỦY QUÁI THUỒNG LUỒNG 3 PHA
+  // ==========================================================================
+  drawThuongLuongBeastForm(ctx, jt, st, p, now) {
+    const prog = Math.max(0, Math.min(1, p || 0));
+    const phase = prog < 0.42 ? 1 : (prog < 0.72 ? 2 : 3);
+    const wave = now * 0.022;
+    const tilt = phase === 1
+      ? Math.sin(wave * 0.7) * 0.08
+      : (phase === 2 ? -0.92 + Math.sin(wave) * 0.08 : 1.08);
+
+    ctx.save();
+    ctx.translate(0, -56);
+
+    // Vầng hào quang hải lưu bọt sóng quanh thân Thuồng Luồng
+    const aura = ctx.createRadialGradient(0, 0, 14, 0, 0, 148);
+    aura.addColorStop(0, 'rgba(34, 211, 238, 0.55)');
+    aura.addColorStop(0.52, 'rgba(15, 118, 110, 0.32)');
+    aura.addColorStop(0.82, 'rgba(220, 38, 38, 0.16)');
+    aura.addColorStop(1, 'rgba(4, 47, 46, 0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath();
+    ctx.arc(0, 0, 148, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Vệt sóng trắng bọt biển theo hướng lao / bay lên / đập xuống
+    ctx.strokeStyle = 'rgba(224, 242, 254, 0.72)';
+    ctx.lineWidth = 3.0;
+    ctx.lineCap = 'round';
+    ctx.rotate(tilt);
+    for (let k = -1; k <= 1; k++) {
+      ctx.beginPath();
+      ctx.moveTo(-165, k * 24 + Math.sin(wave + k) * 6);
+      ctx.quadraticCurveTo(-80, k * 18 - 10, 48, k * 12);
+      ctx.stroke();
+    }
+
+    // Thân rắn rồng Thuồng Luồng 9 đốt uốn lượn + vây lưng đỏ rực
+    const segs = 10;
+    const pts = [];
+    for (let i = 0; i < segs; i++) {
+      const u = i / (segs - 1);
+      const sx = 64 - u * 185;
+      const amp = 10 + u * 20;
+      const sy = Math.sin(wave - u * 4.4) * amp;
+      const r = (1 - u * 0.68) * 20 + 4;
+      pts.push({ x: sx, y: sy, r });
+    }
+
+    // Gai vây đỏ phía trên sống lưng
+    for (let i = 1; i < segs - 1; i++) {
+      const pt = pts[i];
+      ctx.fillStyle = i % 2 === 0 ? '#dc2626' : '#ef4444';
+      ctx.beginPath();
+      ctx.moveTo(pt.x + 8, pt.y - pt.r * 0.65);
+      ctx.lineTo(pt.x - 10, pt.y - pt.r * 1.85);
+      ctx.lineTo(pt.x - 9, pt.y - pt.r * 0.55);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Vẽ từng đốt thân vảy xanh ngọc lục bảo & bụng sáng
+    for (let i = segs - 1; i >= 0; i--) {
+      const pt = pts[i];
+      const grad = ctx.createRadialGradient(pt.x + 3, pt.y - pt.r * 0.3, 2, pt.x, pt.y, pt.r);
+      grad.addColorStop(0, '#2dd4bf');
+      grad.addColorStop(0.55, '#0f766e');
+      grad.addColorStop(1, '#042f2e');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#022c22';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+      // Vân bụng ngà xanh
+      ctx.fillStyle = 'rgba(204, 251, 241, 0.55)';
+      ctx.beginPath();
+      ctx.ellipse(pt.x, pt.y + pt.r * 0.42, pt.r * 0.65, pt.r * 0.28, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Đầu Thuồng Luồng dữ tợn (sừng đỏ, hàm mở rộng nanh trắng, mắt phát sáng xanh băng)
+    const hd = pts[0];
+    ctx.save();
+    ctx.translate(hd.x + 12, hd.y);
+    // Sừng & bờm vây đỏ sau đầu
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.moveTo(-8, -14); ctx.lineTo(-34, -36); ctx.lineTo(-16, -8); ctx.closePath();
+    ctx.moveTo(-2, -16); ctx.lineTo(-22, -40); ctx.lineTo(-8, -10); ctx.closePath();
+    ctx.fill();
+    // Hàm trên
+    ctx.fillStyle = '#0e7490';
+    ctx.strokeStyle = '#042f2e';
+    ctx.lineWidth = 2.0;
+    ctx.beginPath();
+    ctx.moveTo(-14, -14);
+    ctx.quadraticCurveTo(14, -22, 42, -6);
+    ctx.lineTo(36, 4);
+    ctx.lineTo(-10, 4);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    // Hàm dưới há rộng + lưỡi đỏ
+    ctx.fillStyle = '#7f1d1d';
+    ctx.beginPath();
+    ctx.moveTo(-6, 2); ctx.lineTo(34, 4); ctx.lineTo(24, 18); ctx.lineTo(-10, 14); ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#0f766e';
+    ctx.beginPath();
+    ctx.moveTo(-12, 10); ctx.lineTo(30, 16); ctx.lineTo(20, 24); ctx.lineTo(-14, 18); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    // Nanh trắng sắc nhọn
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.moveTo(22, 3); ctx.lineTo(26, 13); ctx.lineTo(30, 3); ctx.closePath();
+    ctx.moveTo(10, 3); ctx.lineTo(14, 11); ctx.lineTo(17, 3); ctx.closePath();
+    ctx.fill();
+    // Đôi mắt phát sáng cyan rực lửa
+    ctx.fillStyle = '#67e8f9';
+    ctx.beginPath();
+    ctx.moveTo(4, -11); ctx.lineTo(16, -8); ctx.lineTo(8, -5); ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(10, -8, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+
     ctx.restore();
   }
 }

@@ -6,6 +6,36 @@
  */
 
 (function () {
+  function isThuongLuongSkin(entity) {
+    if (!entity) return false;
+    if (entity.equippedSkin === 'thuongluong' || entity.thuongLuongSkin) return true;
+    if (window.CharacterRegistry && typeof window.CharacterRegistry.getEquippedSkin === 'function') {
+      return window.CharacterRegistry.getEquippedSkin(entity) === 'thuongluong';
+    }
+    return false;
+  }
+
+  function spawnThuongLuongWave(fx, x, y, dir = 1, count = 12, spread = 24) {
+    if (!fx || !Array.isArray(fx.particles)) return;
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const spd = 2.5 + Math.random() * 5.5;
+      const col = i % 4 === 0 ? '#ef4444' : (i % 3 === 0 ? '#e0f2fe' : (i % 2 === 0 ? '#06b6d4' : '#0f766e'));
+      fx.particles.push({
+        x: x + (Math.random() - 0.5) * spread,
+        y: y + (Math.random() - 0.5) * spread * 0.7,
+        vx: Math.cos(a) * spd + dir * (1.8 + Math.random() * 2.5),
+        vy: Math.sin(a) * spd - 1.6,
+        size: 2.8 + Math.random() * 3.4,
+        color: col,
+        alpha: 0.95,
+        life: 0.36 + Math.random() * 0.28,
+        maxLife: 0.64,
+        gravity: 0.16
+      });
+    }
+  }
+
   window.CharacterRegistry.register({
     id: 'vananh',
     uiSlotOrder: 7,
@@ -460,38 +490,52 @@
           player._xichHuyetArmorTriggered = true;
           const healAmt = Math.round(player.maxHp * 0.08);
           player.hp = Math.min(player.maxHp, player.hp + healAmt);
+          const isTL = isThuongLuongSkin(player);
+          const armorCol = isTL ? '#06b6d4' : '#f59e0b';
           if (typeof player.activateAuraArmor === 'function') {
-            player.activateAuraArmor(3, '#f59e0b');
+            player.activateAuraArmor(3, armorCol);
           }
           if (window.effectManager) {
-            window.effectManager.addFloatingText('HẬU PHƯƠNG THÉP!', player.x, player.y - 150, 'ult');
-            window.effectManager.createShockRing(player.x, player.y, '#f59e0b');
+            window.effectManager.addFloatingText(isTL ? '🐉 THỦY LÂN HỘ THỂ!' : 'HẬU PHƯƠNG THÉP!', player.x, player.y - 150, 'ult');
+            window.effectManager.createShockRing(player.x, player.y, armorCol);
+            if (isTL) spawnThuongLuongWave(window.effectManager, player.x, player.y - 60, player.facing || 1, 18, 56);
           }
         }
         return null;
       },
       onDodge(player, ctx) {
         if (ctx) ctx.dodgeSpeed = 480;
+        const isTL = isThuongLuongSkin(player);
         if (window.effectManager) {
-          window.effectManager.addFloatingText('KHÓI HABANA!', player.x, player.y - 140, 'dodge');
-          window.effectManager.addGhostTrail(player, 'rgba(245, 158, 11, 0.45)');
+          window.effectManager.addFloatingText(isTL ? '🌊 LẶN SÓNG THUỒNG LUỒNG!' : 'KHÓI HABANA!', player.x, player.y - 140, 'dodge');
+          window.effectManager.addGhostTrail(player, isTL ? 'rgba(6, 182, 212, 0.56)' : 'rgba(245, 158, 11, 0.45)');
+          if (isTL) {
+            window.effectManager.createShockRing(player.x, player.y, '#06b6d4');
+            spawnThuongLuongWave(window.effectManager, player.x, player.y - 45, -(player.facing || 1), 12, 34);
+          }
         }
       },
       onHandCounter(defender, attacker) {
         if (!attacker || attacker.isDead) return;
+        const isTL = isThuongLuongSkin(defender);
         attacker.takeDamage(34, defender.facing * 260, true);
         attacker.stunTimer = Math.max(attacker.stunTimer || 0, 0.9);
         if (typeof attacker.poise === 'number') {
           attacker.poise = Math.max(0, attacker.poise - 14);
         }
         if (window.effectManager) {
-          window.effectManager.addFloatingText('GÍ SÚNG GIẢM THANH!', attacker.x, attacker.y - 145, 'crit');
-          window.effectManager.createShockRing(attacker.x, attacker.y, '#f59e0b');
+          window.effectManager.addFloatingText(isTL ? '🐉 LONG VĨ QUẤT SÓNG!' : 'GÍ SÚNG GIẢM THANH!', attacker.x, attacker.y - 145, 'crit');
+          window.effectManager.createShockRing(attacker.x, attacker.y, isTL ? '#06b6d4' : '#f59e0b');
+          if (isTL) {
+            window.effectManager.createShockRing(attacker.x, attacker.y, '#ef4444');
+            spawnThuongLuongWave(window.effectManager, attacker.x, attacker.y - 65, defender.facing || 1, 16, 40);
+          }
         }
       },
       onLegCounter(defender, attacker) {
+        const isTL = isThuongLuongSkin(defender);
         if (typeof defender.activateAuraArmor === 'function') {
-          defender.activateAuraArmor(1, '#f59e0b');
+          defender.activateAuraArmor(1, isTL ? '#06b6d4' : '#f59e0b');
         } else if (typeof defender.setAuraArmor === 'function') {
           defender.setAuraArmor('gold', 1.2);
         }
@@ -502,44 +546,56 @@
             attacker.poise = Math.max(0, attacker.poise - 20);
           }
           if (window.effectManager) {
-            if (typeof window.effectManager.createShockRing === 'function') window.effectManager.createShockRing(attacker.x, attacker.y || 580, '#f59e0b');
-            if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText('🔫 PHÁT BẮN BẺ KHỚP (-20 POISE / +1 GIÁP)!', attacker.x, (attacker.y || 580) - 165, 'crit');
+            if (typeof window.effectManager.createShockRing === 'function') window.effectManager.createShockRing(attacker.x, attacker.y || 580, isTL ? '#06b6d4' : '#f59e0b');
+            if (isTL) spawnThuongLuongWave(window.effectManager, attacker.x, (attacker.y || 580) - 55, defender.facing || 1, 14, 38);
+            if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText(isTL ? '🌊 TRIỀU CƯỜNG KHÓA CHÂN (-20 POISE / +1 GIÁP)!' : '🔫 PHÁT BẮN BẺ KHỚP (-20 POISE / +1 GIÁP)!', attacker.x, (attacker.y || 580) - 165, 'crit');
           }
         }
       },
       onStanceSpecial(player) {
+        const isTL = isThuongLuongSkin(player);
         player.nextHitCrit = true;
         player.stamina = Math.min(player.maxStamina || 100, (player.stamina || 0) + 10);
         if (typeof player.setAuraArmor === 'function') player.setAuraArmor('gold', 0.8);
         if (window.effectManager) {
-          if (typeof window.effectManager.createDust === 'function') window.effectManager.createDust(player.x, player.y || 580, 10, 36);
-          if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText('🥃 KHÓI HABANA NẠP ĐẠN CHÍ MẠNG (+10 TL)!', player.x, (player.y || 580) - 175, 'heal');
+          if (isTL) {
+            if (typeof window.effectManager.createShockRing === 'function') window.effectManager.createShockRing(player.x, player.y || 580, '#06b6d4');
+            spawnThuongLuongWave(window.effectManager, player.x, (player.y || 580) - 55, player.facing || 1, 16, 44);
+          } else if (typeof window.effectManager.createDust === 'function') {
+            window.effectManager.createDust(player.x, player.y || 580, 10, 36);
+          }
+          if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText(isTL ? '🐉 HẢI KHÍ TỤ LỰC CHÍ MẠNG (+10 TL)!' : '🥃 KHÓI HABANA NẠP ĐẠN CHÍ MẠNG (+10 TL)!', player.x, (player.y || 580) - 175, 'heal');
         }
         return true;
       },
       onDodgeFollowup(player, btn) {
+        const isTL = isThuongLuongSkin(player);
         if (btn === 'K') {
           player.startAttack('kick_push', 0.48, 225);
           player._moveVariant = 'wk';
           if (window.effectManager && typeof window.effectManager.addFloatingText === 'function') {
-            window.effectManager.addFloatingText('🥾 ỦNG THÂN ĐẾ ĐÔ!', player.x, (player.y || 580) - 150, 'crit');
+            window.effectManager.addFloatingText(isTL ? '🌊 ĐẠP SÓNG THUỒNG LUỒNG!' : '🥾 ỦNG THÂN ĐẾ ĐÔ!', player.x, (player.y || 580) - 150, 'crit');
           }
           return true;
         }
         player.startAttack('punch_hook', 0.40, 190);
         if (window.effectManager && typeof window.effectManager.addFloatingText === 'function') {
-          window.effectManager.addFloatingText('🔫 QUẤT BÁNG SÚNG HẮC KIM!', player.x, (player.y || 580) - 150, 'dodge');
+          window.effectManager.addFloatingText(isTL ? '🐉 QUẬT VÂY ĐỎ THỦY QUÁI!' : '🔫 QUẤT BÁNG SÚNG HẮC KIM!', player.x, (player.y || 580) - 150, 'dodge');
         }
         return true;
       },
       onAttackHit(attacker, defender, attackData, combatSystem, hitCtx) {
         if (!defender || defender.isDead) return;
+        const isTL = isThuongLuongSkin(attacker);
+        if (isTL && window.effectManager) {
+          spawnThuongLuongWave(window.effectManager, defender.x, (defender.y || 580) - 65, attacker.facing || 1, 8, 28);
+        }
         if (attackData && (attackData.weight === 'ultimate' || attackData.weight === 'heavy')) {
           if (typeof defender.poise === 'number') {
             defender.poise = Math.max(0, defender.poise - 8);
           }
           if (window.effectManager) {
-            window.effectManager.createShockRing(defender.x, defender.y, '#f59e0b');
+            window.effectManager.createShockRing(defender.x, defender.y, isTL ? '#06b6d4' : '#f59e0b');
           }
         }
         if (hitCtx && (hitCtx.isCrossCombo || hitCtx.effectiveMove === 'elbow_strike') && defender.type !== 'player') {
@@ -553,8 +609,16 @@
             if (typeof defender.setState === 'function') defender.setState('knockdown', 1.0);
           }
           if (window.effectManager) {
-            if (typeof window.effectManager.createMuzzleFlash === 'function') window.effectManager.createMuzzleFlash(attacker.x + (attacker.facing || 1) * 55, (attacker.y || 580) - 78, attacker.facing || 1, '#facc15');
-            if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText('🔫 BỒI ĐẠN GIẢM THANH (+14)!', defender.x, (defender.y || 580) - 165, 'crit');
+            if (isTL) {
+              if (typeof window.effectManager.createSlashArc === 'function') {
+                window.effectManager.createSlashArc(defender.x, (defender.y || 580) - 70, attacker.facing || 1, 72, '#06b6d4', 5);
+              }
+              spawnThuongLuongWave(window.effectManager, defender.x, (defender.y || 580) - 72, attacker.facing || 1, 14, 34);
+              if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText('🌊 THỦY TIỄN THUỒNG LUỒNG (+14)!', defender.x, (defender.y || 580) - 165, 'crit');
+            } else {
+              if (typeof window.effectManager.createMuzzleFlash === 'function') window.effectManager.createMuzzleFlash(attacker.x + (attacker.facing || 1) * 55, (attacker.y || 580) - 78, attacker.facing || 1, '#facc15');
+              if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText('🔫 BỒI ĐẠN GIẢM THANH (+14)!', defender.x, (defender.y || 580) - 165, 'crit');
+            }
           }
         }
         if (hitCtx && hitCtx.effectiveMove === 'uppercut' && (defender.stunTimer > 0 || defender.guardBroken)) {
@@ -579,6 +643,112 @@
       // Rút súng lục giảm thanh, xả 12 phát đạn vàng vào mục tiêu phía trước rồi kết thúc bằng trận mưa tiền vàng nổ tung
       execute(player, st, dt, enemies, { p, hitEnemy }) {
         const fx = window.effectManager;
+
+        // === TUYỆT KỸ ĐỘC QUYỀN SKIN THUỒNG LUỒNG: HÓA THUỒNG LUỒNG -> PHI SIÊU NHANH XUYÊN ĐỊCH -> BAY LÊN TRỜI -> ĐẬP MẠNH XUỐNG ĐẤT ===
+        if (isThuongLuongSkin(player)) {
+          const dir = player.facing || 1;
+          if (!player._ultStep) {
+            player._ultStep = 1;
+            player._tlDashHits = {};
+            if (fx) {
+              fx.createShockRing(player.x, player.y, '#06b6d4');
+              fx.createShockRing(player.x, player.y, '#ef4444');
+              spawnThuongLuongWave(fx, player.x, player.y - 60, dir, 22, 65);
+              if (typeof fx.addFloatingText === 'function') {
+                fx.addFloatingText('🐉 HÓA THUỒNG LUỒNG!', player.x, player.y - 165, 'ultimate');
+              }
+            }
+          }
+
+          if (p < 0.42) {
+            // PHA 1: Phi siêu nhanh xuyên qua người kẻ địch
+            player.vx = dir * 980;
+            player.z = -14 - Math.sin(p * Math.PI * 10) * 10;
+            player.vz = 0;
+            if (fx && Math.random() < 0.7) {
+              spawnThuongLuongWave(fx, player.x - dir * 34, player.y + player.z - 42, -dir, 5, 26);
+            }
+            const hitCounts = player._tlDashHits || (player._tlDashHits = {});
+            const passStep = Math.floor(p * 12);
+            for (const e of enemies) {
+              if (!e || e.isDead) continue;
+              const eid = e.id || e._netId || e.name || 'e';
+              const dist = Math.hypot(e.x - player.x, (e.y - player.y) * 1.4);
+              const rec = hitCounts[eid] || { n: 0, lastStep: -9 };
+              if (dist < 145 && rec.n < 3 && passStep > rec.lastStep + 1) {
+                rec.n += 1;
+                rec.lastStep = passStep;
+                hitCounts[eid] = rec;
+                hitEnemy(e, 34, 6, false);
+                e.stunTimer = Math.max(e.stunTimer || 0, 0.35);
+                if (typeof e.poise === 'number') e.poise = Math.max(0, e.poise - 6);
+                if (fx) {
+                  if (typeof fx.createSlashArc === 'function') fx.createSlashArc(e.x, e.y - 65, dir, 84, '#06b6d4', 5);
+                  spawnThuongLuongWave(fx, e.x, e.y - 65, dir, 10, 32);
+                }
+              }
+            }
+          } else if (p < 0.72) {
+            // PHA 2: Cuộn mình bay vút thẳng lên trời
+            const riseT = (p - 0.42) / 0.30;
+            player.vx = dir * 130 * (1 - riseT);
+            player.z = -18 - Math.sin(riseT * Math.PI * 0.5) * 235;
+            player.vz = 0;
+            if (player._ultStep < 2) {
+              player._ultStep = 2;
+              if (fx) {
+                fx.createShockRing(player.x, player.y, '#06b6d4');
+                spawnThuongLuongWave(fx, player.x, player.y - 50, dir, 20, 60);
+                if (typeof fx.addFloatingText === 'function') {
+                  fx.addFloatingText('🌊 VÚT LÊN TRỜI CAO!', player.x, player.y + player.z - 110, 'crit');
+                }
+              }
+            }
+            if (fx && Math.random() < 0.65) {
+              spawnThuongLuongWave(fx, player.x, player.y + player.z - 20, 0, 4, 48);
+            }
+          } else if (p < 1) {
+            // PHA 3: Lao đầu đập mạnh xuống mặt đất!
+            const diveT = (p - 0.72) / 0.28;
+            player.vx = dir * 180 * (1 - diveT);
+            player.z = -253 * Math.max(0, 1 - diveT * diveT);
+            player.vz = 0;
+            if (fx && Math.random() < 0.75) {
+              spawnThuongLuongWave(fx, player.x, player.y + player.z - 25, 0, 5, 42);
+            }
+          }
+
+          if (p >= 1) {
+            player.vx = 0;
+            player.z = 0;
+            player.vz = 0;
+            if (typeof player.activateAuraArmor === 'function') player.activateAuraArmor(2, '#06b6d4');
+            if (fx) {
+              if (typeof fx.createUltimateBlast === 'function') {
+                fx.createUltimateBlast(player.x, player.y - 45, { primary: '#06b6d4', secondary: '#dc2626', flash: '#e0f2fe' });
+              }
+              if (typeof fx.createGroundSlam === 'function') fx.createGroundSlam(player.x, player.y, 260);
+              if (typeof fx.createGroundCrack === 'function') fx.createGroundCrack(player.x, player.y, 175, '#06b6d4');
+              fx.createShockRing(player.x, player.y, '#06b6d4', 320);
+              fx.createShockRing(player.x, player.y, '#ef4444', 240);
+              fx.triggerScreenShake(26, 0.65);
+              spawnThuongLuongWave(fx, player.x, player.y - 35, 0, 44, 180);
+              if (typeof fx.addFloatingText === 'function') {
+                fx.addFloatingText('💥 HẢI KHIẾU GIÁNG ĐỊA!', player.x, player.y - 180, 'ultimate');
+              }
+            }
+            for (const e of enemies) {
+              if (!e.isDead && Math.abs(e.x - player.x) < 400) {
+                hitEnemy(e, 118, 18, true);
+              }
+            }
+            player._tlDashHits = null;
+            player.hitTargets.clear();
+            player.setState('idle');
+          }
+          return;
+        }
+
         player.vx = -player.facing * 30 * (1 - p);
         const shots = Math.min(12, Math.floor(p * 12));
         while ((player._ultStep || 0) < shots && p < 1) {

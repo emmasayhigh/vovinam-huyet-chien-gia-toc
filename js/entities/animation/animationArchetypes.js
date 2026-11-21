@@ -64,6 +64,66 @@ class SkeletalRendererArchetypes extends window.SkeletalRendererWeapon {
       }
     }
 
+    if (st.serpentTail) {
+      const tWave = Math.sin(((motion && motion.now) || 0) * 0.011) * 5.2 + sw * 0.45;
+      const tBase = P(H, -7.5, 2.0);
+      const tMid1 = P(H, -24.0 + wind * 0.45, 8.5 + tWave * 0.45);
+      const tMid2 = P(H, -40.0 + wind * 0.72, -3.5 - tWave * 0.5);
+      const tTip = P(H, -54.0 + wind * 0.95, 7.5 + tWave);
+      ctx.fillStyle = this._c(st, st.gi || '#0f766e');
+      ctx.beginPath();
+      ctx.moveTo(tBase[0], tBase[1] - 5.5);
+      ctx.bezierCurveTo(tMid1[0], tMid1[1] - 5.5, tMid2[0], tMid2[1] - 4.0, tTip[0], tTip[1]);
+      ctx.bezierCurveTo(tMid2[0], tMid2[1] + 5.5, tMid1[0], tMid1[1] + 6.5, tBase[0], tBase[1] + 5.5);
+      ctx.closePath();
+      ctx.fill();
+      if (!isSolid) {
+        ctx.strokeStyle = '#042f2e'; ctx.lineWidth = 1.25; ctx.stroke();
+        // Vây đỏ dọc sống lưng đuôi Thuồng Luồng
+        ctx.fillStyle = '#dc2626';
+        for (let k = 0; k < 4; k++) {
+          const u = 0.22 + k * 0.2;
+          const fx = tBase[0] + (tTip[0] - tBase[0]) * u;
+          const fy = tBase[1] + (tTip[1] - tBase[1]) * u - 3.5;
+          ctx.beginPath();
+          ctx.moveTo(fx - 3.5, fy + 2);
+          ctx.lineTo(fx - 6.5, fy - 6.5);
+          ctx.lineTo(fx + 2.5, fy + 1);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+    }
+
+    if (st.serpentSpines) {
+      // Mũ trùm / cổ áo vây đỏ Thuồng Luồng dựng sau gáy và vai
+      const colL = P(sh, -12.5, 4.0);
+      const colTop = P(sh, -18.5 + wind * 0.35, 19.0);
+      const colR = P(sh, 5.5, 6.0);
+      ctx.fillStyle = this._c(st, '#0b4f52');
+      ctx.beginPath();
+      ctx.moveTo(colL[0], colL[1]);
+      ctx.quadraticCurveTo(colTop[0] - 4, colTop[1], colR[0] - 6, colTop[1] - 4);
+      ctx.lineTo(colR[0], colR[1]);
+      ctx.closePath();
+      ctx.fill();
+      if (!isSolid) {
+        ctx.strokeStyle = '#042f2e'; ctx.lineWidth = 1.1; ctx.stroke();
+        // Gai vây đỏ rực viền cổ áo Thuồng Luồng
+        ctx.fillStyle = '#ef4444';
+        for (let s = 0; s < 3; s++) {
+          const sx = colL[0] - 2 - s * 3.5;
+          const sy = colL[1] - 5 - s * 5.0;
+          ctx.beginPath();
+          ctx.moveTo(sx + 2, sy + 3);
+          ctx.lineTo(sx - 7, sy - 4);
+          ctx.lineTo(sx + 3, sy - 2);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+    }
+
     if (st.thanTrungHood) {
       const shL = P(sh, -13.5, 2.0), shR = P(sh, 10.5, 2.0);
       const cBotL = P(H, -28.0 + wind * 1.15, -39.0);

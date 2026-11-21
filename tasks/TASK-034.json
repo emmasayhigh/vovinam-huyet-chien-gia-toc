@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-034",
+  "title": "Add Mythic Thuong Luong Sea-Serpent Skin & Transformation Ultimate for Pho Van Anh",
+  "author": "Antigravity Senior Game Engine & VFX Engineer",
+  "date": "2026-11-22",
+  "objective": "Thêm trang phục Chí Tôn Phẩm Thuồng Luồng (thuongluong) cho Phó Văn Anh theo đúng phong cách mặc bộ đồ Thuồng Luồng vảy xanh ngọc - vây đỏ, kèm toàn bộ hiệu ứng kỹ năng thủy quái và Tuyệt Kỹ (I) biến hình thành Thuồng Luồng phi siêu nhanh xuyên kẻ địch -> bay vút lên trời -> lao xuống đập mạnh mặt đất.",
+  "requestedBehavior": "1. Đăng ký skin thuongluong + runtime style cho vananh trong js/data/skins.js kèm chân dung assets/images/characters/char_vananh_thuongluong.png. 2. Vẽ trang phục bộ đồ Thuồng Luồng (đuôi vảy xanh ngọc vây đỏ, cổ vây thủy quái, nền thẻ skin) trong animationArchetypes.js & animationBody.js, và vẽ hình thái biến hình Thuồng Luồng 3 pha trong animationRenderBase.js khi vananh thi triển ultimate_barrage với skin thuongluong. 3. Bổ sung hiệu ứng nội tại/né/phản đòn/đánh trúng mang chủ đề Thuồng Luồng & thực thi Tuyệt Kỹ 3 pha (phi xuyên siêu nhanh -> bay lên trời -> đập mạnh xuống đất) trong js/entities/characters/vananh.js. 4. Đồng bộ cờ thuongLuongSkin trong game.js và danh sách ngoại lệ skin trong save.js; thêm test hồi quy trong tests/test_skin_registry_and_cloud_auth.js.",
+  "allowedFiles": [
+    "assets/images/characters/char_vananh_thuongluong.png",
+    "js/data/skins.js",
+    "js/entities/characters/vananh.js",
+    "js/entities/animation/animationArchetypes.js",
+    "js/entities/animation/animationBody.js",
+    "js/entities/animation/animationRenderBase.js",
+    "js/core/game.js",
+    "js/core/save.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tasks/TASK-034.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-CMB-001",
+    "FEAT-NET-001"
+  ],
+  "dependencies": [
+    "SkinRegistry",
+    "CharacterRegistry",
+    "SkeletalRendererRenderBase",
+    "SkeletalRendererArchetypes",
+    "SkeletalRendererBody",
+    "OnlineManager",
+    "SaveManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 40,
+    "authorizedRemovals": [
+      "Updating cache-bust query strings in index.html",
+      "Extending skin condition branches in vananh.js, animationRenderBase.js, animationBody.js, game.js, and save.js"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-034.json"
+  ]
+}

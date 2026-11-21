@@ -1584,6 +1584,7 @@ class SkeletalRendererBody extends _ParentRenderer {
     const isHoXam = (skinId === 'hoxam');
     const isThanTrung = (skinId === 'thantrung');
     const isChoDoiNon = (skinId === 'chodoinon');
+    const isThuongLuong = (skinId === 'thuongluong');
     const styleType = charObj.styleType || 'player';
     const dummy = {
       id: 'skin_card_' + charObj.id + '_' + skinId,
@@ -1622,6 +1623,10 @@ class SkeletalRendererBody extends _ParentRenderer {
       bg.addColorStop(0, '#7f1d1d');
       bg.addColorStop(0.55, '#271216');
       bg.addColorStop(1, '#09090b');
+    } else if (isThuongLuong) {
+      bg.addColorStop(0, '#042f2e');
+      bg.addColorStop(0.5, '#0e7490');
+      bg.addColorStop(1, '#08121c');
     } else if (isVovinam) {
       bg.addColorStop(0, '#0c2461');
       bg.addColorStop(0.55, '#1e3799');

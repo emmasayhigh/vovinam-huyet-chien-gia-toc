@@ -681,6 +681,94 @@
     }
   });
 
+  // =========================================================================
+  // TRANG PHỤC CHÍ TÔN PHẨM: THUỒNG LUỒNG THỦY QUÁI (PHÓ VĂN ANH)
+  // =========================================================================
+  registry.register('vananh', {
+    id: 'thuongluong',
+    name: 'Thuồng Luồng — Đại Hải Thủy Quái',
+    shortName: 'Thuồng Luồng 🐉',
+    tier: SKIN_TIERS.chiton.tier,
+    tierKey: 'chiton',
+    badgeClass: SKIN_TIERS.chiton.badgeClass,
+    rarity: SKIN_TIERS.chiton.rarity,
+    themeClass: SKIN_TIERS.chiton.themeClass,
+    image: 'assets/images/characters/char_vananh_thuongluong.png',
+    styleKey: 'vananh_thuongluong',
+    shopSkin: false,
+    shopKey: 'skin_vananh_thuongluong',
+    shopCurrency: 'diamond',
+    shopPrice: 150,
+    shopRibbon: '🌊 CHÍ TÔN PHẨM • PHÓ VĂN ANH',
+    shopRoleSub: 'TRANG PHỤC CHÍ TÔN PHẨM (ĐỎ) • HÓA THUỒNG LUỒNG PHI XUYÊN & ĐẬP ĐẤT',
+    quote: '“Sóng biển gầm vang, vây đỏ rẽ nước — ta hóa Thuồng Luồng càn quét cả chiến trường!”',
+    bio: 'Trang phục Chí Tôn Phẩm truyền thuyết thủy quái Việt Nam dành riêng cho Phó Văn Anh: khoác bộ chiến phục da Thuồng Luồng vảy xanh ngọc lục bảo viền vây đỏ rực và đuôi giao long; toàn bộ chiêu thức bùng nổ hải lưu bọt sóng, Tuyệt Kỹ (I) hóa thân thành Thuồng Luồng khổng lồ phi xuyên siêu nhanh qua kẻ địch, vút bay lên trời rồi lao đầu đập nát mặt đất!',
+    skillsGrid: [
+      { key: 'J / K / Đòn 4', name: 'Thủy Lân Trọng Quyền & Thủy Tiễn' },
+      { key: 'L', name: 'Lặn Sóng Ảo Ảnh Thuồng Luồng' },
+      { key: 'U+J / U+K', name: 'Long Vĩ Quất Sóng & Vảy Đỏ Phản Kích' },
+      { key: 'I', name: 'Hóa Thuồng Luồng: Phi Xuyên — Vút Trời — Đập Đất' }
+    ],
+    passiveNote: {
+      icon: '🐉',
+      title: 'Biến Hình Tuyệt Kỹ Thuồng Luồng 3 Pha:',
+      desc: 'Giữ hình dáng Phó Văn Anh mặc bộ đồ Thuồng Luồng vảy xanh ngọc vây đỏ; khi tung Tuyệt Kỹ (I) hóa hẳn thành Thuồng Luồng khổng lồ phi siêu nhanh xuyên qua kẻ địch, bay vút lên trời rồi lao đập mạnh xuống đất tạo sóng thần!'
+    },
+    fx: ['🌊 Bộ Đồ Thuồng Luồng Vảy Ngọc', '🔴 Vây Đỏ & Hải Lưu Bọt Sóng', '🐉 Ulti: Hóa Thuồng Luồng Phi Xuyên & Đập Đất'],
+    sub: 'Trang phục Chí Tôn Phẩm cho Phó Văn Anh: mặc bộ đồ Thuồng Luồng xanh ngọc vây đỏ kèm đuôi thủy quái, đòn đánh tung hải lưu bọt sóng và Tuyệt Kỹ (I) hóa thành Thuồng Luồng phi siêu nhanh xuyên kẻ địch, bay lên trời rồi đập mạnh xuống đất!',
+    toast: '🐉 Đã trang bị: Thuồng Luồng — Đại Hải Thủy Quái!'
+  });
+
+  registry.registerRuntimeStyle('vananh', 'thuongluong', {
+    style: {
+      archetype: 'mafia_overcoat',
+      serpentSuit: true,
+      serpentTail: true,
+      serpentSpines: true,
+      suit: true,
+      drapedOvercoat: false,
+      coat: false,
+      cigar: false,
+      tieColor: '#dc2626',
+      leatherBelt: true,
+      leatherBeltColor: '#062c30',
+      hair: '#0f172a',
+      hairStyle: 'slicked',
+      gi: '#0f766e',
+      giD: '#064e3b',
+      giL: '#2dd4bf',
+      vestColor: '#0d5e5b',
+      pants: '#0b3b44',
+      pantsD: '#052229',
+      belt: '#dc2626',
+      beltD: '#7f1d1d',
+      beltTrim: '#38bdf8',
+      under: '#082f49',
+      cuffTrim: '#ef4444',
+      gloves: '#0e4a4f',
+      shoes: 'brawler_boots',
+      shoeColor: '#062c30',
+      eyeColor: '#22d3ee',
+      aura: '#06b6d4'
+    },
+    trailProfile: {
+      primary: '#06b6d4',
+      secondary: '#dc2626',
+      core: '#e0f2fe',
+      width: 15,
+      dual: true,
+      dodgeGhost: 'rgba(6, 182, 212, 0.56)'
+    },
+    cinematic: {
+      title: 'CHÍ TÔN PHẨM • THUỒNG LUỒNG THỦY QUÁI',
+      ult: 'HÓA THUỒNG LUỒNG — HẢI KHIẾU GIÁNG ĐỊA',
+      color: '#06b6d4',
+      accent: '#dc2626',
+      style: 'wind',
+      duration: 1.45
+    }
+  });
+
   registry.applyToCharacterRegistry();
 
   root.SKIN_TIERS = SKIN_TIERS;

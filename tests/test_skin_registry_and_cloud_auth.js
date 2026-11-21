@@ -322,7 +322,16 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     assert.ok(!indexSrc.includes('id="online-server-config-bar"'), 'Đã bỏ thanh Máy chủ WebSocket khỏi sảnh Online');
     assert.ok(!indexSrc.includes('class="online-web-share-bar"'), 'Đã bỏ thanh WEB SERVER LIVE khỏi footer sảnh Online');
     assert.ok(indexSrc.includes('id="btn-gate-tab-login"') && indexSrc.includes('id="btn-gate-tab-register"'), 'Cổng đăng nhập có tab Đăng Nhập / Đăng Ký Mới chuyên nghiệp');
-    console.log('✓ TEST 4: InputManager typing guard & AccountManager mandatory auth gate passed');
+
+    // TEST 5: Skin Chí Tôn Phẩm Thuồng Luồng (Phó Văn Anh) — Registry, Runtime Style & 3-Phase Transformation Ult
+    const tlSkin = window.SkinRegistry.getSkin('vananh', 'thuongluong');
+    assert.ok(tlSkin && tlSkin.id === 'thuongluong' && tlSkin.styleKey === 'vananh_thuongluong', 'SkinRegistry đăng ký thành công skin thuongluong cho vananh');
+    assert.strictEqual(tlSkin.shopSkin, false, 'Skin thuongluong mở sẵn trong danh sách chọn trang phục (không chiếm ô shop)');
+    assert.ok(fs.existsSync(path.resolve(__dirname, '../assets/images/characters/char_vananh_thuongluong.png')), 'Ảnh chân dung char_vananh_thuongluong.png tồn tại trong assets');
+    const tlRuntime = window.SkinRegistry.getRuntimeStyle('vananh', 'thuongluong');
+    assert.ok(tlRuntime && tlRuntime.style && tlRuntime.style.serpentSuit && tlRuntime.style.serpentTail && tlRuntime.style.serpentSpines, 'Runtime style Thuồng Luồng có đầy đủ bộ đồ vảy, đuôi và vây đỏ');
+
+    console.log('✓ TEST 4 & 5: InputManager typing guard, AccountManager auth gate & Thuong Luong skin passed');
   } finally {
     server.close();
     try { fs.unlinkSync(tmpFile); } catch (_) {}
