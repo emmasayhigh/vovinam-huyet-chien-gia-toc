@@ -138,7 +138,7 @@ class GameBase {
     const om = window.onlineManager;
     if (!om || !om.isActive || this.state === 'MENU') return 0;
     const prev = this._lastLogicTickAt || this.lastTime || now;
-    let remain = Math.min(2.4, Math.max(0, (now - prev) / 1000));
+    let remain = Math.min(1.2, Math.max(0, (now - prev) / 1000));
     if (remain < 0.12) return 0;
     this._lastLogicTickAt = now;
     this.lastTime = now;

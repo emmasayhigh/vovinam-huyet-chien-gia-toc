@@ -1659,9 +1659,113 @@ function connectWsClient(port) {
     window.onlineManager.handleServerMessage({ type: 'pvp_hit_ack', epoch: 4, hitSeq: sentHitBlk.hitSeq, accepted: true, newHp: rpBlk.maxHp - 9, guardGauge: 68, isDead: false, reason: 'blocked' });
     assert.strictEqual(rpBlk.guardGauge, 68, 'pvp_hit_ack syncs authoritative opponent guardGauge');
 
+    // 15g. TASK-033 Audit S1-S6: hitSeq dedup, rate_limit ack, session_resumed ghost-match exit + P1 slot restore, PvP weapon cleanup & projectiles
+    window.onlineManager.handleServerMessage({
+      type: 'match_started',
+      room: {
+        code: 'AUD33',
+        mode: 'pvp',
+        status: 'playing',
+        matchEpoch: 5,
+        scores: { p1: 0, p2: 0 },
+        players: [
+          { slot: 1, name: 'Host', charId: 'nghi', skinId: 'default' },
+          { slot: 2, name: 'Guest', charId: 'bichlam', skinId: 'default' }
+        ]
+      }
+    });
+    window.onlineManager._introLockTimer = 0;
+    const pDup = window.game.player;
+    pDup.isDead = false;
+    pDup.invincibleTimer = 0;
+    pDup.state = 'idle';
+    const hpStartDup = pDup.hp;
+    pkts15.length = 0;
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit', epoch: 5, hitSeq: 401, damage: 40, knockbackX: 2, isKnockdown: false, bypassInvincible: true });
+    assert.strictEqual(pDup.hp, hpStartDup - 40, 'S1: First pvp_hit hitSeq=401 applies damage once');
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit', epoch: 5, hitSeq: 401, damage: 40, knockbackX: 2, isKnockdown: false, bypassInvincible: true });
+    assert.strictEqual(pDup.hp, hpStartDup - 40, 'S1: Duplicate retried pvp_hit hitSeq=401 MUST NOT deduct HP a second time');
+    assert.ok(pkts15.some((p) => p.type === 'pvp_hit_ack' && p.hitSeq === 401 && p.accepted === false && p.reason === 'dup'), 'S1: Duplicate hitSeq emits dup ack');
+
+    // S2: rate_limit ack clears pending hit & optimistic HP lock cleanly
+    const rpRate = window.onlineManager.remotePlayer;
+    rpRate.invincibleTimer = 0;
+    rpRate.state = 'idle';
+    rpRate.takeDamage(50, 2, false);
+    const rateSeq = rpRate._optimisticTargetHitSeq;
+    assert.ok(window.onlineManager._pendingHits.has(rateSeq) && rpRate._optimisticHpLockTimer > 0);
+    window.onlineManager.handleServerMessage({ type: 'pvp_hit_ack', epoch: 5, hitSeq: rateSeq, accepted: false, appliedDmg: 0, reason: 'rate_limit' });
+    assert.strictEqual(window.onlineManager._pendingHits.has(rateSeq), false, 'S2: rate_limit ack removes entry from _pendingHits');
+    assert.strictEqual(rpRate._optimisticHpLockTimer, 0, 'S2: rate_limit ack releases _optimisticHpLockTimer');
+
+    // S6: startPvPMatch resets ground weapons & Game.updatePlaying advances projectiles in PvP
+    if (window.weaponSystem) {
+      assert.strictEqual(window.weaponSystem.groundWeapons ? window.weaponSystem.groundWeapons.length : 0, 0, 'S6: startPvPMatch clears ground weapons');
+    }
+    window.game.projectiles = [{ x: 400, y: 580, vx: 200, vy: 0, rot: 0, life: 1.0, damage: 0, owner: { isRemotePlayer: true } }];
+    window.game.updatePlaying(0.1);
+    assert.ok(window.game.projectiles[0].x > 400, 'S6: Game.updatePlaying advances projectiles during PvP');
+
+    // S3/S4 client: session_resumed while room.status !== 'playing' exits stale ghost match cleanly
+    assert.strictEqual(window.onlineManager.isActive, true);
+    window.onlineManager.handleServerMessage({
+      type: 'session_resumed',
+      slot: 1,
+      room: { code: 'AUD33', mode: 'pvp', status: 'waiting', players: [{ id: 'p1', slot: 1, name: 'Host', charId: 'nghi', ready: false }] }
+    });
+    assert.strictEqual(window.onlineManager.isActive, false, 'S3: session_resumed exits stale active ghost match when room reverted to waiting');
+    assert.ok(window.onlineManager.room && window.onlineManager.room.code === 'AUD33' && window.onlineManager.slot === 1, 'S3/S4: session_resumed preserves room and restored slot 1');
+
+    // S3/S4 server: Host (slot 1) disconnect & resume preserves Host slot 1 and notifies peer
+    const srv33 = createOnlineServer(path.resolve(__dirname, '..'), { heartbeatIntervalMs: 5000, maxMissedPongs: 5 });
+    await new Promise((res) => srv33.server.listen(0, '127.0.0.1', res));
+    const port33 = srv33.server.address().port;
+    let s33a, s33b, s33Res;
+    try {
+      s33a = await connectWsClient(port33);
+      const w33a = await s33a.waitFor('welcome');
+      s33a.send({ type: 'create_room', mode: 'pvp', name: 'Host33', charId: 'nghi' });
+      const jr33 = await s33a.waitFor('room_joined');
+      const code33 = jr33.room.code;
+
+      s33b = await connectWsClient(port33);
+      await s33b.waitFor('welcome');
+      s33b.send({ type: 'join_room', code: code33, name: 'Guest33', charId: 'bichlam' });
+      await s33b.waitFor('room_joined');
+
+      // Simulate excessive >28 hits rate_limit ack on server
+      s33b.send({ type: 'toggle_ready', ready: true });
+      await s33a.waitFor('room_updated');
+      s33a.send({ type: 'toggle_ready', ready: true });
+      await s33a.waitFor('room_updated');
+      s33a.send({ type: 'start_match' });
+      const st33 = await s33a.waitFor('match_started');
+      for (let hi = 1; hi <= 29; hi++) {
+        s33a.send({ type: 'pvp_hit', epoch: st33.room.matchEpoch, hitSeq: hi, damage: 10 });
+      }
+      const rlAck = await s33a.waitFor('pvp_hit_ack');
+      assert.strictEqual(rlAck.reason, 'rate_limit', 'S2 server: >28 pvp_hit/s replies pvp_hit_ack(reason:rate_limit)');
+      assert.strictEqual(rlAck.hitSeq, 29);
+
+      // Host disconnects -> Guest gets peer_left -> Host resumes -> Host reclaims slot 1
+      s33a.close();
+      await s33b.waitFor('peer_left');
+      s33Res = await connectWsClient(port33);
+      await s33Res.waitFor('welcome');
+      s33Res.send({ type: 'resume_session', sessionToken: w33a.sessionToken, roomCode: code33 });
+      const res33 = await s33Res.waitFor('session_resumed');
+      assert.strictEqual(res33.slot, 1, 'S4 server: Host reconnects via resume_session and reclaims slot 1');
+      assert.strictEqual(res33.room.players.find((p) => p.name === 'Guest33').slot, 2, 'S4 server: Guest returns to slot 2');
+    } finally {
+      if (s33a) s33a.close();
+      if (s33b) s33b.close();
+      if (s33Res) s33Res.close();
+      srv33.server.close();
+    }
+
     window.onlineManager.leaveMatch(false);
   }
-  console.log('✓ TEST 15: TASK-025, TASK-030, TASK-031 & TASK-032 (Rematch, Background Knockdown Recovery, Phantom 0-HP Fix, PvP Block) passed');
+  console.log('✓ TEST 15: TASK-025, TASK-030, TASK-031, TASK-032 & TASK-033 passed');
 
   console.log('\n================================================');
   console.log('ALL ONLINE MULTIPLAYER TESTS PASSED 100%!');

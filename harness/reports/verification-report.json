@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-032",
-  "taskTitle": "Fix PvP Online Guard/Block Gauge Consumption, Guard Break & Sync",
-  "generatedAt": "2026-11-19T09:39:02.984Z",
+  "taskId": "TASK-033",
+  "taskTitle": "Fix Online Multiplayer Audit Findings S1-S6 & C1/C3",
+  "generatedAt": "2026-11-21T19:05:36.242Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 9,
+    "filesModifiedCount": 5,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,17 +13,13 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-032.json"
+      "tasks/TASK-033.json"
     ],
     "filesModified": [
-      "arness/reports/latest-test-run.json",
-      "harness/reports/verification-report.json",
-      "harness/reports/verification-report.md",
-      "index.html",
-      "js/combat/combat.js",
+      "ndex.html",
       "js/core/game.js",
-      "js/entities/animation/animationRenderBase.js",
-      "js/entities/player/playerDamage.js",
+      "js/core/gameBase.js",
+      "server.js",
       "tests/test_online_multiplayer.js"
     ],
     "filesDeleted": []

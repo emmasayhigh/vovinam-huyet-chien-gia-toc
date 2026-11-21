@@ -463,7 +463,6 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
     client.skinId = sanitizeDisplayText(msg.skinId, client.skinId || 'default', 24);
     client.allyId = sanitizeDisplayText(msg.allyId, client.allyId || 'auto', 24);
     client.roomCode = room.code;
-    client.slot = 2;
     client.ready = viaQM;
     client.isSearching = false;
     client.rematchReady = false;
@@ -472,10 +471,17 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       if (viaQM) p.ready = true;
     });
     if (viaQM) room.quickMatched = true;
-    room.players.push(client);
+    if (Number(msg.preferredSlot) === 1 && room.players.length === 1) {
+      room.players[0].slot = 2;
+      client.slot = 1;
+      room.players.unshift(client);
+    } else {
+      client.slot = room.players.some((p) => p.slot === 1) ? 2 : 1;
+      room.players.push(client);
+    }
 
     const payload = serializeRoom(room);
-    sendWs(client, { type: 'room_joined', slot: 2, room: payload });
+    sendWs(client, { type: 'room_joined', slot: client.slot, room: payload });
     broadcastRoom(room, { type: 'room_updated', room: payload }, client.id);
     broadcastRoomsToLobby();
     broadcastOnlinePlayers();
@@ -519,8 +525,10 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
             client.charId = prev.charId || client.charId;
             client.skinId = prev.skinId || client.skinId;
             client.allyId = prev.allyId || client.allyId;
-            joinRoomForClient(client, room, { fromQuickMatch: !!room.isQuickMatch });
-            sendWs(client, { type: 'session_resumed', room: serializeRoom(room), slot: client.slot });
+            joinRoomForClient(client, room, { fromQuickMatch: !!room.isQuickMatch, preferredSlot: prev.slot });
+            const resumedRoom = serializeRoom(room);
+            sendWs(client, { type: 'session_resumed', room: resumedRoom, slot: client.slot });
+            broadcastRoom(room, { type: 'room_updated', room: resumedRoom }, client.id);
             break;
           }
         }
@@ -710,7 +718,7 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
 
       case 'match_result': {
         const room = client.roomCode ? rooms.get(client.roomCode) : null;
-        if (!room) return;
+        if (!room || (client.slot !== 1 && client.slot !== 2)) return;
         if (Number.isFinite(Number(msg.epoch)) && room.matchEpoch && Number(msg.epoch) !== Number(room.matchEpoch)) {
           return;
         }
@@ -775,7 +783,19 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
           client._hitWindowCount = 0;
         }
         client._hitWindowCount += 1;
-        if (client._hitWindowCount > 28) return;
+        if (client._hitWindowCount > 28) {
+          if (Number.isFinite(Number(msg.hitSeq))) {
+            sendWs(client, {
+              type: 'pvp_hit_ack',
+              epoch: msg.epoch || room.matchEpoch || 1,
+              hitSeq: Number(msg.hitSeq),
+              accepted: false,
+              appliedDmg: 0,
+              reason: 'rate_limit'
+            });
+          }
+          return;
+        }
         msg.damage = Math.max(0, Math.min(600, Number(msg.damage) || 0));
         msg.fromSlot = client.slot;
         broadcastRoom(room, msg, client.id);
@@ -1136,6 +1156,7 @@ function createOnlineServer(rootDir = __dirname, options = {}) {
       if (client.roomCode && client.sessionToken) {
         disconnectedSessions.set(client.sessionToken, {
           roomCode: client.roomCode,
+          slot: client.slot,
           name: client.name,
           charId: client.charId,
           skinId: client.skinId,

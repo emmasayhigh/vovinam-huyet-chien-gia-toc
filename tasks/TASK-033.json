@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-033",
+  "title": "Fix Online Multiplayer Audit Findings S1-S6 & C1/C3",
+  "author": "Antigravity Senior Game Engine & Netcode Engineer",
+  "date": "2026-11-22",
+  "objective": "Khắc phục triệt để các lỗi đồng bộ và trải nghiệm Online Multiplayer còn sót: S1 trùng hitSeq gây nhân đôi sát thương khi ping >450ms, S2 server nuốt hit im lặng vượt 28 gói/s, S3/S4 resume_session kẹt trận ma & đảo P1/P2, S5 timeout 99s cân bằng 2 phía & xác thực slot match_result, S6 dọn vũ khí & cập nhật projectile trong PvP, C1 giảm giới hạn catch-up 1.2s chống khựng frame khi quay lại tab, C3 chỉ ép dậy RemotePlayer khi packet thực sự stall (>=0.35s).",
+  "requestedBehavior": "1. Dedup hitSeq bên nhận pvp_hit qua _processedHitSeqs & _lastRecvHitSeq và giữ retryAfterMs thích nghi RTT. 2. Server trả pvp_hit_ack(reason:'rate_limit') khi vượt 28 hit/s và kiểm tra client.slot hợp lệ ở match_result. 3. Lưu slot vào disconnectedSessions, khôi phục preferredSlot & room_updated khi resume_session, đồng bộ slot ở room_updated và thoát trận ma nếu room.status !== 'playing', đồng thời giới hạn reconnect backoff khi có _resumeToken. 4. Cân đối timeout 99s cho cả P1 và P2 fallback; reset weaponSystem và gọi updateProjectiles trong PvP. 5. Giới hạn catchUpBackgroundSimulation ở 1.2s và thêm điều kiện _netRxAge >= 0.35s cho RemotePlayer knockdown recovery. 6. Bổ sung test 15g xác minh đầy đủ.",
+  "allowedFiles": [
+    "js/core/game.js",
+    "js/core/gameBase.js",
+    "server.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_online_multiplayer.js",
+    "tasks/TASK-033.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-NET-001",
+    "FEAT-CMB-001"
+  ],
+  "dependencies": [
+    "OnlineManager",
+    "RemotePlayer",
+    "GameBase",
+    "Game"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 35,
+    "authorizedRemovals": [
+      "Updating cache-bust query strings in index.html",
+      "Replacing fixed catch-up/retry/slot-assignment/timeout lines with S1-S6 & C1/C3 improvements across game.js, gameBase.js, and server.js"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-033.json"
+  ]
+}

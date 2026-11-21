@@ -322,9 +322,9 @@ class RemotePlayer extends (window.Player || Object) {
     }
     this.animTime = (this.animTime || 0) + step;
     this.stateTimer = (this.stateTimer || 0) + step;
-    // Giải kẹt tự động khi đối thủ chuyển tab / thu nhỏ trình duyệt lúc đang knockdown hoặc getup
+    // Giải kẹt tự động khi đối thủ chuyển tab / thu nhỏ trình duyệt lúc đang knockdown hoặc getup (chỉ kích hoạt khi packet thực sự ngưng >= 0.35s)
     if (!this.isDead) {
-      if (this.state === 'knockdown' && (this.netTargetZ || 0) >= -2 && (this.z || 0) >= -2) {
+      if (this.state === 'knockdown' && (this._netRxAge || 0) >= 0.35 && (this.netTargetZ || 0) >= -2 && (this.z || 0) >= -2) {
         const kdLimit = Math.max(0.55, (Number(this.stateDuration) || 0.45) + 0.45);
         if (this.stateTimer >= kdLimit) {
           this.state = 'getup';
@@ -533,6 +533,7 @@ class OnlineManager {
     this._lastPeerPacketAt = 0;
     this._peerLostWarned = false;
     this._pendingHits = new Map();
+    this._processedHitSeqs = new Set();
     this._sentStateSeq = 0;
     this._qmAutoStartTimer = null;
     this._lastRoomsRenderSig = '';
@@ -583,7 +584,8 @@ class OnlineManager {
 
   _scheduleReconnect() {
     if (this._intentionalClose || this._reconnectTimer || typeof WebSocket === 'undefined') return;
-    const delayMs = Math.min(10000, Math.round(1200 * Math.pow(1.6, Math.min(5, this._reconnectAttempts || 0))));
+    const maxCapMs = this._resumeToken ? 3500 : 10000;
+    const delayMs = Math.min(maxCapMs, Math.round(1200 * Math.pow(1.6, Math.min(5, this._reconnectAttempts || 0))));
     this._reconnectAttempts = (this._reconnectAttempts || 0) + 1;
     this._reconnectTimer = setTimeout(() => {
       this._reconnectTimer = null;
@@ -1888,6 +1890,9 @@ class OnlineManager {
         this._resumeRoomCode = null;
         this.room = msg.room || this.room;
         if (msg.slot) this.slot = msg.slot;
+        if (this.isActive && (!this.room || this.room.status !== 'playing')) {
+          this.leaveMatch(true, { skipServerNotify: true, keepRoom: true });
+        }
         this._toast('✅ Đã khôi phục kết nối vào phòng đấu!');
         this.renderRoomPanel();
         break;
@@ -2081,7 +2086,31 @@ class OnlineManager {
           }
         }
         if (Number.isFinite(msg.hitSeq)) {
-          this._lastRecvHitSeq = Math.max(this._lastRecvHitSeq || 0, Number(msg.hitSeq));
+          const seqNum = Number(msg.hitSeq);
+          if ((this._processedHitSeqs && this._processedHitSeqs.has(seqNum)) || seqNum <= (this._lastRecvHitSeq || 0)) {
+            if (this.mode === 'pvp') {
+              this.send({
+                type: 'pvp_hit_ack',
+                epoch: this._matchEpoch || 1,
+                hitSeq: seqNum,
+                accepted: false,
+                appliedDmg: 0,
+                newHp: Math.round(g.player.hp || 0),
+                guardGauge: Math.round(g.player.guardGauge ?? 100),
+                isDead: !!g.player.isDead,
+                reason: 'dup'
+              });
+            }
+            break;
+          }
+          if (this._processedHitSeqs) {
+            this._processedHitSeqs.add(seqNum);
+            if (this._processedHitSeqs.size > 128) {
+              const firstKey = this._processedHitSeqs.values().next().value;
+              this._processedHitSeqs.delete(firstKey);
+            }
+          }
+          this._lastRecvHitSeq = Math.max(this._lastRecvHitSeq || 0, seqNum);
         }
         this._syncAccum = 999;
         const p = g.player;
@@ -2497,6 +2526,7 @@ class OnlineManager {
     this._lastPeerPacketAt = Date.now();
     this._peerLostWarned = false;
     if (this._pendingHits) this._pendingHits.clear();
+    if (this._processedHitSeqs) this._processedHitSeqs.clear();
 
     this._startStageClean(1);
     if (window.audioManager && typeof window.audioManager.startPvPBGM === 'function') {
@@ -2511,6 +2541,9 @@ class OnlineManager {
     g.projectiles = [];
     g.stageEvidence = null;
     if (window.propSystem) window.propSystem.props = [];
+    if (window.weaponSystem && typeof window.weaponSystem.reset === 'function') {
+      window.weaponSystem.reset();
+    }
     if (window.allyManager && typeof window.allyManager.reset === 'function') {
       window.allyManager.reset();
     }
@@ -2567,6 +2600,7 @@ class OnlineManager {
     this._lastPeerPacketAt = Date.now();
     this._peerLostWarned = false;
     if (this._pendingHits) this._pendingHits.clear();
+    if (this._processedHitSeqs) this._processedHitSeqs.clear();
 
     const targetStage = Math.max(1, Math.min(20, Number((room && room.stageId) || this.stageId) || 1));
     this.stageId = targetStage;
@@ -2660,6 +2694,7 @@ class OnlineManager {
     this._lastPeerPacketAt = 0;
     this._peerLostWarned = false;
     if (this._pendingHits) this._pendingHits.clear();
+    if (this._processedHitSeqs) this._processedHitSeqs.clear();
     this.pvpScores = { p1: 0, p2: 0 };
     this._resetRematchButton(false);
     if (this._vsTimerIds) {
@@ -2825,6 +2860,7 @@ class OnlineManager {
 
     if (this._pendingHits && this._pendingHits.size > 0 && this.mode === 'pvp' && !this._roundOver) {
       const nowMs = Date.now();
+      const retryAfterMs = Math.max(450, Math.min(950, Math.round((this.pingMs || 220) * 1.8)));
       for (const [hSeq, entry] of this._pendingHits.entries()) {
         if (!entry) {
           this._pendingHits.delete(hSeq);
@@ -2833,7 +2869,7 @@ class OnlineManager {
         const age = nowMs - entry.sentAt;
         if (age > 1600) {
           this._pendingHits.delete(hSeq);
-        } else if (age > 450 && !entry.retried) {
+        } else if (age > retryAfterMs && !entry.retried) {
           entry.retried = true;
           this.send(entry.packet);
         }
@@ -3344,12 +3380,18 @@ class Game extends window.GameRender {
       if (window.combatSystem) window.combatSystem.update(dt);
       const targets = (om.remotePlayer && !om.remotePlayer.isDead) ? [om.remotePlayer] : [];
       this.player.update(dt, targets);
+      if (typeof this.updateProjectiles === 'function') {
+        this.updateProjectiles(dt);
+      }
       om.update(dt);
-      if (this.stageElapsedTime >= 99 && !om._roundOver && om.slot === 1 && om.remotePlayer) {
+      const timeoutReady = (om.slot === 1 && this.stageElapsedTime >= 99) || (om.slot === 2 && this.stageElapsedTime >= 99.6);
+      if (timeoutReady && !om._roundOver && om.remotePlayer) {
         const myRatio = (this.player.hp || 0) / Math.max(1, this.player.maxHp || 1);
         const oppRatio = (om.remotePlayer.hp || 0) / Math.max(1, om.remotePlayer.maxHp || 1);
+        const p1Ratio = om.slot === 1 ? myRatio : oppRatio;
+        const p2Ratio = om.slot === 1 ? oppRatio : myRatio;
         om._roundOver = true;
-        om.send({ type: 'match_result', winnerSlot: myRatio >= oppRatio ? 1 : 2 });
+        om.send({ type: 'match_result', epoch: om._matchEpoch || 1, winnerSlot: p1Ratio >= p2Ratio ? 1 : 2 });
       }
 
       if (this.player) {
