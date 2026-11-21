@@ -337,6 +337,16 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     assert.ok(gameBaseSrc.includes('isThuongLuongPassThrough'), 'GameBase bỏ qua giãn cách thân người khi Thuồng Luồng lao xuyên qua');
     assert.ok(gameSrc.includes('tlUltSelf') && gameSrc.includes('tlUltPeer'), 'PvP Game bỏ qua giãn cách thân người khi Thuồng Luồng lao xuyên qua');
 
+    // TEST 7: Skin Chí Tôn Phẩm Ngư Tinh (Phó Tiến Đăng) — Registry, Runtime Style & Non-P2W Parity
+    const ntSkin = window.SkinRegistry.getSkin('tiendang', 'ngutinh');
+    assert.ok(ntSkin && ntSkin.id === 'ngutinh' && ntSkin.styleKey === 'tiendang_ngutinh', 'SkinRegistry đăng ký thành công skin ngutinh cho tiendang');
+    assert.strictEqual(ntSkin.shopSkin, false, 'Skin ngutinh mở sẵn trong danh sách chọn trang phục (không chiếm ô shop)');
+    assert.ok(fs.existsSync(path.resolve(__dirname, '../assets/images/characters/char_tiendang_ngutinh.png')), 'Ảnh chân dung char_tiendang_ngutinh.png tồn tại trong assets');
+    const ntRuntime = window.SkinRegistry.getRuntimeStyle('tiendang', 'ngutinh');
+    assert.ok(ntRuntime && ntRuntime.style && ntRuntime.style.nguTinhSuit && ntRuntime.style.nguTinhTail && ntRuntime.style.nguTinhFin && ntRuntime.style.nguTinhTalisman, 'Runtime style Ngư Tinh có đầy đủ vảy bạc, đuôi xương, vây tím & bùa cổ');
+    const tiendangSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/characters/tiendang.js'), 'utf8');
+    assert.ok(tiendangSrc.includes('isNguTinhSkin') && tiendangSrc.includes('hitEnemy(target, 42, 5, false)') && tiendangSrc.includes('hitEnemy(e, 175, 18, true)'), 'Skin Ngư Tinh giữ nguyên thông số chiến đấu chuẩn Tiến Đăng gốc (42/175 dmg)');
+
     // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
     {
       const amRec = new window.AccountManager();

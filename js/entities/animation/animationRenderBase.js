@@ -221,6 +221,15 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
       ctx.restore();
       return;
     }
+    const isNguTinhUlt = !ghost && !isSil && state === 'ultimate_blink' && (
+      e.equippedSkin === 'ngutinh' ||
+      (window.CharacterRegistry && typeof window.CharacterRegistry.getEquippedSkin === 'function' && window.CharacterRegistry.getEquippedSkin(e) === 'ngutinh')
+    );
+    if (isNguTinhUlt && typeof this.drawNguTinhBeastForm === 'function') {
+      this.drawNguTinhBeastForm(ctx, jt, st, p, now);
+      ctx.restore();
+      return;
+    }
     const shieldInFront = st.shield && (state === 'guard' || state === 'boss_bash' || state === 'elbow_strike' || (state === 'ultimate_bash' && p < 0.58));
     if (typeof this.drawBackLayers === 'function') this.drawBackLayers(ctx, jt, st, motion);
     this.drawLeg(ctx, jt.fHip, jt.fKnee, jt.fAnk, jt.fFoot, st, true);
@@ -2070,6 +2079,188 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
     ctx.beginPath(); ctx.arc(11, -9, 2.1, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
 
+    ctx.restore();
+  }
+
+  // Biến hình Ngư Tinh Hải Quái Đại Việt cho Phó Tiến Đăng (vảy trắng bạc, vây tím hồng rực, hàng chân xương vàng, 4 mắt hổ phách & bùa cổ)
+  drawNguTinhBeastForm(ctx, jt, st, p, now) {
+    const t = (now || 0) * 0.001;
+    const wave = t * 14 + p * Math.PI * 6;
+    const tilt = Math.sin(p * Math.PI * 6) * 0.14;
+
+    ctx.save();
+    ctx.translate(0, -64);
+
+    // Hào quang thủy triều Ngư Tinh tím hồng - ngọc bích
+    const aura = ctx.createRadialGradient(0, 0, 14, 0, 0, 170);
+    aura.addColorStop(0, 'rgba(192, 132, 252, 0.36)');
+    aura.addColorStop(0.55, 'rgba(20, 184, 166, 0.22)');
+    aura.addColorStop(1, 'rgba(4, 47, 46, 0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath();
+    ctx.arc(0, 0, 170, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.rotate(tilt);
+
+    // 3 dải sóng hải triều tím hồng & ngọc bích rẽ nước
+    ctx.lineCap = 'round';
+    for (let k = -1; k <= 1; k++) {
+      ctx.strokeStyle = k === 0 ? 'rgba(250, 232, 255, 0.85)' : 'rgba(192, 132, 252, 0.65)';
+      ctx.lineWidth = k === 0 ? 4.0 : 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-195, k * 24 + Math.sin(wave + k) * 7);
+      ctx.quadraticCurveTo(-90, k * 18 - 10, 62, k * 12);
+      ctx.stroke();
+    }
+
+    // 13 đốt thân Ngư Tinh uốn lượn
+    const segs = 13;
+    const pts = [];
+    for (let i = 0; i < segs; i++) {
+      const u = i / (segs - 1);
+      const sx = 72 - u * 225;
+      const amp = 7 + u * 22;
+      const sy = Math.sin(wave - u * 5.0) * amp;
+      const r = (1 - u * 0.72) * 22 + 4.5;
+      pts.push({ x: sx, y: sy, r });
+    }
+
+    // Màng vây lưng tím hồng rực rỡ dọc sống lưng
+    ctx.fillStyle = 'rgba(192, 132, 252, 0.88)';
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y - pts[0].r * 0.7);
+    for (let i = 1; i < segs - 1; i++) {
+      const pt = pts[i];
+      const spH = pt.r * (1.82 + (i % 2 === 0 ? 0.42 : 0.16));
+      ctx.lineTo(pt.x - 4, pt.y - spH);
+      ctx.lineTo(pt.x - 10, pt.y - pt.r * 0.85);
+    }
+    ctx.lineTo(pts[segs - 1].x, pts[segs - 1].y);
+    for (let i = segs - 1; i >= 0; i--) {
+      ctx.lineTo(pts[i].x, pts[i].y - pts[i].r * 0.4);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#f5d0fe';
+    ctx.lineWidth = 1.15;
+    ctx.stroke();
+
+    // Hàng chân rết / xương vây nâu vàng đặc trưng dưới bụng Ngư Tinh
+    ctx.strokeStyle = '#b45309';
+    ctx.lineWidth = 2.8;
+    ctx.lineCap = 'round';
+    for (let i = 1; i < segs - 1; i++) {
+      const pt = pts[i];
+      const legLen = pt.r * 1.45;
+      ctx.beginPath();
+      ctx.moveTo(pt.x, pt.y + pt.r * 0.55);
+      ctx.quadraticCurveTo(pt.x - 6, pt.y + pt.r + legLen * 0.45, pt.x - 12, pt.y + pt.r + legLen);
+      ctx.stroke();
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.strokeStyle = '#b45309';
+      ctx.lineWidth = 2.8;
+    }
+
+    // Vẽ từng đốt thân vảy trắng bạc ngọc trai + bụng xanh rêu thẫm
+    for (let i = segs - 1; i >= 0; i--) {
+      const pt = pts[i];
+      const grad = ctx.createRadialGradient(pt.x + 4, pt.y - pt.r * 0.35, 2, pt.x, pt.y, pt.r);
+      grad.addColorStop(0, '#f8fafc');
+      grad.addColorStop(0.55, '#cbd5e1');
+      grad.addColorStop(1, '#365314');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Vảy ánh tím-bạc trên lưng
+      ctx.fillStyle = 'rgba(232, 121, 249, 0.32)';
+      ctx.beginPath();
+      ctx.moveTo(pt.x + pt.r * 0.34, pt.y - pt.r * 0.25);
+      ctx.lineTo(pt.x, pt.y - pt.r * 0.62);
+      ctx.lineTo(pt.x - pt.r * 0.34, pt.y - pt.r * 0.25);
+      ctx.lineTo(pt.x, pt.y + pt.r * 0.08);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Đầu Ngư Tinh trắng bạc dữ tợn: mào vây tím lớn, 4 mắt hổ phách & hàm nanh đỏ
+    const hd = pts[0];
+    ctx.save();
+    ctx.translate(hd.x + 14, hd.y);
+
+    // Mào vây tím hồng vươn cao trên đỉnh đầu
+    ctx.fillStyle = '#c084fc';
+    ctx.strokeStyle = '#f5d0fe';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-12, -12);
+    ctx.lineTo(-28, -36);
+    ctx.lineTo(-10, -24);
+    ctx.lineTo(-18, -42);
+    ctx.lineTo(4, -18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Hàm trên trắng bạc
+    ctx.fillStyle = '#e2e8f0';
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 2.0;
+    ctx.beginPath();
+    ctx.moveTo(-16, -15);
+    ctx.quadraticCurveTo(16, -24, 46, -6);
+    ctx.lineTo(40, 5);
+    ctx.lineTo(-12, 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Khoang miệng đỏ thẫm & hàm dưới há rộng đầy răng nanh
+    ctx.fillStyle = '#881337';
+    ctx.beginPath();
+    ctx.moveTo(-8, 3); ctx.lineTo(36, 5); ctx.lineTo(28, 20); ctx.lineTo(-12, 16); ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#cbd5e1';
+    ctx.beginPath();
+    ctx.moveTo(-14, 12); ctx.lineTo(32, 18); ctx.lineTo(22, 26); ctx.lineTo(-16, 20); ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(27, 4); ctx.lineTo(31, 15); ctx.lineTo(35, 4); ctx.closePath();
+    ctx.moveTo(14, 4); ctx.lineTo(18, 12); ctx.lineTo(21, 4); ctx.closePath();
+    ctx.moveTo(20, 17); ctx.lineTo(24, 10); ctx.lineTo(27, 17); ctx.closePath();
+    ctx.fill();
+
+    // 4 mắt vàng hổ phách đặc trưng theo tranh Ngư Tinh
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath();
+    ctx.arc(8, -10, 2.7, 0, Math.PI * 2);
+    ctx.arc(17, -9, 2.4, 0, Math.PI * 2);
+    ctx.arc(11, -4, 1.8, 0, Math.PI * 2);
+    ctx.arc(20, -4, 1.7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Lá bùa cổ Ngư Tinh bay cạnh đầu
+    ctx.save();
+    ctx.translate(-22, -16);
+    ctx.rotate(Math.sin(t * 9) * 0.2 - 0.15);
+    ctx.fillStyle = '#fde047';
+    ctx.fillRect(-4, -12, 8, 18);
+    ctx.strokeStyle = '#dc2626';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(0, 4); ctx.stroke();
+    ctx.restore();
+
+    ctx.restore();
     ctx.restore();
   }
 }

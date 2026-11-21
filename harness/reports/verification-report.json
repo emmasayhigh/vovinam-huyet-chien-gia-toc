@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-038",
-  "taskTitle": "Add W+U Stance Special Skill Descriptions to All Playable Characters UI",
-  "generatedAt": "2026-11-21T19:56:28.343Z",
+  "taskId": "TASK-039",
+  "taskTitle": "Add Mythic Ngu Tinh Skin for Pho Tien Dang with Non-P2W Parity",
+  "generatedAt": "2026-11-21T20:05:27.021Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 1,
-    "filesModifiedCount": 15,
+    "filesAddedCount": 2,
+    "filesModifiedCount": 14,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,30 +13,31 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-038.json"
+      "assets/images/characters/char_tiendang_ngutinh.png",
+      "tasks/TASK-039.json"
     ],
     "filesModified": [
-      "arness/reports/latest-test-run.json",
+      "ssets/images/characters/char_vananh_thuongluong.png",
+      "harness/reports/latest-test-run.json",
+      "harness/reports/verification-report.json",
+      "harness/reports/verification-report.md",
       "index.html",
-      "js/entities/characters/bichlam.js",
-      "js/entities/characters/dinhan.js",
-      "js/entities/characters/dunghai.js",
-      "js/entities/characters/giangmanh.js",
-      "js/entities/characters/hoanganh.js",
-      "js/entities/characters/huavudai.js",
-      "js/entities/characters/nghi.js",
-      "js/entities/characters/thienkhanh.js",
+      "js/core/effects.js",
+      "js/core/game.js",
+      "js/core/save.js",
+      "js/data/skins.js",
+      "js/entities/animation/animationArchetypes.js",
+      "js/entities/animation/animationBody.js",
+      "js/entities/animation/animationRenderBase.js",
       "js/entities/characters/tiendang.js",
-      "js/entities/characters/vananh.js",
-      "js/ui/menu/charselect/charSelectCore.js",
-      "js/ui/training/trainingManagerOverlay.js",
-      "tests/test_char_select_passives_and_ally_title.js"
+      "tests/test_skin_registry_and_cloud_auth.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
       "FEAT-CHR-001",
+      "FEAT-CMB-001",
       "FEAT-UI-001"
     ],
     "preserved": [

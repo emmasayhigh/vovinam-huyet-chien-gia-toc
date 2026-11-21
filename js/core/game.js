@@ -65,6 +65,7 @@ class RemotePlayer extends (window.Player || Object) {
     this.choDoiNonSkin = (resolvedSkin === 'chodoinon');
     this.hoXamSkin = (resolvedSkin === 'hoxam');
     this.thuongLuongSkin = (resolvedSkin === 'thuongluong');
+    this.nguTinhSkin = (resolvedSkin === 'ngutinh');
     if (window.CharacterRegistry) {
       const def = window.CharacterRegistry.get(this.charId);
       if (def && def.appearance && def.appearance.skins && def.appearance.skins[resolvedSkin] && def.appearance.skins[resolvedSkin].styleKey) {
@@ -792,6 +793,8 @@ class OnlineManager {
       } else if (nextSkin === 'chodoinon' && this.charId !== 'huavudai') {
         nextSkin = 'default';
       } else if (nextSkin === 'thuongluong' && this.charId !== 'vananh') {
+        nextSkin = 'default';
+      } else if (nextSkin === 'ngutinh' && this.charId !== 'tiendang') {
         nextSkin = 'default';
       }
       this.skinId = nextSkin;

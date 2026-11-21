@@ -904,6 +904,27 @@ class EffectManager {
     });
   }
 
+  createNguTinhWaveSlash(x, y, dir = 1, scale = 1.0) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'ngutinh_slash',
+      x, y, dir: dir >= 0 ? 1 : -1,
+      scale: scale || 1.0,
+      t: 0,
+      life: 0.38, maxLife: 0.38, alpha: 1
+    });
+  }
+
+  createNguTinhVortex(x, y, radius = 72, height = 190) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'ngutinh_vortex',
+      x, y, radius, height,
+      t: 0,
+      life: 0.58, maxLife: 0.58, alpha: 1
+    });
+  }
+
   createDimensionalSlash(x, y, angle = -0.3, length = 220, color = '#38bdf8', opts = null) {
     const darkCore = !!(opts && opts.darkCore);
     const width = (opts && opts.width) || (darkCore ? 7.2 : 5);
@@ -1575,6 +1596,80 @@ class EffectManager {
           ctx.beginPath();
           ctx.moveTo(4, -4); ctx.lineTo(-len * 0.85, -20 - prog * 12);
           ctx.moveTo(4, 4); ctx.lineTo(-len * 0.85, 18 + prog * 12);
+          ctx.stroke();
+        } else if (sf.kind === 'ngutinh_slash') {
+          ctx.translate(sf.x, sf.y);
+          ctx.scale(sf.dir * sf.scale, sf.scale);
+          const r = 48 + prog * 34;
+          ctx.globalCompositeOperation = 'lighter';
+          // Lưỡi sóng vây tím-hồng rực rỡ
+          ctx.strokeStyle = '#c084fc';
+          ctx.lineWidth = Math.max(2, (1 - prog) * 16);
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.arc(-8, 0, r, -1.18, 1.02);
+          ctx.stroke();
+          // Vệt vẩy trắng ngọc trai bên trong
+          ctx.strokeStyle = '#f8fafc';
+          ctx.lineWidth = Math.max(1.4, (1 - prog) * 7.5);
+          ctx.beginPath();
+          ctx.arc(-6, 0, r * 0.90, -1.06, 0.88);
+          ctx.stroke();
+          // Gai vây vàng hổ phách rẽ nước ngoài cùng
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = Math.max(1.2, (1 - prog) * 4.5);
+          ctx.beginPath();
+          ctx.arc(-11, 0, r * 1.11, -0.92, 0.78);
+          ctx.stroke();
+        } else if (sf.kind === 'ngutinh_vortex') {
+          const h = sf.height * Math.min(1, prog * 3.0);
+          const rad = sf.radius * (0.72 + prog * 0.55);
+          const g = ctx.createLinearGradient(sf.x, sf.y, sf.x, sf.y - h);
+          g.addColorStop(0, 'rgba(20, 184, 166, 0.72)');
+          g.addColorStop(0.55, 'rgba(168, 85, 247, 0.48)');
+          g.addColorStop(1, 'rgba(250, 232, 255, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.moveTo(sf.x - rad * 0.72, sf.y);
+          ctx.quadraticCurveTo(sf.x - rad * 0.34, sf.y - h * 0.5, sf.x - rad * 0.52, sf.y - h);
+          ctx.lineTo(sf.x + rad * 0.52, sf.y - h);
+          ctx.quadraticCurveTo(sf.x + rad * 0.34, sf.y - h * 0.5, sf.x + rad * 0.72, sf.y);
+          ctx.closePath();
+          ctx.fill();
+          // Xoáy hải triều tím hồng & ngọc bích
+          ctx.globalCompositeOperation = 'lighter';
+          for (let s = 0; s < 2; s++) {
+            ctx.strokeStyle = s === 0 ? '#e879f9' : '#2dd4bf';
+            ctx.lineWidth = s === 0 ? 4.0 : 2.6;
+            ctx.beginPath();
+            for (let k = 0; k <= 12; k++) {
+              const u = k / 12;
+              const px = sf.x + Math.sin(u * 8 + sf.t * 17 + s * Math.PI) * rad * (0.7 - u * 0.28);
+              const py = sf.y - u * h;
+              if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+          }
+          // Lá bùa vàng chữ đỏ xoay quanh cột xoáy Ngư Tinh
+          ctx.globalCompositeOperation = 'source-over';
+          for (let f = 0; f < 3; f++) {
+            const ang = sf.t * 7 + f * 2.1;
+            const tx = sf.x + Math.cos(ang) * rad * 0.65;
+            const ty = sf.y - h * (0.28 + f * 0.24);
+            ctx.save();
+            ctx.translate(tx, ty);
+            ctx.rotate(Math.sin(ang) * 0.45);
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(-4, -9, 8, 18);
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(0, 6); ctx.stroke();
+            ctx.restore();
+          }
+          ctx.strokeStyle = 'rgba(232, 121, 249, 0.8)';
+          ctx.lineWidth = 3.0;
+          ctx.beginPath();
+          ctx.ellipse(sf.x, sf.y, rad * (0.85 + prog * 0.6), 15, 0, 0, Math.PI * 2);
           ctx.stroke();
         }
         ctx.restore();

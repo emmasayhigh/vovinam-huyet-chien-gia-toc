@@ -124,6 +124,94 @@ class SkeletalRendererArchetypes extends window.SkeletalRendererWeapon {
       }
     }
 
+    if (st.nguTinhTail) {
+      const fWave = Math.sin(((motion && motion.now) || 0) * 0.011) * 5.0 + sw * 0.42;
+      const tBase = P(H, -7.2, 2.5);
+      const tMid1 = P(H, -23.0 + wind * 0.45, 7.5 + fWave * 0.45);
+      const tMid2 = P(H, -39.5 + wind * 0.75, -4.0 - fWave * 0.45);
+      const tTip = P(H, -55.0 + wind * 0.95, 6.0 + fWave);
+      // Thân đuôi Ngư Tinh vảy trắng bạc ngọc trai
+      ctx.fillStyle = this._c(st, st.gi || '#e2e8f0');
+      ctx.beginPath();
+      ctx.moveTo(tBase[0], tBase[1] - 5.2);
+      ctx.bezierCurveTo(tMid1[0], tMid1[1] - 5.2, tMid2[0], tMid2[1] - 4.0, tTip[0], tTip[1]);
+      ctx.bezierCurveTo(tMid2[0], tMid2[1] + 5.2, tMid1[0], tMid1[1] + 6.0, tBase[0], tBase[1] + 5.2);
+      ctx.closePath();
+      ctx.fill();
+      if (!isSolid) {
+        ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.2; ctx.stroke();
+        // Màng vây lưng tím hồng rực rỡ dọc sống trên đuôi
+        ctx.fillStyle = '#c084fc';
+        for (let k = 0; k < 4; k++) {
+          const u = 0.2 + k * 0.21;
+          const fx = tBase[0] + (tTip[0] - tBase[0]) * u;
+          const fy = tBase[1] + (tTip[1] - tBase[1]) * u - 3.5;
+          ctx.beginPath();
+          ctx.moveTo(fx - 3.5, fy + 2);
+          ctx.lineTo(fx - 7.0, fy - 7.5);
+          ctx.lineTo(fx + 3.0, fy + 1);
+          ctx.closePath();
+          ctx.fill();
+        }
+        // Hàng chân xương / gai rết nâu vàng đặc trưng phía bụng đuôi Ngư Tinh
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 1.6;
+        ctx.lineCap = 'round';
+        for (let r = 0; r < 5; r++) {
+          const u = 0.16 + r * 0.18;
+          const rx = tBase[0] + (tTip[0] - tBase[0]) * u;
+          const ry = tBase[1] + (tTip[1] - tBase[1]) * u + 3.8;
+          ctx.beginPath();
+          ctx.moveTo(rx, ry);
+          ctx.lineTo(rx - 4.5, ry + 6.5);
+          ctx.stroke();
+        }
+      }
+    }
+
+    if (st.nguTinhFin) {
+      // Mào vây tím hồng rực sau vai & cổ áo + lá bùa vàng cổ Ngư Tinh
+      const cL = P(sh, -12.0, 3.5);
+      const cTop = P(sh, -18.5 + wind * 0.35, 19.5);
+      const cR = P(sh, 5.0, 5.5);
+      ctx.fillStyle = this._c(st, '#9333ea');
+      ctx.beginPath();
+      ctx.moveTo(cL[0], cL[1]);
+      ctx.quadraticCurveTo(cTop[0] - 4, cTop[1], cR[0] - 6, cTop[1] - 3);
+      ctx.lineTo(cR[0], cR[1]);
+      ctx.closePath();
+      ctx.fill();
+      if (!isSolid) {
+        ctx.strokeStyle = '#e879f9'; ctx.lineWidth = 1.15; ctx.stroke();
+        ctx.fillStyle = '#c084fc';
+        for (let s = 0; s < 3; s++) {
+          const sx = cL[0] - 2 - s * 3.6;
+          const sy = cL[1] - 5 - s * 5.2;
+          ctx.beginPath();
+          ctx.moveTo(sx + 2, sy + 3);
+          ctx.lineTo(sx - 8, sy - 4.5);
+          ctx.lineTo(sx + 3, sy - 2);
+          ctx.closePath();
+          ctx.fill();
+        }
+        if (st.nguTinhTalisman) {
+          const tp = P(sh, -14.5 + wind * 0.45, -1.5);
+          ctx.save();
+          ctx.translate(tp[0], tp[1]);
+          ctx.rotate(-0.18 + wind * 0.012);
+          ctx.fillStyle = '#fde047';
+          ctx.fillRect(-3.2, -10.5, 6.4, 15);
+          ctx.strokeStyle = '#dc2626';
+          ctx.lineWidth = 1.1;
+          ctx.beginPath();
+          ctx.moveTo(0, -8); ctx.lineTo(0, 2.5);
+          ctx.moveTo(-1.8, -4.5); ctx.lineTo(1.8, -3.5);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+    }
+
     if (st.thanTrungHood) {
       const shL = P(sh, -13.5, 2.0), shR = P(sh, 10.5, 2.0);
       const cBotL = P(H, -28.0 + wind * 1.15, -39.0);

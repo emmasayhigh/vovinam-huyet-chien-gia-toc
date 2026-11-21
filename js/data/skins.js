@@ -769,6 +769,95 @@
     }
   });
 
+  // =========================================================================
+  // TRANG PHỤC CHÍ TÔN PHẨM: NGƯ TINH HẢI QUÁI ĐẠI VIỆT (PHÓ TIẾN ĐĂNG)
+  // =========================================================================
+  registry.register('tiendang', {
+    id: 'ngutinh',
+    name: 'Ngư Tinh — Hải Quái Đại Việt',
+    shortName: 'Ngư Tinh 🐟',
+    tier: SKIN_TIERS.chiton.tier,
+    tierKey: 'chiton',
+    badgeClass: SKIN_TIERS.chiton.badgeClass,
+    rarity: SKIN_TIERS.chiton.rarity,
+    themeClass: SKIN_TIERS.chiton.themeClass,
+    image: 'assets/images/characters/char_tiendang_ngutinh.png',
+    styleKey: 'tiendang_ngutinh',
+    shopSkin: false,
+    shopKey: 'skin_tiendang_ngutinh',
+    shopCurrency: 'diamond',
+    shopPrice: 150,
+    shopRibbon: '🐟 CHÍ TÔN PHẨM • PHÓ TIẾN ĐĂNG',
+    shopRoleSub: 'TRANG PHỤC CHÍ TÔN PHẨM (ĐỎ) • HÓA NGƯ TINH ĐẠI HẢI & SÓNG VÂY TÍM',
+    quote: '“Vảy bạc rẽ sóng, vây tím rợp trời — một lá bùa phong ấn cũng chẳng thể khóa được Ngư Tinh!”',
+    bio: 'Trang phục Chí Tôn Phẩm truyền thuyết Lĩnh Nam Chích Quái dành riêng cho Phó Tiến Đăng: khoác bộ chiến phục Ngư Tinh vảy trắng bạc ngọc trai, vây lưng tím hồng rực sáng, đuôi cá rết xương nâu vàng và lá bùa cổ bay phấp phới; toàn bộ đòn Mix-up Sao Kê, Dash-Cancel và Tuyệt Kỹ (I) bùng nổ xoáy biển tím ngọc và hóa hình Đại Hải Quái Ngư Tinh trảm cắt chiến trường!',
+    skillsGrid: [
+      { key: 'Mix-up / J / K', name: 'Ngư Lân Trảm & Ấn Thôn Phệ (3 Tầng)' },
+      { key: 'L', name: 'Thủy Kính Ngư Tinh & Bùa Thế Thân' },
+      { key: 'W+U / U+J / U+K', name: 'Ngư Tinh Quét Triều & Bẫy Ngược Sóng Ngầm' },
+      { key: 'I', name: 'Ngư Tinh Hiện Thế: 6 Nhịp Hải Triều Đoạt Mệnh' }
+    ],
+    passiveNote: {
+      icon: '🐟',
+      title: 'Bộ Hiệu Ứng Ngư Tinh — Giữ Nguyên Quy Tắc Gốc:',
+      desc: 'Giữ hình dáng Phó Tiến Đăng mặc chiến phục Ngư Tinh vảy bạc vây tím đuôi xương rết; mọi đòn đánh, dấu ấn Sao Kê và Tuyệt Kỹ (I) chuyển sang hiệu ứng sóng vây tím, xoáy nước bùa vàng & hóa Ngư Tinh khổng lồ dịch chuyển trảm địch — giữ nguyên 100% thông số gốc!'
+    },
+    fx: ['🐟 Chiến Phục Ngư Tinh Vảy Bạc Vây Tím', '📜 Lá Bùa Cổ & Xoáy Triều Tím Ngọc', '🌊 Ulti: Hóa Đại Hải Quái Ngư Tinh 6 Nhịp'],
+    sub: 'Trang phục Chí Tôn Phẩm cho Phó Tiến Đăng: mặc chiến phục Ngư Tinh vảy trắng bạc, vây tím hồng và đuôi cá rết nâu vàng; chiêu thức bùng nổ xoáy triều tím ngọc và Tuyệt Kỹ (I) hóa Ngư Tinh khổng lồ dịch chuyển 6 nhịp trảm địch (chuẩn cân bằng skin gốc)!',
+    toast: '🐟 Đã trang bị: Ngư Tinh — Hải Quái Đại Việt!'
+  });
+
+  registry.registerRuntimeStyle('tiendang', 'ngutinh', {
+    style: {
+      archetype: 'cyber_trench',
+      nguTinhSuit: true,
+      nguTinhTail: true,
+      nguTinhFin: true,
+      nguTinhTalisman: true,
+      tactical: true,
+      cyberTrench: true,
+      coat: true,
+      coatColor: '#134e4a',
+      coatTrim: '#c084fc',
+      liningColor: '#7e22ce',
+      leatherBelt: true,
+      leatherBeltColor: '#b45309',
+      quantumGauntlets: true,
+      glowingEyes: '#fbbf24',
+      hair: '#0f172a',
+      hairStyle: 'windswept',
+      jawStyle: 'lean_angular',
+      gi: '#e2e8f0',
+      giD: '#94a3b8',
+      giL: '#f8fafc',
+      pants: '#134e4a',
+      pantsD: '#042f2e',
+      belt: '#d97706',
+      beltD: '#92400e',
+      under: '#064e3b',
+      shoes: 'cyber_boots',
+      shoeColor: '#042f2e',
+      eyeColor: '#fbbf24',
+      aura: '#c084fc'
+    },
+    trailProfile: {
+      primary: '#c084fc',
+      secondary: '#2dd4bf',
+      core: '#fae8ff',
+      width: 15,
+      dual: true,
+      dodgeGhost: 'rgba(192, 132, 252, 0.56)'
+    },
+    cinematic: {
+      title: 'CHÍ TÔN PHẨM • NGƯ TINH HẢI QUÁI',
+      ult: 'NGƯ TINH HIỆN THẾ — HẢI TRIỀU ĐOẠT MỆNH',
+      color: '#c084fc',
+      accent: '#2dd4bf',
+      style: 'lightning',
+      duration: 1.5
+    }
+  });
+
   registry.applyToCharacterRegistry();
 
   root.SKIN_TIERS = SKIN_TIERS;

@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-039",
+  "title": "Add Mythic Ngu Tinh Skin for Pho Tien Dang with Non-P2W Parity",
+  "author": "Antigravity Senior Character Artist & Combat VFX Engineer",
+  "date": "2026-11-22",
+  "objective": "Tạo trang phục Chí Tôn Phẩm 'Ngư Tinh — Hải Quái Đại Việt' (ngutinh) cho Phó Tiến Đăng theo đúng tạo hình thủy quái vảy trắng bạc, vây lưng tím hồng, chân xương nâu vàng và bùa cổ trong tranh minh họa, đi kèm biến hình & hiệu ứng Ngư Tinh toàn bộ chiêu thức nhưng giữ nguyên 100% quy tắc, sát thương, cooldown và hitbox của Phó Tiến Đăng gốc (không P2W).",
+  "requestedBehavior": "1. Tạo chân dung assets/images/characters/char_tiendang_ngutinh.png và đăng ký skin 'ngutinh' cho tiendang trong js/data/skins.js. 2. Bổ sung tạo hình phục trang nguTinhTail/nguTinhFin/nguTinhTalisman (animationArchetypes.js), nền thẻ skin (animationBody.js) và hình thái Đại Hải Quái Ngư Tinh khi tung Tuyệt Kỹ (animationRenderBase.js drawNguTinhBeastForm). 3. Thêm hiệu ứng thủy triều tím-ngọc Ngư Tinh (effects.js) và gắn toàn bộ VFX/text skin Ngư Tinh vào js/entities/characters/tiendang.js với đúng nguyên thông số gốc. 4. Cập nhật game.js, save.js, cache-bust ?v=6.15 trong index.html và test hồi quy trong tests/test_skin_registry_and_cloud_auth.js.",
+  "allowedFiles": [
+    "assets/images/characters/char_tiendang_ngutinh.png",
+    "assets/images/characters/char_vananh_thuongluong.png",
+    "ssets/images/characters/char_vananh_thuongluong.png",
+    "js/data/skins.js",
+    "js/core/game.js",
+    "js/core/save.js",
+    "js/core/effects.js",
+    "js/entities/animation/animationArchetypes.js",
+    "js/entities/animation/animationBody.js",
+    "js/entities/animation/animationRenderBase.js",
+    "js/entities/characters/tiendang.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tasks/TASK-039.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-CMB-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "SkinRegistry",
+    "CharacterRegistry",
+    "EffectManager",
+    "SkeletalRenderer"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 60,
+    "authorizedRemovals": [
+      "Replacing hardcoded default VFX color/text literals with skin-aware Ngư Tinh vs default branches across tiendang.js",
+      "Updating cache-bust ?v=6.15 tags in index.html and save.js skin exclusion array",
+      "Updating char_vananh_thuongluong.png portrait asset with mascot Thuồng Luồng"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-039.json"
+  ]
+}
