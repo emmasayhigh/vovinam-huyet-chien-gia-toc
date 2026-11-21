@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-037",
+  "title": "Disable Body Separation Pushback During Thuong Luong Ultimate Pass-Through",
+  "author": "Antigravity Senior Game Engine & Balance Engineer",
+  "date": "2026-11-22",
+  "objective": "Loại bỏ hoàn toàn hiện tượng đẩy lùi kẻ địch / mộc nhân / đối thủ PvP do vòng lặp giãn cách va chạm vật lý thân người trong lúc Phó Văn Anh skin Thuồng Luồng hóa rồng nước lao xuyên qua người ở Tuyệt Kỹ.",
+  "requestedBehavior": "1. Trong js/core/gameBase.js: bỏ qua giãn cách vật lý mềm (this.enemies) khi player đang ở state 'ultimate_barrage' với skin Thuồng Luồng (_tlInit / thuongLuongSkin / equippedSkin === 'thuongluong'). 2. Trong js/core/game.js: bỏ qua giãn cách PvP với om.remotePlayer khi một trong hai người đang thực hiện Tuyệt Kỹ Thuồng Luồng xuyên qua. 3. Cập nhật test hồi quy trong tests/test_skin_registry_and_cloud_auth.js và nâng cache-bust ?v=6.13 trong index.html.",
+  "allowedFiles": [
+    "js/core/gameBase.js",
+    "js/core/game.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tasks/TASK-037.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-CMB-001",
+    "FEAT-ONL-001"
+  ],
+  "dependencies": [
+    "GameBase",
+    "Game",
+    "CharacterRegistry"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 6,
+    "authorizedRemovals": [
+      "Guarding body separation condition in js/core/gameBase.js",
+      "Guarding PvP body separation condition in js/core/game.js",
+      "Bumping gameBase.js?v=6.13 and game.js?v=6.13 in index.html"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-037.json"
+  ]
+}

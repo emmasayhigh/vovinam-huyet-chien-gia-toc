@@ -330,6 +330,12 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     assert.ok(fs.existsSync(path.resolve(__dirname, '../assets/images/characters/char_vananh_thuongluong.png')), 'Ảnh chân dung char_vananh_thuongluong.png tồn tại trong assets');
     const tlRuntime = window.SkinRegistry.getRuntimeStyle('vananh', 'thuongluong');
     assert.ok(tlRuntime && tlRuntime.style && tlRuntime.style.serpentSuit && tlRuntime.style.serpentTail && tlRuntime.style.serpentSpines, 'Runtime style Thuồng Luồng có đầy đủ bộ đồ vảy, đuôi và vây đỏ');
+    const gameBaseSrc = fs.readFileSync(path.resolve(__dirname, '../js/core/gameBase.js'), 'utf8');
+    const gameSrc = fs.readFileSync(path.resolve(__dirname, '../js/core/game.js'), 'utf8');
+    const vananhSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/characters/vananh.js'), 'utf8');
+    assert.ok(vananhSrc.includes('hitEnemy(target, 22, 0, false)'), 'Pha 1 Ulti Thuồng Luồng dùng knockback = 0');
+    assert.ok(gameBaseSrc.includes('isThuongLuongPassThrough'), 'GameBase bỏ qua giãn cách thân người khi Thuồng Luồng lao xuyên qua');
+    assert.ok(gameSrc.includes('tlUltSelf') && gameSrc.includes('tlUltPeer'), 'PvP Game bỏ qua giãn cách thân người khi Thuồng Luồng lao xuyên qua');
 
     // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
     {

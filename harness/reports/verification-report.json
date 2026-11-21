@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-036",
-  "taskTitle": "Ensure Thuong Luong Ultimate Pass-Through Has Zero Knockback & Strict Non-P2W Parity",
-  "generatedAt": "2026-11-21T19:37:51.212Z",
+  "taskId": "TASK-037",
+  "taskTitle": "Disable Body Separation Pushback During Thuong Luong Ultimate Pass-Through",
+  "generatedAt": "2026-11-21T19:47:50.136Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 2,
+    "filesModifiedCount": 7,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,18 +13,24 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-036.json"
+      "tasks/TASK-037.json"
     ],
     "filesModified": [
-      "ndex.html",
-      "js/entities/characters/vananh.js"
+      "arness/reports/latest-test-run.json",
+      "harness/reports/verification-report.json",
+      "harness/reports/verification-report.md",
+      "index.html",
+      "js/core/game.js",
+      "js/core/gameBase.js",
+      "tests/test_skin_registry_and_cloud_auth.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
       "FEAT-CHR-001",
-      "FEAT-CMB-001"
+      "FEAT-CMB-001",
+      "FEAT-ONL-001"
     ],
     "preserved": [
       "FEAT-CMB-001",

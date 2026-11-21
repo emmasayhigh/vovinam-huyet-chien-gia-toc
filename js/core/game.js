@@ -3401,7 +3401,17 @@ class Game extends window.GameRender {
         this.player.x = Math.max(this.arenaMinX + 18, Math.min(this.arenaMaxX - 18, this.player.x));
         this.player.y = Math.max(515, Math.min(640, this.player.y));
       }
-      if (om.remotePlayer && !this.player.isDead && !om.remotePlayer.isDead && this.player.state !== 'scissor_kick') {
+      const tlUltSelf = !!(
+        this.player &&
+        this.player.state === 'ultimate_barrage' &&
+        (this.player._tlInit || this.player.thuongLuongSkin || this.player.equippedSkin === 'thuongluong')
+      );
+      const tlUltPeer = !!(
+        om.remotePlayer &&
+        om.remotePlayer.state === 'ultimate_barrage' &&
+        (om.remotePlayer.thuongLuongSkin || om.remotePlayer.equippedSkin === 'thuongluong')
+      );
+      if (om.remotePlayer && !this.player.isDead && !om.remotePlayer.isDead && this.player.state !== 'scissor_kick' && !tlUltSelf && !tlUltPeer) {
         const dx = this.player.x - om.remotePlayer.x;
         const dy = this.player.y - om.remotePlayer.y;
         if (Math.abs(dx) < 32 && Math.abs(dy) < 16) {

@@ -550,7 +550,13 @@ class GameBase {
     }
 
     // Giãn cách vật lý mềm giữa Người chơi và Đối thủ / Mộc nhân (chống đứng xuyên tâm lồng hình vào nhau)
-    if (this.player && !this.player.isDead && this.player.state !== 'scissor_kick') {
+    // Bỏ qua khi đang hóa Thuồng Luồng lao xuyên qua người địch (chỉ xuyên qua tạo hiệu ứng, không đẩy lùi thân vật lý)
+    const isThuongLuongPassThrough = !!(
+      this.player &&
+      this.player.state === 'ultimate_barrage' &&
+      (this.player._tlInit || this.player.thuongLuongSkin || this.player.equippedSkin === 'thuongluong')
+    );
+    if (this.player && !this.player.isDead && this.player.state !== 'scissor_kick' && !isThuongLuongPassThrough) {
       for (const enemy of this.enemies) {
         if (!enemy || enemy.isDead || enemy.state === 'knockdown') continue;
         const dx = this.player.x - enemy.x;
