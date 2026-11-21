@@ -99,6 +99,7 @@
         { name: 'Quan Sát Thói Quen', desc: 'Ghi nhận các đòn người chơi hay dùng; lặp lại 3 lần sẽ bị hắn trừng phạt.' },
         { name: 'Né Ngang Tiếp Cận', desc: 'Né sidestep rồi áp sát — có thời gian hồi, không né liên tục.' },
         { name: 'Phản Công Trừng Phạt', desc: 'Đòn phản công sau khi né: sát thương lớn, ngắn gọn.' },
+        { name: 'Hàn Băng Kiếm Quyết [W+U]', desc: 'Tỏa hàn khí gắn +1 tầng Đóng Băng lên địch (165px), hồi +12 Thể Lực và mở 0.8s cửa sổ Phản Đòn (CD 6s).' },
         { name: 'Áp Sát Bất Ngờ', desc: 'Lướt thẳng vào cự ly gần rồi ra đòn ngay.' }
       ],
       ultimate: null,
@@ -134,6 +135,7 @@
         { key: 'J / K', icon: '🗡️', name: 'Nhất Kiếm Tuyệt Sát', desc: 'Đòn kiếm chuẩn xác, không động tác thừa, trừng phạt sơ hở.' },
         { key: 'L', icon: '❄️', name: 'Thân Pháp Băng Bộ', desc: 'Né sidestep nhanh chóng rồi tức thì áp sát cự ly gần.' },
         { key: 'U+J / U+K', icon: '👁️', name: 'Bắt Bài Phản Công', desc: 'Trừng phạt combo lặp của đối thủ bằng đòn phản kích tê liệt.' },
+        { key: 'W+U', icon: '❄️', name: 'Hàn Băng Kiếm Quyết', desc: 'Tỏa hàn khí khắc +1 tầng Đóng Băng địch (165px), hồi +12 Thể Lực và mở 0.8s cửa sổ Phản Đòn (CD 6s).' },
         { key: 'I', icon: '⚡', name: 'Vô Nhất Hàn Phong', desc: 'Tuyệt kỹ: kiếm khí băng hàn xé rách mọi tuyến phòng thủ.' }
       ],
       passives: [

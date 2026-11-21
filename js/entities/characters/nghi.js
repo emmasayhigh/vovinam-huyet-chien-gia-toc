@@ -76,6 +76,7 @@
         { name: 'Đòn Thế Vovinam Mở Rộng', desc: 'Giữ ↑ + J: Đấm Móc Lên hất tung đối thủ. Giữ ↓ + J: Đánh Chỏ phá thủ. Giữ ↓ + K: Quét Trụ đòn thấp quật ngã. Shift + J: Lao Tới Đấm Móc. Trên không + J: Phi Quyền.' },
         { name: 'Đòn Chân Kẹp', desc: 'Khi áp sát và đã nối 2 đòn: nhảy kẹp cổ quật ngã (không áp dụng lên boss).' },
         { name: 'Phản Đòn Hoàn Hảo', desc: 'L đúng lúc đối thủ ra đòn → time-slow → đòn trừng phạt bạo kích.' },
+        { name: 'Long Hổ Tụ Khí [W+U]', desc: 'Nạp ngay +15 Năng Lượng, xóa nhạt lực đòn đánh và nhận 0.45s Giáp Bất Hoại Trắng (CD 6s).' },
         { name: 'Đá Bay Phi Thân', desc: 'Nhảy + K: lao xuyên đối thủ, sát thương cao, có knockdown.' }
       ],
       ultimate: { name: 'LONG HỔ XUẤT SƠN', desc: 'Chuỗi đòn liên hoàn xanh lam + nổ năng lượng cuối, gây sát thương diện rộng toàn màn.' },
@@ -112,6 +113,7 @@
         { key: 'W+J / S+J', icon: '🥋', name: 'Đấm Móc & Đánh Chỏ', desc: 'W+J: Đấm Móc Lên hất tung đối thủ. S+J: Đánh Chỏ phá vỡ phòng thủ.' },
         { key: 'W+K (hoặc J→J→K)', icon: '⚡', name: 'Đòn Chân Kẹp Vovinam', desc: 'Đặc trưng Vovinam: áp sát kẹp cổ, phá khiên và quật ngã đối thủ.' },
         { key: 'U+J / U+K', icon: '🛡️', name: 'Phản Đòn Tay & Chân', desc: 'Đỡ & phản kích MỌI đòn đánh, lập tức phá vỡ Bá Thể Đỏ.' },
+        { key: 'W+U', icon: '🐉', name: 'Long Hổ Tụ Khí', desc: 'Nạp ngay +15 Năng Lượng, xóa nhạt lực spam đòn và nhận 0.45s Giáp Bất Hoại Trắng (CD 6s).' },
         { key: 'I', icon: '🐉', name: 'Long Hổ Xuất Sơn', desc: 'Tuyệt kỹ Vovinam: liên hoàn sấm sét chấn động toàn trường.' }
       ],
       passives: [

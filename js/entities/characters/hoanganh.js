@@ -74,6 +74,7 @@
         { name: 'Quét Cuốc Ngang', desc: 'Tầm rộng lớn, telegraph rõ, lùi lại là né được.' },
         { name: 'Đập Mặt Đất', desc: 'Rung động AoE — chỉ an toàn khi đang ở trên không.' },
         { name: 'Chuỗi Liên Hoàn Nặng', desc: 'Giai đoạn 3: 3 đòn liên tiếp, mỗi đòn đều báo trước.' },
+        { name: 'Sơn Nhạc Trấn Thế [W+U]', desc: 'Đạp nứt mặt đất hồi ngay +55 HP và bật 2.5s Bá Thể Đỏ chịu tối đa 150 ST / 4 hit (CD 6s).' },
         { name: 'Xem Nhẹ Đòn Nhẹ', desc: 'Super armor: đòn thường gây 50% và không làm hắn chùn bước.' }
       ],
       ultimate: { name: 'THỔNG SƠN CHÙY', desc: 'Nện cuốc xuống đất: sóng xung kích 2 bên + knockdown diện rộng.' },
@@ -109,6 +110,7 @@
         { key: 'J / K', icon: '⛏️', name: 'Thiết Cuốc Trảm', desc: 'Quét cuốc sắt ngang người với phạm vi cực rộng.' },
         { key: 'L', icon: '🛡️', name: 'Bá Thể Sơn Cước', desc: 'Super Armor: không bị ngắt chiêu bởi đòn đánh nhẹ.' },
         { key: 'U+J / U+K', icon: '🌋', name: 'Đập Nát Địa Tầng', desc: 'Nện cuốc xuống đất tạo sóng xung kích chấn động sàn đấu.' },
+        { key: 'W+U', icon: '⛰️', name: 'Sơn Nhạc Trấn Thế', desc: 'Đạp nứt mặt đất hồi ngay +55 HP và nhận 2.5s Bá Thể Đỏ (chịu tối đa 150 ST / 4 hit) (CD 6s).' },
         { key: 'I', icon: '💥', name: 'Thống Sơn Đại Chùy', desc: 'Tuyệt kỹ: bổ trời giáng đất chấn nổ toàn bộ khu vực.' }
       ],
       passives: [

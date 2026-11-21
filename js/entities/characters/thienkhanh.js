@@ -324,7 +324,7 @@
       stats: { power: 96, speed: 90, defense: 74, technique: 99 },
       skills: [
         { key: 'J / K', icon: '🗡️', name: 'Múa Kiếm Xu Hỏa Diễm', desc: 'Chuỗi múa Kiếm Xu tầm rộng kèm kiếm khí xu đồng rực lửa, khắc hiệu ứng Thiêu Đốt.' },
-        { key: 'W + U', icon: '👹', name: 'Bùa Triệu Hồi Âm Binh', desc: 'Niệm bùa chú đỏ gọi ngay Hỏa Âm Binh lao ra tấn công và thiêu đốt kẻ địch gần nhất.' },
+        { key: 'W+U', icon: '👹', name: 'Tà Sư Kết Ấn', desc: 'Niệm bùa triệu hồi 1 Hỏa Âm Binh truy sát & thiêu đốt địch trong 6.2s, đồng thời hồi +8 Năng Lượng (CD 3.5s).' },
         { key: 'U+J / U+K', icon: '🔥', name: 'Phản Chú Hỏa Ngục', desc: 'Phản đòn tức thì gọi thêm 1 Hỏa Âm Binh hỗ trợ chiến đấu và bùng nổ hỏa luân.' },
         { key: 'I', icon: '🌋', name: 'Huyết Đạo Luân Hồi Trảm', desc: 'Tuyệt kỹ tối thượng: Múa kiếm xu hủy diệt + triệu hồi đội quân 3 Hỏa Âm Binh thiêu rụi chiến trường.' }
       ],

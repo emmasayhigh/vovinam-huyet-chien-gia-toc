@@ -602,6 +602,10 @@ class TrainingManagerOverlay extends window.TrainingManagerModes {
           `;
           skillsBadges.appendChild(item);
         });
+        const tSkillsBtn = modal.querySelector('#btn-t-subtab-skills');
+        if (tSkillsBtn) {
+          tSkillsBtn.innerHTML = `<span>⚡</span> CHIÊU THỨC (${skills.length})`;
+        }
       }
 
       // Passives

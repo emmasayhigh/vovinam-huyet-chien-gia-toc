@@ -24,10 +24,13 @@ require('../js/entities/characters/dinhan.js');
 require('../js/entities/characters/hoanganh.js');
 require('../js/entities/characters/dunghai.js');
 require('../js/entities/characters/giangmanh.js');
+require('../js/entities/characters/vananh.js');
+require('../js/entities/characters/tiendang.js');
+require('../js/entities/characters/thienkhanh.js');
 require('../js/ui/menu/charSlots.js');
 
 assert(Array.isArray(global.CHAR_SLOTS), 'CHAR_SLOTS should be an array');
-assert(global.CHAR_SLOTS.length >= 8, 'CHAR_SLOTS should have at least 8 characters');
+assert(global.CHAR_SLOTS.length >= 10, 'CHAR_SLOTS should have at least 10 playable characters');
 
 for (const slot of global.CHAR_SLOTS) {
   if (slot.id === 'coming_soon') continue;
@@ -38,8 +41,11 @@ for (const slot of global.CHAR_SLOTS) {
     assert(p.icon, `Passive for ${slot.id} must have icon`);
     assert(p.desc, `Passive for ${slot.id} must have desc`);
   }
+  assert(Array.isArray(slot.skills), `Character ${slot.id} must have skills array`);
+  const wuSkill = slot.skills.find((s) => s && typeof s.key === 'string' && s.key.replace(/\s+/g, '') === 'W+U');
+  assert(wuSkill && wuSkill.name && wuSkill.desc, `Character ${slot.id} must describe its W+U skill in slot.skills`);
 }
-console.log('✓ All playable characters have 4 valid passives');
+console.log('✓ All playable characters have 4 valid passives and W+U skill description');
 
 // 3. Verify charSelectDeployment.js auto card title uses ally-auto-title
 const deployJs = fs.readFileSync('js/ui/menu/charselect/charSelectDeployment.js', 'utf8');

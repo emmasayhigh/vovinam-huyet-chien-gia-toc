@@ -65,6 +65,7 @@
         { name: 'Thủ Thế Triệu Gia', desc: 'Giảm 45% sát thương thụ động.' },
         { name: 'Chuỗi Đòn Nặng', desc: '3 đòn liên hoàn chậm nhưng rộng, mỗi đòn đẩy lùi.' },
         { name: 'Chiếm Không Gian', desc: 'Đứng chắn giữa sân, buộc người chơi phải vòng hoặc phá thế.' },
+        { name: 'Thiết Bích Cố Thủ [W+U]', desc: 'Hồi ngay +40 điểm Khiên Thủ và kích hoạt 1.5s Giáp Kim Cang Vàng chống ngắt chiêu (CD 6s).' },
         { name: 'Phá Thế Thủ', desc: 'Đòn unblockable phá thủ — đó là cửa thắng.' }
       ],
       ultimate: { name: 'XUNG KÍCH KHỐI VŨ', desc: 'Lao tới bằng vai, húc văng mọi thứ trên đường đi.' },
@@ -97,6 +98,7 @@
         { key: 'J / K', icon: '🔨', name: 'Trọng Chùy Phá Trận', desc: 'Vung đại chùy càn quét khiến kẻ địch bật ngã.' },
         { key: 'L', icon: '🛡️', name: 'Thiết Bích Trụ Tấn', desc: 'Giảm 45% mọi sát thương nhận vào khi thủ thế.' },
         { key: 'U+J / U+K', icon: '⚡', name: 'Khiên Kích Phản Chấn', desc: 'Dùng chiến khiên húc văng đối thủ khi chúng tấn công.' },
+        { key: 'W+U', icon: '🛡️', name: 'Thiết Bích Cố Thủ', desc: 'Hồi ngay +40 điểm Khiên Thủ và kích hoạt 1.5s Giáp Kim Cang Vàng đứng vững chống ngắt chiêu (CD 6s).' },
         { key: 'I', icon: '🔥', name: 'Phụng Hoàng Liệt Lôi', desc: 'Tuyệt kỹ: bọc lôi hỏa lao thẳng húc tan nát tiền tuyến.' }
       ],
       passives: [

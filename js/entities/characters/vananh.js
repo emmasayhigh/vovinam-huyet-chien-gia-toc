@@ -101,6 +101,7 @@
         { name: 'Thiết Quyền Habana', desc: 'Chuỗi trọng quyền bọc thép kèm tàn lửa xì gà Habana, đòn thứ 4 bồi phát đạn giảm thanh.' },
         { name: 'Bước Tiến Thiết Giáp', desc: 'Lướt né kèm khói Habana giảm sát thương và nạp đạn chí mạng cho đòn kế tiếp.' },
         { name: 'Gác Súng Phản Kích', desc: 'Đón đỡ đòn địch và rút súng lục nén giảm thanh bắn trả ngay lập tức.' },
+        { name: 'Tụ Khí Nạp Đạn [W+U]', desc: 'Hồi +10 Thể Lực, bọc 0.8s Giáp Kim Cang Vàng và cường hóa đòn kế tiếp chắc chắn Chí Mạng (CD 6s).' },
         { name: 'Quân Đoàn Hậu Phương Thép', desc: 'Huy động hỏa lực quân đoàn lính đánh thuê và kho vàng họ Phó càn quét toàn màn hình.' }
       ],
       ultimate: { name: 'QUÂN ĐOÀN HẬU PHƯƠNG THÉP', desc: 'Huy động hỏa lực thiết giáp và bão đạn Hắc Kim nghiền nát toàn bộ chiến trường.' },
@@ -141,6 +142,7 @@
         { key: 'J / K', icon: '🪙', name: 'Thiết Quyền Habana', desc: 'Trọng quyền găng da cốt thép, đòn kết thúc bồi phát đạn giảm thanh.' },
         { key: 'L', icon: '💨', name: 'Khói Xì Gà Habana', desc: 'Lướt chiến thuật trong làn khói Habana né đòn linh hoạt.' },
         { key: 'U+J / U+K', icon: '🔫', name: 'Gác Súng Phản Kích', desc: 'Gạt đòn và rút súng lục nén giảm thanh gí trán bắn choáng kẻ địch.' },
+        { key: 'W+U', icon: '🥃', name: 'Tụ Khí Nạp Đạn', desc: 'Hồi +10 Thể Lực, bật 0.8s Giáp Kim Cang Vàng và cường hóa đòn kế 100% Chí Mạng (CD 6s).' },
         { key: 'I', icon: '🔥', name: 'Quân Đoàn Hậu Phương Thép', desc: 'Tuyệt kỹ: Đoàn xe thiết giáp và mưa đạn Hắc Kim càn quét toàn chiến trường.' }
       ],
       passives: [

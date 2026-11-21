@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-038",
+  "title": "Add W+U Stance Special Skill Descriptions to All Playable Characters UI",
+  "author": "Antigravity Senior Game UI & Content Engineer",
+  "date": "2026-11-22",
+  "objective": "Bổ sung thẻ mô tả chi tiết chiêu thức [W+U] (Thế Chiêu Đặc Trưng) cho toàn bộ 10 nhân vật chơi được trong mục Chiêu Thức (Chọn Nhân Vật, Võ Đường Huấn Luyện, Hồ Sơ Gia Tộc & Bảng Điều Khiển) để người chơi nắm rõ công dụng và hồi chiêu từng tướng.",
+  "requestedBehavior": "1. Thêm thẻ { key: 'W+U', icon, name, desc } vào uiSlot.skills và mô tả tương ứng vào rosterEntry.skills của nghi, bichlam, huavudai, dinhan, hoanganh, dunghai, giangmanh, vananh, tiendang và chuẩn hóa mô tả W+U của thienkhanh sát với logic onStanceSpecial thực tế. 2. Cập nhật bộ đếm động CHIÊU THỨC (N) trên charSelectCore.js, trainingManagerOverlay.js và bổ sung dòng phím W+U trong modal Điều Khiển ở index.html. 3. Bổ sung assertion kiểm tra thẻ W+U trong tests/test_char_select_passives_and_ally_title.js và nâng cache-bust ?v=6.14 trong index.html.",
+  "allowedFiles": [
+    "js/entities/characters/nghi.js",
+    "js/entities/characters/bichlam.js",
+    "js/entities/characters/huavudai.js",
+    "js/entities/characters/dinhan.js",
+    "js/entities/characters/hoanganh.js",
+    "js/entities/characters/dunghai.js",
+    "js/entities/characters/giangmanh.js",
+    "js/entities/characters/vananh.js",
+    "js/entities/characters/tiendang.js",
+    "js/entities/characters/thienkhanh.js",
+    "js/ui/menu/charselect/charSelectCore.js",
+    "js/ui/training/trainingManagerOverlay.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_char_select_passives_and_ally_title.js",
+    "tasks/TASK-038.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "CharacterRegistry",
+    "CHAR_SLOTS",
+    "CharSelect",
+    "TrainingManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 20,
+    "authorizedRemovals": [
+      "Updating W+U skill wording in thienkhanh.js to match exact cooldown and energy gain",
+      "Updating skill count badge dynamically in charSelectCore.js, trainingManagerOverlay.js, and index.html",
+      "Bumping ?v=6.14 cache-bust tags on edited scripts in index.html"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-038.json"
+  ]
+}

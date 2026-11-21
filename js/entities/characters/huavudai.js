@@ -77,6 +77,7 @@
       skills: [
         { name: 'Xô Bật', desc: 'Đòn tay đẩy đối thủ ra xa, tạo khoảng thở.' },
         { name: 'Đá Lùi Vội', desc: 'Khoảng cách xa, knockback mạnh, sát thương thấp.' },
+        { name: 'Hiệu Lệnh Kim Tiền [W+U]', desc: 'Tung tiền làm chậm 35% tốc độ địch xung quanh (150px) trong 2.0s và nạp ngay +16 Năng Lượng (CD 6s).' },
         { name: 'Mệnh Lệnh Ngầm', desc: 'Tuyệt kỹ: gọi Mộc Đăng thả strike hỗ trợ vào khu vực trước mặt.' }
       ],
       ultimate: { name: 'MỆNH LỆNH NGẦM', desc: 'Gọi strike hỗ trợ — nổ diện rộng phía trước, không cần cận chiến.' },
@@ -109,6 +110,7 @@
         { key: 'J / K', icon: '💥', name: 'Xô Bật Uy Lực', desc: 'Đòn tay đẩy dũng mãnh tạo khoảng cách an toàn.' },
         { key: 'L', icon: '💨', name: 'Thoái Bộ Khẩn Cấp', desc: 'Né lùi nhanh giữ cự ly, tránh bị bao vây.' },
         { key: 'U+J / U+K', icon: '🛡️', name: 'Thiết Trượng Hộ Thân', desc: 'Dùng gậy quyền trượng đỡ đòn và hóa giải chấn động.' },
+        { key: 'W+U', icon: '◈', name: 'Hiệu Lệnh Kim Tiền', desc: 'Tung tiền làm chậm 35% tốc độ địch (150px) trong 2.0s và nạp ngay +16 Năng Lượng (CD 6s).' },
         { key: 'I', icon: '🎯', name: 'Mệnh Lệnh Ngầm', desc: 'Tuyệt kỹ: triệu hồi hỏa lực yểm trợ từ mạng lưới ngầm.' }
       ],
       passives: [

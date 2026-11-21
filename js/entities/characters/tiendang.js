@@ -124,6 +124,7 @@
         { name: 'Hồ Sơ Sao Kê (Mix-up)', desc: 'Phối hợp các chiêu khác nhau để khắc tối đa 3 tầng Sao Kê rồi kích nổ Thâu Tóm M&A (spam cùng 1 chiêu sẽ không tích tầng).' },
         { name: 'Lá Chắn Thanh Khoản', desc: 'Kích nổ Sao Kê hoặc phản đòn thành công tạo Lá Chắn Lượng Tử 3.5s, giảm 28% sát thương cho đòn kế tiếp và làm chậm kẻ đánh.' },
         { name: 'Tàn Ảnh Thế Thân [L]', desc: 'Lướt né (có thể Dash-Cancel khi đòn vừa trúng đích) để lại Bóng Tàn Ảnh khắc +1 Sao Kê và rút ngắn hồi chiêu Phản Đòn.' },
+        { name: 'Quét Dữ Liệu Tây Hồ [W+U]', desc: 'Quét 220px khắc +1 tầng Sao Kê lên địch, xóa khóa trùng chiêu và hồi ngay +15 Thể Lực (CD 6s).' },
         { name: 'Nước Cờ Bẫy Ngược [U+J]', desc: 'Kích nổ trực tiếp Bẫy Ngược phá 28 Poise, mở sơ hở Boss, hồi Thể Lực và giảm 50% hồi chiêu Né [L].' }
       ],
       ultimate: { name: 'HUYỀN THOẠI THÂU TÓM M&A', desc: 'Tiên phong đột kích xuyên toàn màn hình, khóa chặt và nghiền nát mọi kẻ địch bằng bão xung kích Kim Cương.' },
@@ -165,6 +166,7 @@
         { key: 'Mix-up', icon: '💎', name: 'Thâu Tóm M&A (3 Tầng)', desc: 'Đổi chiêu liên tục (J → W+J → K / S+K) để tích 3 tầng Sao Kê và kích nổ sát thương chuẩn + phá Poise.' },
         { key: 'L', icon: '⚡', name: 'Tàn Ảnh Thế Thân', desc: 'Lướt né (Dash-Cancel ngay khi trúng đòn), để lại Bóng Tàn Ảnh khắc +1 Sao Kê và rút ngắn hồi chiêu Phản Đòn.' },
         { key: 'U+J / U+K', icon: '📂', name: 'Nước Cờ Bẫy Ngược', desc: 'Phản đòn kích nổ Bẫy Ngược phá 28 Poise, hồi Thể Lực và hoàn 50% hồi chiêu Né [L].' },
+        { key: 'W+U', icon: '💎', name: 'Quét Dữ Liệu Tây Hồ', desc: 'Quét vùng 220px khắc +1 tầng Sao Kê lên địch, xóa khóa trùng chiêu và hồi +15 Thể Lực (CD 6s).' },
         { key: 'I', icon: '🌌', name: 'Huyền Thoại Thâu Tóm M&A', desc: 'Tuyệt kỹ: Đột kích siêu thanh xuyên màn hình, kích nổ bão xung kích Kim Cương.' }
       ],
       passives: [

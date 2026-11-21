@@ -99,6 +99,7 @@
         { name: 'Áp Sát Liên Tục', desc: 'Rất ít thời gian nghỉ giữa các chuỗi đòn.' },
         { name: 'Đòn Gần Mạnh', desc: 'Sát thương cao nhất ở cự ly rất gần.' },
         { name: 'Đẩy Lùi Phản Công', desc: 'Phản ứng khi bị dồn: tung đòn đẩy tạo khoảng cách.' },
+        { name: 'Cuồng Phong Hộ Thể [W+U]', desc: 'Quét luồng khí xung quanh gây 15 ST + đẩy lùi địch (140px) và bật 2.0s Bá Thể Đỏ / Kim Cang (CD 6s).' },
         { name: 'Phối Hợp', desc: 'Có đoạn dàn dựng đánh cặp với Ngô Nhất Nghị.' }
       ],
       ultimate: { name: 'XUYÊN TẦN LIÊN KẾT', desc: 'Lao xuyên màn hình, liên hoàn nhiều hit, finish bằng đẩy lùi.' },
@@ -132,6 +133,7 @@
         { key: 'J / K', icon: '🌪️', name: 'Thần Phong Trảo', desc: 'Chuỗi cào xé cực nhanh áp sát cự ly gần.' },
         { key: 'L', icon: '💨', name: 'Phi Thân Lạc Bộ', desc: 'Thân pháp lướt xuyên đối thủ ra phía sau.' },
         { key: 'U+J / U+K', icon: '🛡️', name: 'Đẩy Lùi Phản Kích', desc: 'Đón đỡ đòn địch và phản đòn đẩy văng đối phương.' },
+        { key: 'W+U', icon: '🌪️', name: 'Cuồng Phong Hộ Thể', desc: 'Quét khí gây 15 ST + đẩy lùi địch quanh thân (140px) và kích hoạt 2.0s Bá Thể Đỏ / Kim Cang (CD 6s).' },
         { key: 'I', icon: '⚡', name: 'Xuyên Tần Liên Kích', desc: 'Tuyệt kỹ: lao xuyên màn hình nhiều hit dồn dập.' }
       ],
       passives: [

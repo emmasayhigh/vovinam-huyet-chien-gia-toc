@@ -430,6 +430,10 @@ class MenuManagerCharSelectCore extends window.MenuManagerBase {
     }
 
     // Đòn Thế Võ Thuật Thực Chiến (Bộ Chiêu Thức)
+    const tabSkillsBtn = document.getElementById('btn-cs-subtab-skills');
+    if (tabSkillsBtn && Array.isArray(slot.skills)) {
+      tabSkillsBtn.innerHTML = `<span>⚡</span> CHIÊU THỨC (${slot.skills.length})`;
+    }
     const skillsBadges = document.getElementById('cs-skills-badges');
     if (skillsBadges && slot.skills) {
       skillsBadges.innerHTML = '';

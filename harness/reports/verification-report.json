@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-037",
-  "taskTitle": "Disable Body Separation Pushback During Thuong Luong Ultimate Pass-Through",
-  "generatedAt": "2026-11-21T19:47:50.136Z",
+  "taskId": "TASK-038",
+  "taskTitle": "Add W+U Stance Special Skill Descriptions to All Playable Characters UI",
+  "generatedAt": "2026-11-21T19:56:28.343Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 7,
+    "filesModifiedCount": 15,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,24 +13,31 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-037.json"
+      "tasks/TASK-038.json"
     ],
     "filesModified": [
       "arness/reports/latest-test-run.json",
-      "harness/reports/verification-report.json",
-      "harness/reports/verification-report.md",
       "index.html",
-      "js/core/game.js",
-      "js/core/gameBase.js",
-      "tests/test_skin_registry_and_cloud_auth.js"
+      "js/entities/characters/bichlam.js",
+      "js/entities/characters/dinhan.js",
+      "js/entities/characters/dunghai.js",
+      "js/entities/characters/giangmanh.js",
+      "js/entities/characters/hoanganh.js",
+      "js/entities/characters/huavudai.js",
+      "js/entities/characters/nghi.js",
+      "js/entities/characters/thienkhanh.js",
+      "js/entities/characters/tiendang.js",
+      "js/entities/characters/vananh.js",
+      "js/ui/menu/charselect/charSelectCore.js",
+      "js/ui/training/trainingManagerOverlay.js",
+      "tests/test_char_select_passives_and_ally_title.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
       "FEAT-CHR-001",
-      "FEAT-CMB-001",
-      "FEAT-ONL-001"
+      "FEAT-UI-001"
     ],
     "preserved": [
       "FEAT-CMB-001",

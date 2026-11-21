@@ -63,6 +63,7 @@
         { name: 'Nhịp Bất Kỷ Luật', desc: 'Thời gian giữa các đòn ngẫu nhiên rộng — không thể canh theo thói quen.' },
         { name: 'Hủy Đòn Dối', desc: 'Bắt đầu một đòn rồi cancel 40% sang né ngang và đòn thật.' },
         { name: 'Ném Đồ Môi Trường', desc: 'Gạch, chai, ống thép — cấu rỉa rồi mới áp sát.' },
+        { name: 'Khói Mù Nhẫn Giả [W+U]', desc: 'Tung bom khói làm mù địch (150px) trong 1.4s, bật 0.6s Giáp Trắng Bất Hoại và cường hóa đòn kế 100% Chí Mạng (CD 6s).' },
         { name: 'Lời Nói Giữa Trận', desc: 'Dừng lại nói về quá khứ — khiến người chơi hoài nghi lựa chọn của mình.' }
       ],
       ultimate: null,
@@ -95,6 +96,7 @@
         { key: 'J / K', icon: '🗡️', name: 'Song Đao Liên Hoàn', desc: 'Chém chớp nhoáng gây hiệu ứng xuất huyết DoT.' },
         { key: 'L', icon: '💨', name: 'Hư Ảnh Biến Ảo', desc: 'Hủy chiêu giữa chừng chuyển sang né và tập kích bất ngờ.' },
         { key: 'U+J / U+K', icon: '🧱', name: 'Ám Khí Phản Phá', desc: 'Tận dụng phi tiêu môi trường phá nhịp đối phương.' },
+        { key: 'W+U', icon: '💨', name: 'Khói Mù Nhẫn Giả', desc: 'Tung khói làm mù địch (150px) 1.4s, nhận 0.6s Giáp Trắng Bất Hoại và đòn kế tiếp 100% Chí Mạng (CD 6s).' },
         { key: 'I', icon: '⚡', name: 'Huyễn Ảnh Loạn Vũ', desc: 'Tuyệt kỹ: phân thân tung hàng chục vết chém liên tiếp.' }
       ],
       passives: [
