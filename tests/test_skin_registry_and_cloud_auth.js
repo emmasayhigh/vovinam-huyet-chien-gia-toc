@@ -345,7 +345,9 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     const ntRuntime = window.SkinRegistry.getRuntimeStyle('tiendang', 'ngutinh');
     assert.ok(ntRuntime && ntRuntime.style && ntRuntime.style.nguTinhSuit && ntRuntime.style.nguTinhTail && ntRuntime.style.nguTinhFin && ntRuntime.style.nguTinhTalisman, 'Runtime style Ngư Tinh có đầy đủ vảy bạc, đuôi xương, vây tím & bùa cổ');
     const tiendangSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/characters/tiendang.js'), 'utf8');
-    assert.ok(tiendangSrc.includes('isNguTinhSkin') && tiendangSrc.includes('hitEnemy(target, 42, 5, false)') && tiendangSrc.includes('hitEnemy(e, 175, 18, true)'), 'Skin Ngư Tinh giữ nguyên thông số chiến đấu chuẩn Tiến Đăng gốc (42/175 dmg)');
+    const effectsSrc = fs.readFileSync(path.resolve(__dirname, '../js/core/effects.js'), 'utf8');
+    assert.ok(tiendangSrc.includes('isNguTinhSkin') && tiendangSrc.includes('createNguTinhSkyDrop') && tiendangSrc.includes('createNguTinhFangsBite') && tiendangSrc.includes('hitEnemy(target, 42, 5, false)') && tiendangSrc.includes('hitEnemy(e, 175, 18, true)'), 'Skin Ngư Tinh triệu hồi Ngư Tinh rơi từ trời xuống + hiệu ứng Hàm Nanh/Bùa Cổ/Gai Rết riêng và giữ đúng thông số Tiến Đăng gốc (42/175 dmg)');
+    assert.ok(effectsSrc.includes("sf.kind === 'ngutinh_sky_drop'") && effectsSrc.includes("sf.kind === 'ngutinh_fangs'") && effectsSrc.includes("sf.kind === 'ngutinh_seal'") && effectsSrc.includes("sf.kind === 'ngutinh_spines'"), 'Effects có đủ 4 VFX Ngư Tinh độc quyền');
 
     // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
     {

@@ -41,10 +41,10 @@
       const dy = (defender.y || 580) + (defender.z || 0);
       const dir = (attacker && attacker.facing) || 1;
       const isNT = isNguTinhSkin(attacker);
-      if (isNT && typeof fx.createNguTinhVortex === 'function') fx.createNguTinhVortex(defender.x, defender.y || 580, 74, 185);
-      if (isNT && typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(defender.x, dy - 60, dir, 1.25);
+      if (isNT && typeof fx.createNguTinhCentipedeEruption === 'function') fx.createNguTinhCentipedeEruption(defender.x, defender.y || 580, dir);
+      if (isNT && typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(defender.x, dy - 60, dir, 1.25);
       else if (typeof fx.createCyberHexBurst === 'function') fx.createCyberHexBurst(defender.x, dy - 60, dir, '#22d3ee');
-      if (typeof fx.createShockRing === 'function') fx.createShockRing(defender.x, defender.y || 580, isNT ? '#c084fc' : '#22d3ee');
+      if (typeof fx.createShockRing === 'function') fx.createShockRing(defender.x, defender.y || 580, isNT ? '#fde047' : '#22d3ee');
       if (typeof fx.addFloatingText === 'function') fx.addFloatingText(isNT ? `🐟 NGƯ TINH THÔN PHỆ! (+${bonusDmg})` : `💎 THÂU TÓM M&A! (+${bonusDmg})`, defender.x, dy - 160, 'crit');
     }
   }
@@ -68,12 +68,12 @@
     const fx = window.effectManager;
     if (fx) {
       const isNT = isNguTinhSkin(player);
-      if (isNT && typeof fx.createNguTinhVortex === 'function') fx.createNguTinhVortex(anchorX, anchorY, 58, 145);
+      if (isNT && typeof fx.createNguTinhTalismanSeal === 'function') fx.createNguTinhTalismanSeal(anchorX, anchorY, 62);
       else if (typeof fx.createQuantumLockOn === 'function') fx.createQuantumLockOn(anchorX, anchorY - 56, 56, 0.36);
-      if (isNT && typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(anchorX, anchorY - 56, dir || 1, 1.0);
+      if (isNT && typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(anchorX, anchorY - 56, dir || 1, 0.95);
       else if (typeof fx.createCyberHexBurst === 'function') fx.createCyberHexBurst(anchorX, anchorY - 56, dir || 1, '#22d3ee');
       if (typeof fx.addGhostTrail === 'function') fx.addGhostTrail(player, isNT ? 'rgba(192, 132, 252, 0.58)' : 'rgba(34, 211, 238, 0.55)');
-      if (typeof fx.addFloatingText === 'function') fx.addFloatingText(isNT ? '🌊 THỦY KÍNH NGƯ TINH!' : '⚡ TÀN ẢNH THẾ THÂN!', anchorX, anchorY - 145, 'dodge');
+      if (typeof fx.addFloatingText === 'function') fx.addFloatingText(isNT ? '📜 BÙA CỔ NGƯ TINH!' : '⚡ TÀN ẢNH THẾ THÂN!', anchorX, anchorY - 145, 'dodge');
     }
   }
 
@@ -445,58 +445,67 @@
         const gx = e.x || 0, gy = e.y || 580, gz = e.z || 0;
         const isNT = isNguTinhSkin(e);
         if (st === 'dodge' && cross(0.06)) {
-          if (isNT && typeof fx.createNguTinhVortex === 'function') {
-            fx.createNguTinhVortex(gx, gy, 54, 130);
+          if (isNT && typeof fx.createNguTinhTalismanSeal === 'function') {
+            fx.createNguTinhTalismanSeal(gx, gy, 56);
           } else {
             fx.createQuantumLockOn(gx, gy - 55, 52, 0.3);
             fx.createCyberHexBurst(gx, gy - 55, dir, '#22d3ee');
           }
         } else if (st === 'counter_hand_strike') {
           if (cross(0.06)) {
-            if (isNT && typeof fx.createNguTinhVortex === 'function') fx.createNguTinhVortex(gx + dir * 20, gy, 58, 150);
+            if (isNT && typeof fx.createNguTinhTalismanSeal === 'function') fx.createNguTinhTalismanSeal(gx + dir * 20, gy, 58);
             else fx.createQuantumLockOn(gx + dir * 20, gy - 62, 58, 0.34);
           }
           if (cross(0.36)) {
-            if (isNT && typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(gx + dir * 52, gy - 64, dir, 1.25);
+            if (isNT && typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(gx + dir * 52, gy - 64, dir, 1.2);
             else fx.createCyberHexBurst(gx + dir * 56, gy - 64, dir, '#22d3ee');
-            fx.createSonicBoomCone(gx + dir * 48, gy - 64, dir, isNT ? '#c084fc' : '#818cf8');
+            if (!isNT) fx.createSonicBoomCone(gx + dir * 48, gy - 64, dir, '#818cf8');
           }
         } else if (st === 'flying_kick' && cross(0.22)) {
-          fx.createSonicBoomCone(gx + dir * 32, gy + gz - 56, dir, isNT ? '#c084fc' : '#22d3ee');
-          if (isNT && typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(gx + dir * 40, gy + gz - 56, dir, 1.15);
-          else fx.createCyberHexBurst(gx + dir * 40, gy + gz - 56, dir, '#38bdf8');
+          if (isNT && typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(gx + dir * 40, gy + gz - 56, dir, 1.15);
+          else {
+            fx.createSonicBoomCone(gx + dir * 32, gy + gz - 56, dir, '#22d3ee');
+            fx.createCyberHexBurst(gx + dir * 40, gy + gz - 56, dir, '#38bdf8');
+          }
         } else if (st === 'boss_riposte') {
           if (cross(0.08)) {
-            if (isNT && typeof fx.createNguTinhVortex === 'function') fx.createNguTinhVortex(gx + dir * 24, gy, 68, 170);
+            if (isNT && typeof fx.createNguTinhTalismanSeal === 'function') fx.createNguTinhTalismanSeal(gx + dir * 24, gy, 68);
             else fx.createQuantumLockOn(gx + dir * 24, gy - 62, 68, 0.40);
           }
           if (cross(0.38)) {
-            fx.createSonicBoomCone(gx + dir * 52, gy - 66, dir, isNT ? '#2dd4bf' : '#22d3ee');
-            if (isNT && typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(gx + dir * 58, gy - 66, dir, 1.35);
-            else fx.createCyberHexBurst(gx + dir * 58, gy - 66, dir, '#818cf8');
+            if (isNT) {
+              if (typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(gx + dir * 58, gy - 66, dir, 1.35);
+              if (typeof fx.createNguTinhCentipedeEruption === 'function') fx.createNguTinhCentipedeEruption(gx + dir * 58, gy, dir);
+            } else {
+              fx.createSonicBoomCone(gx + dir * 52, gy - 66, dir, '#22d3ee');
+              fx.createCyberHexBurst(gx + dir * 58, gy - 66, dir, '#818cf8');
+            }
           }
         } else if (st === 'ultimate_blink') {
           if (cross(0.05)) {
-            if (isNT && typeof fx.createNguTinhVortex === 'function') fx.createNguTinhVortex(gx, gy, 84, 210);
+            if (isNT && typeof fx.createNguTinhTalismanSeal === 'function') fx.createNguTinhTalismanSeal(gx, gy, 90);
             else fx.createQuantumLockOn(gx, gy - 62, 76, 0.45);
           }
           if (cross(0.73)) {
-            if (isNT && typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(gx + dir * 20, gy - 48, dir, 1.45);
+            if (isNT && typeof fx.createNguTinhCentipedeEruption === 'function') fx.createNguTinhCentipedeEruption(gx + dir * 20, gy, dir);
             else fx.createCyberHexBurst(gx + dir * 20, gy - 45, dir, '#818cf8');
-            fx.createGroundCrack(gx + dir * 20, gy, 145, isNT ? '#c084fc' : '#22d3ee');
+            fx.createGroundCrack(gx + dir * 20, gy, 145, isNT ? '#fde047' : '#22d3ee');
           }
         } else if (st === 'wk') {
           if (cross(0.16)) {
-            if (isNT && typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(gx, gy - 44, dir, 1.0);
+            if (isNT && typeof fx.createNguTinhCentipedeEruption === 'function') fx.createNguTinhCentipedeEruption(gx + dir * 16, gy, dir);
             else fx.createCyberHexBurst(gx, gy - 44, dir, '#22d3ee');
           }
-          if (cross(0.32)) fx.createSonicBoomCone(gx + dir * 40, gy - 62, dir, isNT ? '#c084fc' : '#38bdf8');
+          if (cross(0.32)) {
+            if (isNT && typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(gx + dir * 40, gy - 62, dir, 1.05);
+            else fx.createSonicBoomCone(gx + dir * 40, gy - 62, dir, '#38bdf8');
+          }
         } else if (st === 'kick_sweep' && cross(0.40)) {
-          if (isNT && typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(gx + dir * 48, gy - 18, dir, 1.05);
+          if (isNT && typeof fx.createNguTinhCentipedeEruption === 'function') fx.createNguTinhCentipedeEruption(gx + dir * 48, gy, dir);
           else fx.createCyberHexBurst(gx + dir * 48, gy - 14, dir, '#22d3ee');
           fx.createDust(gx + dir * 32, gy, 8, 36);
         } else if (cross(0.34) && (st === 'punch_hook' || st === 'uppercut' || st === 'hook_run' || st === 'kick_roundhouse')) {
-          if (isNT && typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(gx + dir * 44, gy - 64, dir, 1.05);
+          if (isNT && typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(gx + dir * 44, gy - 64, dir, 1.05);
           else fx.createCyberHexBurst(gx + dir * 44, gy - 64, dir, '#22d3ee');
         }
       }
@@ -607,9 +616,9 @@
         attacker._maMarks = Math.max(attacker._maMarks || 0, 2);
         if (window.effectManager) {
           const isNT = isNguTinhSkin(defender);
-          if (isNT && typeof window.effectManager.createNguTinhWaveSlash === 'function') window.effectManager.createNguTinhWaveSlash(attacker.x, (attacker.y || 580) - 42, defender.facing || 1, 1.15);
+          if (isNT && typeof window.effectManager.createNguTinhCentipedeEruption === 'function') window.effectManager.createNguTinhCentipedeEruption(attacker.x, attacker.y || 580, defender.facing || 1);
           else if (typeof window.effectManager.createCyberHexBurst === 'function') window.effectManager.createCyberHexBurst(attacker.x, (attacker.y || 580) - 35, defender.facing || 1, '#22d3ee');
-          if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText(isNT ? '🌊 CẮT SÓNG NGƯ TINH (SAO KÊ 2/3 / +20 NỘ)!' : '⚡ CẮT TẦN SỐ HẠ (SAO KÊ 2/3 / +20 NỘ)!', attacker.x, (attacker.y || 580) - 175, 'crit');
+          if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText(isNT ? '📜 PHONG ẤN NGƯ TINH (SAO KÊ 2/3 / +20 NỘ)!' : '⚡ CẮT TẦN SỐ HẠ (SAO KÊ 2/3 / +20 NỘ)!', attacker.x, (attacker.y || 580) - 175, 'crit');
         }
       },
       onStanceSpecial(player, enemies) {
@@ -625,13 +634,13 @@
         if (window.effectManager) {
           const isNT = isNguTinhSkin(player);
           if (isNT) {
-            if (typeof window.effectManager.createNguTinhVortex === 'function') window.effectManager.createNguTinhVortex(player.x, player.y || 580, 92, 195);
-            if (typeof window.effectManager.createNguTinhWaveSlash === 'function') window.effectManager.createNguTinhWaveSlash(player.x, (player.y || 580) - 56, player.facing || 1, 1.25);
+            if (typeof window.effectManager.createNguTinhTalismanSeal === 'function') window.effectManager.createNguTinhTalismanSeal(player.x, player.y || 580, 96);
+            if (typeof window.effectManager.createNguTinhCentipedeEruption === 'function') window.effectManager.createNguTinhCentipedeEruption(player.x, player.y || 580, player.facing || 1);
           } else {
             if (typeof window.effectManager.createQuantumLockOn === 'function') window.effectManager.createQuantumLockOn(player.x, (player.y || 580) - 56, 84, 0.42);
             if (typeof window.effectManager.createCyberHexBurst === 'function') window.effectManager.createCyberHexBurst(player.x, (player.y || 580) - 56, player.facing || 1, '#38bdf8');
           }
-          if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText(isNT ? '🐟 NGƯ TINH QUÉT TRIỀU (+1 SAO KÊ / +15 TL)!' : '💎 QUÉT DỮ LIỆU TÂY HỒ (+1 SAO KÊ / +15 TL)!', player.x, (player.y || 580) - 175, 'dodge');
+          if (typeof window.effectManager.addFloatingText === 'function') window.effectManager.addFloatingText(isNT ? '📜 BÙA TRIỆU ẤN NGƯ TINH (+1 SAO KÊ / +15 TL)!' : '💎 QUÉT DỮ LIỆU TÂY HỒ (+1 SAO KÊ / +15 TL)!', player.x, (player.y || 580) - 175, 'dodge');
         }
         return true;
       },
@@ -715,7 +724,7 @@
           const target = alive[(player._ultStep - 1) % alive.length];
           const side = (player._ultStep % 2) ? 1 : -1;
           if (fx) {
-            fx.addGhostTrail(player, isNT ? 'rgba(192, 132, 252, 0.82)' : 'rgba(56, 189, 248, 0.8)');
+            fx.addGhostTrail(player, isNT ? 'rgba(253, 224, 71, 0.72)' : 'rgba(56, 189, 248, 0.8)');
             fx.createShockRing(player.x, player.y, isNT ? '#c084fc' : '#38bdf8');
           }
           player.x = target.x + side * 70;
@@ -725,18 +734,23 @@
           target.stunTimer = Math.max(target.stunTimer || 0, 0.35);
           hitEnemy(target, 42, 5, false);
           if (fx) {
-            fx.createSonicBoomCone(player.x + player.facing * 30, player.y - 70, player.facing, isNT ? '#c084fc' : '#38bdf8');
-            fx.createShockRing(target.x, target.y, isNT ? '#2dd4bf' : '#818cf8');
             if (isNT) {
-              if (typeof fx.createNguTinhWaveSlash === 'function') fx.createNguTinhWaveSlash(target.x, target.y - 68, player.facing, 1.3);
-              if (player._ultStep % 2 === 1 && typeof fx.createNguTinhVortex === 'function') fx.createNguTinhVortex(target.x, target.y, 68, 175);
+              // Triệu hồi Ngư Tinh lao từ trên trời rơi xuống đập thẳng xuống đầu kẻ địch!
+              if (typeof fx.createNguTinhSkyDrop === 'function') fx.createNguTinhSkyDrop(target.x, target.y, player.facing, 0.92, false);
+              if (typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(target.x, target.y - 68, player.facing, 1.15);
+              if (player._ultStep === 1 && typeof fx.addFloatingText === 'function') {
+                fx.addFloatingText('🐟 TRIỆU HỒI NGƯ TINH THIÊN GIÁNG!', player.x, player.y - 165, 'ultimate');
+              }
+            } else {
+              fx.createSonicBoomCone(player.x + player.facing * 30, player.y - 70, player.facing, '#38bdf8');
+              fx.createShockRing(target.x, target.y, '#818cf8');
             }
             if (Array.isArray(fx.particles)) {
               for (let i = 0; i < 10; i++) {
                 fx.particles.push({
                   x: target.x, y: target.y - 70, vx: (Math.random() - 0.5) * 9, vy: (Math.random() - 0.5) * 6,
                   size: 2 + Math.random() * 2.5,
-                  color: isNT ? (i % 3 === 0 ? '#fde047' : (i % 2 ? '#e879f9' : '#2dd4bf')) : (i % 2 ? '#38bdf8' : '#e0f2fe'),
+                  color: isNT ? (i % 3 === 0 ? '#fde047' : (i % 2 ? '#c084fc' : '#d97706')) : (i % 2 ? '#38bdf8' : '#e0f2fe'),
                   alpha: 1, life: 0.45, maxLife: 0.45, gravity: 0
                 });
               }
@@ -746,14 +760,15 @@
         if (p >= 1) {
           if (fx) {
             if (isNT) {
-              fx.createUltimateBlast(player.x, player.y - 60, { primary: '#c084fc', secondary: '#2dd4bf', flash: '#fae8ff' });
-              if (typeof fx.createNguTinhVortex === 'function') fx.createNguTinhVortex(player.x, player.y, 118, 290);
-              if (typeof fx.createNguTinhWaveSlash === 'function') {
-                fx.createNguTinhWaveSlash(player.x + 36, player.y - 65, 1, 1.5);
-                fx.createNguTinhWaveSlash(player.x - 36, player.y - 65, -1, 1.5);
+              // Pha kết liễu: Ngư Tinh Chúa khổng lồ lao từ trên trời giáng xuống đập nát mặt đất!
+              if (typeof fx.createNguTinhSkyDrop === 'function') fx.createNguTinhSkyDrop(player.x, player.y, player.facing, 1.38, true);
+              if (typeof fx.createNguTinhCentipedeEruption === 'function') {
+                fx.createNguTinhCentipedeEruption(player.x + 48, player.y, 1);
+                fx.createNguTinhCentipedeEruption(player.x - 48, player.y, -1);
               }
+              fx.createUltimateBlast(player.x, player.y - 60, { primary: '#c084fc', secondary: '#fde047', flash: '#fae8ff' });
               fx.createShockRing(player.x, player.y, '#c084fc', 320);
-              fx.createShockRing(player.x, player.y, '#2dd4bf', 240);
+              fx.createShockRing(player.x, player.y, '#fde047', 235);
             } else {
               fx.createUltimateBlast(player.x, player.y - 60, { primary: '#22d3ee', secondary: '#818cf8', flash: '#38bdf8' });
               fx.createCyberHexBurst(player.x, player.y - 60, player.facing, '#818cf8');

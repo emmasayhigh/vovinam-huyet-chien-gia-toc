@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-040",
+  "title": "Overhaul Ngu Tinh Skin with Sky-Drop Summon Ult & Unique Fangs/Talisman/Centipede-Spine VFX",
+  "author": "Antigravity Senior VFX & Character Gameplay Engineer",
+  "date": "2026-11-22",
+  "objective": "Thiết kế lại toàn bộ hiệu ứng đặc trưng cho skin Ngư Tinh của Phó Tiến Đăng để hoàn toàn tách biệt khỏi Thuồng Luồng: Tiến Đăng giữ nguyên nhân dạng kết ấn triệu hồi Ngư Tinh từ trên trời rơi xuống đập nát kẻ địch, kết hợp bộ VFX độc quyền gồm Hàm Nanh 4 Mắt Ngư Tinh, Đạo Bùa Vàng Cổ và Gai Xương Rết Nâu Vàng (giữ nguyên 100% thông số cân bằng gốc).",
+  "requestedBehavior": "1. Trong js/core/effects.js: thay cặp VFX tạm ngutinh_slash/ngutinh_vortex bằng 4 hiệu ứng độc quyền Ngư Tinh (createNguTinhSkyDrop triệu hồi quái Ngư Tinh rơi từ trời xuống đập đất, createNguTinhFangsBite hàm nanh đỏ-trắng + 4 mắt hổ phách, createNguTinhTalismanSeal đạo bùa vàng cổ quay vòng, createNguTinhCentipedeEruption gai xương rết trồi mặt đất). 2. Trong js/entities/animation/animationRenderBase.js: bỏ hoán đổi hình thể beast form trùng kiểu Thuồng Luồng để Tiến Đăng giữ hình người kết ấn triệu hồi quái từ trời rơi xuống. 3. Trong js/entities/characters/tiendang.js: nối toàn bộ bộ đòn đánh, Sao Kê, [L], [W+U], [U+J/K] và Tuyệt Kỹ [I] sang 4 hiệu ứng Ngư Tinh mới với đúng sát thương gốc (42/175 dmg). 4. Cập nhật js/data/skins.js, cache-bust ?v=6.16 trong index.html và kiểm chứng trong tests/test_skin_registry_and_cloud_auth.js.",
+  "allowedFiles": [
+    "js/core/effects.js",
+    "js/entities/animation/animationRenderBase.js",
+    "js/entities/characters/tiendang.js",
+    "js/data/skins.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tasks/TASK-040.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-CMB-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "EffectManager",
+    "SkeletalRenderer",
+    "SkinRegistry",
+    "CharacterRegistry"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 360,
+    "authorizedRemovals": [
+      { "file": "js/core/effects.js", "name": "createNguTinhWaveSlash" },
+      { "file": "js/core/effects.js", "name": "createNguTinhVortex" },
+      { "file": "js/entities/animation/animationRenderBase.js", "name": "drawNguTinhBeastForm" }
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-040.json"
+  ]
+}

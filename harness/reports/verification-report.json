@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-039",
-  "taskTitle": "Add Mythic Ngu Tinh Skin for Pho Tien Dang with Non-P2W Parity",
-  "generatedAt": "2026-11-21T20:05:27.021Z",
+  "taskId": "TASK-040",
+  "taskTitle": "Overhaul Ngu Tinh Skin with Sky-Drop Summon Ult & Unique Fangs/Talisman/Centipede-Spine VFX",
+  "generatedAt": "2026-11-21T20:14:55.537Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 2,
-    "filesModifiedCount": 14,
+    "filesAddedCount": 1,
+    "filesModifiedCount": 9,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,21 +13,15 @@
   },
   "scope": {
     "filesAdded": [
-      "assets/images/characters/char_tiendang_ngutinh.png",
-      "tasks/TASK-039.json"
+      "tasks/TASK-040.json"
     ],
     "filesModified": [
-      "ssets/images/characters/char_vananh_thuongluong.png",
-      "harness/reports/latest-test-run.json",
+      "arness/reports/latest-test-run.json",
       "harness/reports/verification-report.json",
       "harness/reports/verification-report.md",
       "index.html",
       "js/core/effects.js",
-      "js/core/game.js",
-      "js/core/save.js",
       "js/data/skins.js",
-      "js/entities/animation/animationArchetypes.js",
-      "js/entities/animation/animationBody.js",
       "js/entities/animation/animationRenderBase.js",
       "js/entities/characters/tiendang.js",
       "tests/test_skin_registry_and_cloud_auth.js"

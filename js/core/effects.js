@@ -904,24 +904,47 @@ class EffectManager {
     });
   }
 
-  createNguTinhWaveSlash(x, y, dir = 1, scale = 1.0) {
+  createNguTinhFangsBite(x, y, dir = 1, scale = 1.0) {
     if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
     this.serpentFx.push({
-      kind: 'ngutinh_slash',
+      kind: 'ngutinh_fangs',
       x, y, dir: dir >= 0 ? 1 : -1,
       scale: scale || 1.0,
       t: 0,
-      life: 0.38, maxLife: 0.38, alpha: 1
+      life: 0.34, maxLife: 0.34, alpha: 1
     });
   }
 
-  createNguTinhVortex(x, y, radius = 72, height = 190) {
+  createNguTinhTalismanSeal(x, y, radius = 64) {
     if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
     this.serpentFx.push({
-      kind: 'ngutinh_vortex',
-      x, y, radius, height,
+      kind: 'ngutinh_seal',
+      x, y, radius: radius || 64,
       t: 0,
-      life: 0.58, maxLife: 0.58, alpha: 1
+      life: 0.62, maxLife: 0.62, alpha: 1
+    });
+  }
+
+  createNguTinhCentipedeEruption(x, y, dir = 1) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'ngutinh_spines',
+      x, y, dir: dir >= 0 ? 1 : -1,
+      t: 0,
+      life: 0.52, maxLife: 0.52, alpha: 1
+    });
+  }
+
+  createNguTinhSkyDrop(x, y, dir = 1, scale = 1.0, isFinal = false) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    const dur = isFinal ? 0.88 : 0.62;
+    this.serpentFx.push({
+      kind: 'ngutinh_sky_drop',
+      x, y, dir: dir >= 0 ? 1 : -1,
+      scale: scale || 1.0,
+      isFinal: !!isFinal,
+      t: 0,
+      life: dur, maxLife: dur, alpha: 1
     });
   }
 
@@ -1597,80 +1620,329 @@ class EffectManager {
           ctx.moveTo(4, -4); ctx.lineTo(-len * 0.85, -20 - prog * 12);
           ctx.moveTo(4, 4); ctx.lineTo(-len * 0.85, 18 + prog * 12);
           ctx.stroke();
-        } else if (sf.kind === 'ngutinh_slash') {
+        } else if (sf.kind === 'ngutinh_fangs') {
           ctx.translate(sf.x, sf.y);
           ctx.scale(sf.dir * sf.scale, sf.scale);
-          const r = 48 + prog * 34;
+          const snap = Math.sin(Math.min(1, prog * 1.6) * Math.PI);
+          const gap = 28 * (1 - prog * 0.72) + 4;
           ctx.globalCompositeOperation = 'lighter';
-          // Lưỡi sóng vây tím-hồng rực rỡ
+          // Hàm nanh đỏ-tím trên & dưới ngoạm khép vào mục tiêu
           ctx.strokeStyle = '#c084fc';
-          ctx.lineWidth = Math.max(2, (1 - prog) * 16);
-          ctx.lineCap = 'round';
+          ctx.lineWidth = Math.max(2, (1 - prog) * 6);
           ctx.beginPath();
-          ctx.arc(-8, 0, r, -1.18, 1.02);
+          ctx.arc(0, -gap, 36, 0.25, Math.PI - 0.25);
           ctx.stroke();
-          // Vệt vẩy trắng ngọc trai bên trong
-          ctx.strokeStyle = '#f8fafc';
-          ctx.lineWidth = Math.max(1.4, (1 - prog) * 7.5);
           ctx.beginPath();
-          ctx.arc(-6, 0, r * 0.90, -1.06, 0.88);
+          ctx.arc(0, gap, 36, Math.PI + 0.25, Math.PI * 2 - 0.25);
           ctx.stroke();
-          // Gai vây vàng hổ phách rẽ nước ngoài cùng
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = Math.max(1.2, (1 - prog) * 4.5);
-          ctx.beginPath();
-          ctx.arc(-11, 0, r * 1.11, -0.92, 0.78);
-          ctx.stroke();
-        } else if (sf.kind === 'ngutinh_vortex') {
-          const h = sf.height * Math.min(1, prog * 3.0);
-          const rad = sf.radius * (0.72 + prog * 0.55);
-          const g = ctx.createLinearGradient(sf.x, sf.y, sf.x, sf.y - h);
-          g.addColorStop(0, 'rgba(20, 184, 166, 0.72)');
-          g.addColorStop(0.55, 'rgba(168, 85, 247, 0.48)');
-          g.addColorStop(1, 'rgba(250, 232, 255, 0)');
-          ctx.fillStyle = g;
-          ctx.beginPath();
-          ctx.moveTo(sf.x - rad * 0.72, sf.y);
-          ctx.quadraticCurveTo(sf.x - rad * 0.34, sf.y - h * 0.5, sf.x - rad * 0.52, sf.y - h);
-          ctx.lineTo(sf.x + rad * 0.52, sf.y - h);
-          ctx.quadraticCurveTo(sf.x + rad * 0.34, sf.y - h * 0.5, sf.x + rad * 0.72, sf.y);
-          ctx.closePath();
-          ctx.fill();
-          // Xoáy hải triều tím hồng & ngọc bích
-          ctx.globalCompositeOperation = 'lighter';
-          for (let s = 0; s < 2; s++) {
-            ctx.strokeStyle = s === 0 ? '#e879f9' : '#2dd4bf';
-            ctx.lineWidth = s === 0 ? 4.0 : 2.6;
-            ctx.beginPath();
-            for (let k = 0; k <= 12; k++) {
-              const u = k / 12;
-              const px = sf.x + Math.sin(u * 8 + sf.t * 17 + s * Math.PI) * rad * (0.7 - u * 0.28);
-              const py = sf.y - u * h;
-              if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-            }
-            ctx.stroke();
-          }
-          // Lá bùa vàng chữ đỏ xoay quanh cột xoáy Ngư Tinh
+
           ctx.globalCompositeOperation = 'source-over';
-          for (let f = 0; f < 3; f++) {
-            const ang = sf.t * 7 + f * 2.1;
-            const tx = sf.x + Math.cos(ang) * rad * 0.65;
-            const ty = sf.y - h * (0.28 + f * 0.24);
-            ctx.save();
-            ctx.translate(tx, ty);
-            ctx.rotate(Math.sin(ang) * 0.45);
-            ctx.fillStyle = '#fde047';
-            ctx.fillRect(-4, -9, 8, 18);
-            ctx.strokeStyle = '#dc2626';
-            ctx.lineWidth = 1.4;
-            ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(0, 6); ctx.stroke();
-            ctx.restore();
+          ctx.fillStyle = '#f8fafc';
+          ctx.strokeStyle = '#881337';
+          ctx.lineWidth = 1.3;
+          for (let f = -2; f <= 2; f++) {
+            const fx = f * 12;
+            const fh = (12 - Math.abs(f) * 2) * (0.65 + snap * 0.45);
+            // Nanh hàm trên cắm xuống
+            ctx.beginPath();
+            ctx.moveTo(fx - 4, -gap + 8);
+            ctx.lineTo(fx, -gap + 8 + fh);
+            ctx.lineTo(fx + 4, -gap + 8);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            // Nanh hàm dưới cắm lên
+            ctx.beginPath();
+            ctx.moveTo(fx - 4, gap - 8);
+            ctx.lineTo(fx, gap - 8 - fh);
+            ctx.lineTo(fx + 4, gap - 8);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
           }
-          ctx.strokeStyle = 'rgba(232, 121, 249, 0.8)';
+          // 4 đốm mắt hổ phách & gai chân rết vàng cam văng hai bên
+          ctx.fillStyle = '#fbbf24';
+          ctx.beginPath();
+          ctx.arc(-12, -gap - 6, 2.4, 0, Math.PI * 2);
+          ctx.arc(-4, -gap - 8, 2.1, 0, Math.PI * 2);
+          ctx.arc(4, -gap - 8, 2.1, 0, Math.PI * 2);
+          ctx.arc(12, -gap - 6, 2.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#d97706';
+          ctx.lineWidth = 2.2;
+          for (let k = 0; k < 4; k++) {
+            const sx = (k < 2 ? -1 : 1) * (24 + prog * 28);
+            const sy = (k % 2 === 0 ? -1 : 1) * (10 + prog * 14);
+            ctx.beginPath(); ctx.moveTo(sx * 0.5, sy * 0.5); ctx.lineTo(sx, sy); ctx.stroke();
+          }
+        } else if (sf.kind === 'ngutinh_seal') {
+          const rad = sf.radius * (0.85 + Math.min(1, prog * 2.2) * 0.35);
+          // Pháp trận phong ấn Ngư Tinh dưới mặt đất (xoay + 8 gai xương rết hướng tâm)
+          ctx.save();
+          ctx.translate(sf.x, sf.y);
+          ctx.strokeStyle = '#c084fc';
           ctx.lineWidth = 3.0;
           ctx.beginPath();
-          ctx.ellipse(sf.x, sf.y, rad * (0.85 + prog * 0.6), 15, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 0, rad, rad * 0.34, 0, 0, Math.PI * 2);
           ctx.stroke();
+          ctx.strokeStyle = '#fde047';
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, rad * 0.72, rad * 0.24, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.strokeStyle = '#d97706';
+          ctx.lineWidth = 2.4;
+          for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2 + sf.t * 4.5;
+            const x1 = Math.cos(a) * rad * 0.92;
+            const y1 = Math.sin(a) * rad * 0.31;
+            const x2 = Math.cos(a) * rad * 1.18;
+            const y2 = Math.sin(a) * rad * 0.42;
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+          }
+          // 4 lá bùa vàng chữ đỏ bay lên xoay vòng quanh ấn
+          for (let b = 0; b < 4; b++) {
+            const ang = sf.t * 6.5 + b * (Math.PI * 0.5);
+            const bx = Math.cos(ang) * rad * 0.68;
+            const by = -28 - prog * 95 + Math.sin(ang) * 14;
+            ctx.save();
+            ctx.translate(bx, by);
+            ctx.rotate(Math.sin(ang) * 0.42);
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(-5, -11, 10, 22);
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, -8); ctx.lineTo(0, 8);
+            ctx.moveTo(-2.5, -3); ctx.lineTo(2.5, -1);
+            ctx.stroke();
+            ctx.restore();
+          }
+          ctx.restore();
+        } else if (sf.kind === 'ngutinh_spines') {
+          // Dãy gai xương rết vàng hổ phách & bùa vàng trồi lên từ mặt đất
+          const rise = Math.sin(Math.min(1, prog * 1.35) * Math.PI);
+          ctx.save();
+          ctx.translate(sf.x, sf.y);
+          ctx.scale(sf.dir, 1);
+          for (let i = -2; i <= 2; i++) {
+            const bx = i * 24;
+            const h = (56 + (2 - Math.abs(i)) * 18) * (0.35 + rise * 0.78);
+            ctx.fillStyle = i % 2 === 0 ? '#d97706' : '#c084fc';
+            ctx.strokeStyle = '#fef08a';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.moveTo(bx - 7, 0);
+            ctx.quadraticCurveTo(bx + i * 3, -h * 0.6, bx + i * 8, -h);
+            ctx.quadraticCurveTo(bx + 6, -h * 0.45, bx + 7, 0);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+          }
+          ctx.strokeStyle = '#e879f9';
+          ctx.lineWidth = 2.6;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 74 + prog * 36, 16, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        } else if (sf.kind === 'ngutinh_sky_drop') {
+          // TUYỆT KỸ ĐỘC QUYỀN: PHÁP TRẬN TRỜI MỞ -> NGƯ TINH BAY TỪ TRÊN TRỜI RƠI XUỐNG ĐẬP MẠNH XUỐNG ĐẤT!
+          const sc = sf.scale || 1.0;
+          const dropEnd = 0.44;
+          const skyY = sf.y - 390 * sc;
+          const impactT = Math.max(0, (prog - dropEnd) / (1 - dropEnd));
+
+          // 1. Pháp trận bùa trời mở ra phía trên nơi Ngư Tinh giáng xuống
+          if (prog < 0.78) {
+            const portalAlpha = prog < 0.15 ? (prog / 0.15) : Math.max(0, 1 - (prog - 0.15) / 0.63);
+            ctx.save();
+            ctx.globalAlpha *= portalAlpha;
+            ctx.translate(sf.x, skyY + 35);
+            ctx.strokeStyle = '#e879f9';
+            ctx.lineWidth = 3.5 * sc;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 92 * sc, 24 * sc, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 2 * sc;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 62 * sc, 16 * sc, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          // 2. Tính vị trí rơi từ trên trời (dropEnd -> chạm đất tại sf.y)
+          const fallRatio = prog < dropEnd ? Math.pow(prog / dropEnd, 1.75) : 1;
+          const bounceOffset = prog >= dropEnd ? -Math.sin(Math.min(1, impactT * 1.8) * Math.PI) * 18 * sc : 0;
+          const headX = sf.x;
+          const headY = skyY + (sf.y - skyY) * fallRatio + bounceOffset - 8 * sc;
+
+          // Vẽ Quái Ngư Tinh thân cá-rết dài từ trời cắm thẳng đầu xuống đất!
+          ctx.save();
+          ctx.translate(headX, headY);
+          ctx.scale(sf.dir * sc, sc);
+
+          // Vệt lao xé gió tím hồng từ trời xuống
+          if (prog < 0.7) {
+            ctx.globalCompositeOperation = 'lighter';
+            const streak = ctx.createLinearGradient(0, -290, 0, 10);
+            streak.addColorStop(0, 'rgba(192, 132, 252, 0)');
+            streak.addColorStop(0.55, 'rgba(192, 132, 252, 0.45)');
+            streak.addColorStop(1, 'rgba(250, 232, 255, 0.75)');
+            ctx.fillStyle = streak;
+            ctx.beginPath();
+            ctx.moveTo(-36, -280);
+            ctx.lineTo(36, -280);
+            ctx.lineTo(18, 8);
+            ctx.lineTo(-18, 8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+          }
+
+          // 11 đốt thân Ngư Tinh dựng dọc uốn lượn (đầu ở dưới y=0, đuôi vút lên trời y=-255)
+          const segs = 11;
+          const bodyPts = [];
+          for (let i = 0; i < segs; i++) {
+            const u = i / (segs - 1);
+            const sy = -u * 250;
+            const sx = Math.sin(u * Math.PI * 2.4 + sf.t * 14) * (10 + u * 22);
+            const r = (1 - u * 0.68) * 24 + 5;
+            bodyPts.push({ x: sx, y: sy, r });
+          }
+
+          // Màng vây lưng tím hồng rực rỡ dọc sống lưng phía sau
+          ctx.fillStyle = 'rgba(192, 132, 252, 0.9)';
+          ctx.beginPath();
+          ctx.moveTo(bodyPts[0].x - bodyPts[0].r * 0.6, bodyPts[0].y);
+          for (let i = 1; i < segs - 1; i++) {
+            const pt = bodyPts[i];
+            ctx.lineTo(pt.x - pt.r * 1.9, pt.y + 4);
+            ctx.lineTo(pt.x - pt.r * 0.9, pt.y - 8);
+          }
+          ctx.lineTo(bodyPts[segs - 1].x, bodyPts[segs - 1].y - 16);
+          for (let i = segs - 1; i >= 0; i--) {
+            ctx.lineTo(bodyPts[i].x, bodyPts[i].y);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#f5d0fe';
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+
+          // Hai hàng chân xương rết nâu vàng chĩa ra hai bên thân Ngư Tinh
+          ctx.strokeStyle = '#b45309';
+          ctx.lineWidth = 3.2;
+          ctx.lineCap = 'round';
+          for (let i = 1; i < segs - 1; i++) {
+            const pt = bodyPts[i];
+            const leg = pt.r * 1.35;
+            ctx.beginPath();
+            ctx.moveTo(pt.x + pt.r * 0.6, pt.y);
+            ctx.lineTo(pt.x + pt.r + leg, pt.y - 12);
+            ctx.stroke();
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 1.3;
+            ctx.stroke();
+            ctx.strokeStyle = '#b45309';
+            ctx.lineWidth = 3.2;
+          }
+
+          // Các đốt thân vảy trắng bạc ngọc trai + viền rêu biển
+          for (let i = segs - 1; i >= 0; i--) {
+            const pt = bodyPts[i];
+            const g = ctx.createRadialGradient(pt.x - pt.r * 0.3, pt.y, 2, pt.x, pt.y, pt.r);
+            g.addColorStop(0, '#f8fafc');
+            g.addColorStop(0.55, '#cbd5e1');
+            g.addColorStop(1, '#365314');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+
+          // Đầu Ngư Tinh cắm thẳng xuống đất (há mồm nanh đỏ + 4 mắt vàng hổ phách)
+          ctx.save();
+          ctx.translate(bodyPts[0].x, bodyPts[0].y + 10);
+          ctx.fillStyle = '#e2e8f0';
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-22, -26);
+          ctx.quadraticCurveTo(0, -34, 24, -18);
+          ctx.lineTo(18, 22);
+          ctx.lineTo(-18, 22);
+          ctx.closePath();
+          ctx.fill(); ctx.stroke();
+
+          // Khoang miệng đỏ & nanh nhọn hướng xuống mặt đất
+          ctx.fillStyle = '#881337';
+          ctx.beginPath();
+          ctx.moveTo(-14, 2); ctx.lineTo(14, 2); ctx.lineTo(10, 26); ctx.lineTo(-10, 26); ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          for (let tIdx = -2; tIdx <= 2; tIdx++) {
+            const tx = tIdx * 5;
+            ctx.beginPath();
+            ctx.moveTo(tx - 2.2, 10); ctx.lineTo(tx, 24); ctx.lineTo(tx + 2.2, 10); ctx.closePath();
+            ctx.fill();
+          }
+          // 4 mắt vàng hổ phách rực sáng
+          ctx.fillStyle = '#fbbf24';
+          ctx.beginPath();
+          ctx.arc(-8, -8, 3.0, 0, Math.PI * 2);
+          ctx.arc(-6, 0, 2.3, 0, Math.PI * 2);
+          ctx.arc(8, -8, 3.0, 0, Math.PI * 2);
+          ctx.arc(6, 0, 2.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          ctx.restore();
+
+          // 3. Sóng va chạm mạnh & gai rết + bùa vàng văng ra khi Ngư Tinh đập trúng mặt đất!
+          if (prog >= dropEnd) {
+            const impW = (75 + impactT * 140) * sc;
+            ctx.save();
+            ctx.translate(sf.x, sf.y);
+            ctx.strokeStyle = '#c084fc';
+            ctx.lineWidth = Math.max(1.5, (1 - impactT) * 6 * sc);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, impW, impW * 0.28, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = Math.max(1, (1 - impactT) * 3.5 * sc);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, impW * 0.7, impW * 0.2, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            // Gai xương rết & lá bùa vàng bật ra quanh điểm đập
+            const spCount = sf.isFinal ? 7 : 4;
+            for (let k = 0; k < spCount; k++) {
+              const offsetRatio = (k / Math.max(1, spCount - 1)) - 0.5;
+              const bx = offsetRatio * 120 * sc;
+              const bh = (38 + (k % 2) * 20) * (1 - impactT * 0.4) * sc;
+              ctx.fillStyle = k % 2 === 0 ? '#d97706' : '#c084fc';
+              ctx.beginPath();
+              ctx.moveTo(bx - 5 * sc, 0);
+              ctx.lineTo(bx + offsetRatio * 24 * sc, -bh);
+              ctx.lineTo(bx + 5 * sc, 0);
+              ctx.closePath();
+              ctx.fill();
+            }
+            for (let tIdx = 0; tIdx < (sf.isFinal ? 6 : 3); tIdx++) {
+              const ang = tIdx * 1.1 + sf.t * 3;
+              const tx = Math.cos(ang) * impW * 0.72;
+              const ty = -25 - impactT * 95 - (tIdx % 3) * 18;
+              ctx.save();
+              ctx.translate(tx, ty);
+              ctx.rotate(ang);
+              ctx.fillStyle = '#fde047';
+              ctx.fillRect(-4, -9, 8, 18);
+              ctx.strokeStyle = '#dc2626';
+              ctx.lineWidth = 1.3;
+              ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(0, 6); ctx.stroke();
+              ctx.restore();
+            }
+            ctx.restore();
+          }
         }
         ctx.restore();
       }

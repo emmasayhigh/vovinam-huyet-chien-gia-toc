@@ -788,22 +788,22 @@
     shopCurrency: 'diamond',
     shopPrice: 150,
     shopRibbon: '🐟 CHÍ TÔN PHẨM • PHÓ TIẾN ĐĂNG',
-    shopRoleSub: 'TRANG PHỤC CHÍ TÔN PHẨM (ĐỎ) • HÓA NGƯ TINH ĐẠI HẢI & SÓNG VÂY TÍM',
-    quote: '“Vảy bạc rẽ sóng, vây tím rợp trời — một lá bùa phong ấn cũng chẳng thể khóa được Ngư Tinh!”',
-    bio: 'Trang phục Chí Tôn Phẩm truyền thuyết Lĩnh Nam Chích Quái dành riêng cho Phó Tiến Đăng: khoác bộ chiến phục Ngư Tinh vảy trắng bạc ngọc trai, vây lưng tím hồng rực sáng, đuôi cá rết xương nâu vàng và lá bùa cổ bay phấp phới; toàn bộ đòn Mix-up Sao Kê, Dash-Cancel và Tuyệt Kỹ (I) bùng nổ xoáy biển tím ngọc và hóa hình Đại Hải Quái Ngư Tinh trảm cắt chiến trường!',
+    shopRoleSub: 'TRANG PHỤC CHÍ TÔN PHẨM (ĐỎ) • TRIỆU HỒI NGƯ TINH TỪ TRỜI ĐẬP ĐỊCH',
+    quote: '“Bùa vàng mở ấn, Ngư Tinh từ chín tầng mây giáng xuống đập nát mọi kẻ cản đường!”',
+    bio: 'Trang phục Chí Tôn Phẩm truyền thuyết Lĩnh Nam Chích Quái dành riêng cho Phó Tiến Đăng: khoác bộ chiến phục Ngư Tinh vảy trắng bạc ngọc trai, vây lưng tím hồng rực sáng, đuôi cá rết xương nâu vàng và lá bùa cổ bay phấp phới; đòn đánh tung Hàm Nanh 4 Mắt & Gai Xương Rết, né đòn mở Pháp Trận Bùa Cổ, và Tuyệt Kỹ (I) giữ hình người kết ấn triệu hồi Ngư Tinh khổng lồ bay từ trên trời rơi xuống đập nát kẻ địch!',
     skillsGrid: [
-      { key: 'Mix-up / J / K', name: 'Ngư Lân Trảm & Ấn Thôn Phệ (3 Tầng)' },
-      { key: 'L', name: 'Thủy Kính Ngư Tinh & Bùa Thế Thân' },
-      { key: 'W+U / U+J / U+K', name: 'Ngư Tinh Quét Triều & Bẫy Ngược Sóng Ngầm' },
-      { key: 'I', name: 'Ngư Tinh Hiện Thế: 6 Nhịp Hải Triều Đoạt Mệnh' }
+      { key: 'Mix-up / J / K', name: 'Hàm Nanh 4 Mắt & Gai Xương Rết' },
+      { key: 'L / W+U', name: 'Pháp Trận Bùa Cổ & Ấn Phong Thủy' },
+      { key: 'U+J / U+K', name: 'Bẫy Ngược Gai Xương Rết' },
+      { key: 'I', name: 'Triệu Hồi Ngư Tinh Từ Trời Giáng Xuống Đập Địch' }
     ],
     passiveNote: {
       icon: '🐟',
-      title: 'Bộ Hiệu Ứng Ngư Tinh — Giữ Nguyên Quy Tắc Gốc:',
-      desc: 'Giữ hình dáng Phó Tiến Đăng mặc chiến phục Ngư Tinh vảy bạc vây tím đuôi xương rết; mọi đòn đánh, dấu ấn Sao Kê và Tuyệt Kỹ (I) chuyển sang hiệu ứng sóng vây tím, xoáy nước bùa vàng & hóa Ngư Tinh khổng lồ dịch chuyển trảm địch — giữ nguyên 100% thông số gốc!'
+      title: 'Bộ Hiệu Ứng Độc Quyền Ngư Tinh (Giữ Nguyên Cân Bằng):',
+      desc: 'Giữ nguyên Phó Tiến Đăng mặc chiến phục Ngư Tinh kết ấn triệu hồi: đòn đánh hiện Hàm Nanh 4 Mắt + Gai Xương Rết trồi đất, né đòn mở Pháp Trận Bùa Cổ, Tuyệt Kỹ (I) gọi Ngư Tinh khổng lồ rơi thẳng từ trên trời xuống đập kẻ địch qua 6 nhịp + Ngư Tinh Chúa kết liễu!'
     },
-    fx: ['🐟 Chiến Phục Ngư Tinh Vảy Bạc Vây Tím', '📜 Lá Bùa Cổ & Xoáy Triều Tím Ngọc', '🌊 Ulti: Hóa Đại Hải Quái Ngư Tinh 6 Nhịp'],
-    sub: 'Trang phục Chí Tôn Phẩm cho Phó Tiến Đăng: mặc chiến phục Ngư Tinh vảy trắng bạc, vây tím hồng và đuôi cá rết nâu vàng; chiêu thức bùng nổ xoáy triều tím ngọc và Tuyệt Kỹ (I) hóa Ngư Tinh khổng lồ dịch chuyển 6 nhịp trảm địch (chuẩn cân bằng skin gốc)!',
+    fx: ['🐟 Chiến Phục Ngư Tinh + Bùa Cổ & Gai Rết', '🦷 Hàm Nanh 4 Mắt & Pháp Trận Bùa Vàng', '☄️ Ulti: Triệu Hồi Ngư Tinh Rơi Từ Trời Đập Địch'],
+    sub: 'Trang phục Chí Tôn Phẩm cho Phó Tiến Đăng: mặc chiến phục Ngư Tinh vảy trắng bạc vây tím đuôi xương rết; đòn đánh tung Hàm Nanh 4 Mắt & Gai Xương Rết trồi đất, Tuyệt Kỹ (I) kết ấn triệu hồi Ngư Tinh từ trên trời rơi xuống đập nát kẻ địch (chuẩn thông số gốc)!',
     toast: '🐟 Đã trang bị: Ngư Tinh — Hải Quái Đại Việt!'
   });
 
