@@ -735,12 +735,19 @@
           hitEnemy(target, 42, 5, false);
           if (fx) {
             if (isNT) {
-              // Triệu hồi Ngư Tinh lao từ trên trời rơi xuống đập thẳng xuống đầu kẻ địch!
-              if (typeof fx.createNguTinhSkyDrop === 'function') fx.createNguTinhSkyDrop(target.x, target.y, player.facing, 0.92, false);
-              if (typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(target.x, target.y - 68, player.facing, 1.15);
-              if (player._ultStep === 1 && typeof fx.addFloatingText === 'function') {
-                fx.addFloatingText('🐟 TRIỆU HỒI NGƯ TINH THIÊN GIÁNG!', player.x, player.y - 165, 'ultimate');
+              // Rơi xuống 1 lần duy nhất ở nhịp đầu rồi chìm hẳn xuống lòng đất theo dõi mục tiêu suốt 6 nhịp!
+              if (player._ultStep === 1 && !player._activeNguTinhUltFx && typeof fx.createNguTinhSkyDrop === 'function') {
+                player._activeNguTinhUltFx = fx.createNguTinhSkyDrop(target.x, target.y, player.facing, 1.18, true);
+                if (typeof fx.addFloatingText === 'function') {
+                  fx.addFloatingText('🐟 NGƯ TINH GIÁNG THỔ — LẶN NGẦM!', player.x, player.y - 165, 'ultimate');
+                }
               }
+              if (player._activeNguTinhUltFx) {
+                player._activeNguTinhUltFx.emergeX = target.x;
+                player._activeNguTinhUltFx.emergeY = target.y;
+                player._activeNguTinhUltFx.emergeDir = player.facing || 1;
+              }
+              if (typeof fx.createNguTinhFangsBite === 'function') fx.createNguTinhFangsBite(target.x, target.y - 68, player.facing, 1.15);
             } else {
               fx.createSonicBoomCone(player.x + player.facing * 30, player.y - 70, player.facing, '#38bdf8');
               fx.createShockRing(target.x, target.y, '#818cf8');
@@ -760,8 +767,20 @@
         if (p >= 1) {
           if (fx) {
             if (isNT) {
-              // Pha kết liễu: Ngư Tinh Chúa khổng lồ lao từ trên trời giáng xuống đập nát mặt đất!
-              if (typeof fx.createNguTinhSkyDrop === 'function') fx.createNguTinhSkyDrop(player.x, player.y, player.facing, 1.38, true);
+              // Kết thúc chiêu I: Ngư Tinh từ dưới lòng đất trồi lên CẮN MẠNH rồi bay thẳng lên trời biến mất!
+              const ultFx = player._activeNguTinhUltFx;
+              player._activeNguTinhUltFx = null;
+              if (ultFx) {
+                ultFx.emergeX = player.x;
+                ultFx.emergeY = player.y || 580;
+                ultFx.emergeDir = player.facing || 1;
+                ultFx.emergeTriggered = true;
+                ultFx.emergeStartT = ultFx.t || 0;
+                ultFx.life = 0.95;
+                ultFx.maxLife = 0.95;
+              } else if (typeof fx.createNguTinhSkyDrop === 'function') {
+                fx.createNguTinhSkyDrop(player.x, player.y || 580, player.facing, 1.2, false);
+              }
               if (typeof fx.createNguTinhCentipedeEruption === 'function') {
                 fx.createNguTinhCentipedeEruption(player.x + 48, player.y, 1);
                 fx.createNguTinhCentipedeEruption(player.x - 48, player.y, -1);

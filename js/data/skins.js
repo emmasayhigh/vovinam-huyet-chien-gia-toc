@@ -788,22 +788,22 @@
     shopCurrency: 'diamond',
     shopPrice: 150,
     shopRibbon: '🐟 CHÍ TÔN PHẨM • PHÓ TIẾN ĐĂNG',
-    shopRoleSub: 'TRANG PHỤC CHÍ TÔN PHẨM (ĐỎ) • TRIỆU HỒI NGƯ TINH TỪ TRỜI ĐẬP ĐỊCH',
-    quote: '“Bùa vàng mở ấn, Ngư Tinh từ chín tầng mây giáng xuống đập nát mọi kẻ cản đường!”',
-    bio: 'Trang phục Chí Tôn Phẩm truyền thuyết Lĩnh Nam Chích Quái dành riêng cho Phó Tiến Đăng: khoác bộ chiến phục Ngư Tinh vảy trắng bạc ngọc trai, vây lưng tím hồng rực sáng, đuôi cá rết xương nâu vàng và lá bùa cổ bay phấp phới; đòn đánh tung Hàm Nanh 4 Mắt & Gai Xương Rết, né đòn mở Pháp Trận Bùa Cổ, và Tuyệt Kỹ (I) giữ hình người kết ấn triệu hồi Ngư Tinh khổng lồ bay từ trên trời rơi xuống đập nát kẻ địch!',
+    shopRoleSub: 'TRANG PHỤC CHÍ TÔN PHẨM (ĐỎ) • NGƯ TINH RƠI CHÌM ĐẤT -> TRỒI CẮN BAY TRỜI',
+    quote: '“Ngư Tinh giáng thổ chìm sâu lòng đất — kết ấn nổ vang liền trồi lên cắn nát rồi vút lên trời cao!”',
+    bio: 'Trang phục Chí Tôn Phẩm truyền thuyết Lĩnh Nam Chích Quái dành riêng cho Phó Tiến Đăng: khoác bộ chiến phục Ngư Tinh vảy trắng bạc ngọc trai, vây lưng tím hồng rực sáng, đuôi cá rết xương nâu vàng và lá bùa cổ bay phấp phới; đòn đánh tung Hàm Nanh 4 Mắt & Gai Xương Rết, né đòn mở Pháp Trận Bùa Cổ, và Tuyệt Kỹ (I) triệu hồi Ngư Tinh rơi từ trời chìm hẳn xuống đất, rình ngầm suốt 6 nhịp rồi trồi lên cắn ngoạm mạnh xong bay vút lên trời biến mất!',
     skillsGrid: [
       { key: 'Mix-up / J / K', name: 'Hàm Nanh 4 Mắt & Gai Xương Rết' },
       { key: 'L / W+U', name: 'Pháp Trận Bùa Cổ & Ấn Phong Thủy' },
       { key: 'U+J / U+K', name: 'Bẫy Ngược Gai Xương Rết' },
-      { key: 'I', name: 'Triệu Hồi Ngư Tinh Từ Trời Giáng Xuống Đập Địch' }
+      { key: 'I', name: 'Ngư Tinh: Rơi Chìm Đất — Trồi Cắn — Bay Lên Trời' }
     ],
     passiveNote: {
       icon: '🐟',
-      title: 'Bộ Hiệu Ứng Độc Quyền Ngư Tinh (Giữ Nguyên Cân Bằng):',
-      desc: 'Giữ nguyên Phó Tiến Đăng mặc chiến phục Ngư Tinh kết ấn triệu hồi: đòn đánh hiện Hàm Nanh 4 Mắt + Gai Xương Rết trồi đất, né đòn mở Pháp Trận Bùa Cổ, Tuyệt Kỹ (I) gọi Ngư Tinh khổng lồ rơi thẳng từ trên trời xuống đập kẻ địch qua 6 nhịp + Ngư Tinh Chúa kết liễu!'
+      title: 'Tuyệt Kỹ Ngư Tinh 4 Pha (Giữ Nguyên Cân Bằng):',
+      desc: 'Khi kích hoạt Tuyệt Kỹ (I), Ngư Tinh khổng lồ rơi từ trên trời xuống 1 lần rồi chìm hẳn xuống lòng đất rình ngầm suốt 6 nhịp dịch chuyển; khi kết thúc chiêu I, Ngư Tinh phá đất trồi lên cắn ngoạm cực mạnh rồi bay thẳng lên trời biến mất!'
     },
-    fx: ['🐟 Chiến Phục Ngư Tinh + Bùa Cổ & Gai Rết', '🦷 Hàm Nanh 4 Mắt & Pháp Trận Bùa Vàng', '☄️ Ulti: Triệu Hồi Ngư Tinh Rơi Từ Trời Đập Địch'],
-    sub: 'Trang phục Chí Tôn Phẩm cho Phó Tiến Đăng: mặc chiến phục Ngư Tinh vảy trắng bạc vây tím đuôi xương rết; đòn đánh tung Hàm Nanh 4 Mắt & Gai Xương Rết trồi đất, Tuyệt Kỹ (I) kết ấn triệu hồi Ngư Tinh từ trên trời rơi xuống đập nát kẻ địch (chuẩn thông số gốc)!',
+    fx: ['🐟 Chiến Phục Ngư Tinh + Bùa Cổ & Gai Rết', '🦷 Hàm Nanh 4 Mắt & Pháp Trận Bùa Vàng', '☄️ Ulti: Ngư Tinh Rơi Chìm Đất -> Trồi Cắn -> Bay Lên Trời'],
+    sub: 'Trang phục Chí Tôn Phẩm cho Phó Tiến Đăng: mặc chiến phục Ngư Tinh vảy trắng bạc vây tím đuôi xương rết; Tuyệt Kỹ (I) gọi Ngư Tinh rơi xuống chìm hẳn xuống đất rồi khi kết thúc trồi lên cắn xong bay hẳn lên trời biến mất (chuẩn thông số gốc)!',
     toast: '🐟 Đã trang bị: Ngư Tinh — Hải Quái Đại Việt!'
   });
 

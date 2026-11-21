@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-041",
+  "title": "Refine Ngu Tinh Ultimate: Single Sky-Drop Submerge -> Emerge Bite -> Ascend Into Sky",
+  "author": "Antigravity Senior VFX & Character Gameplay Engineer",
+  "date": "2026-11-22",
+  "objective": "Tinh chỉnh hoạt ảnh Tuyệt Kỹ (I) skin Ngư Tinh của Phó Tiến Đăng theo đúng kịch bản: Ngư Tinh rơi từ trời xuống 1 lần rồi chìm hẳn xuống lòng đất trong suốt 6 nhịp dịch chuyển; khi kết thúc chiêu I thì Ngư Tinh trồi lên từ mặt đất cắn ngoạm mạnh vào kẻ địch rồi bay vút thẳng lên trời biến mất.",
+  "requestedBehavior": "1. Nâng cấp createNguTinhSkyDrop và renderer 'ngutinh_sky_drop' trong js/core/effects.js thành 4 pha liên hoàn (rơi xuống cắt chìm dưới mặt đất -> lặn ngầm sục xoáy -> trồi lên há hàm cắn ngoạm khi nhận tín hiệu kết thúc chiêu I -> bay thẳng lên trời rồi biến mất). 2. Cập nhật js/entities/characters/tiendang.js để chỉ triệu hồi 1 con Ngư Tinh duy nhất ở đầu chiêu I, dẫn bóng lặn ngầm theo mục tiêu và kích hoạt pha trồi lên cắn ở thời điểm p >= 1 (giữ nguyên 100% sát thương 42/175 và quy tắc Tiến Đăng gốc). 3. Cập nhật mô tả skins.js, nâng ?v=6.17 trong index.html và assertion trong tests/test_skin_registry_and_cloud_auth.js.",
+  "allowedFiles": [
+    "js/core/effects.js",
+    "js/entities/characters/tiendang.js",
+    "js/data/skins.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tasks/TASK-041.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-CMB-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "EffectManager",
+    "SkinRegistry",
+    "CharacterRegistry"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 220,
+    "authorizedRemovals": []
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-041.json"
+  ]
+}
