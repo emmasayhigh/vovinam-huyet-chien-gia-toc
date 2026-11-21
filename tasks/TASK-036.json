@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-036",
+  "title": "Ensure Thuong Luong Ultimate Pass-Through Has Zero Knockback & Strict Non-P2W Parity",
+  "author": "Antigravity Senior Game Engine & Balance Engineer",
+  "date": "2026-11-22",
+  "objective": "Đảm bảo Tuyệt Kỹ skin Thuồng Luồng (Phó Văn Anh) hoàn toàn chỉ đổi hiệu ứng thị giác (không P2W): pha lao xuyên qua người địch không gây đẩy lùi (knockback = 0) và giữ nguyên vùng chọn mục tiêu từ vị trí gốc (_tlOriginX) y hệt Văn Anh mặc định.",
+  "requestedBehavior": "1. Trong pha 1 Ulti Thuồng Luồng (js/entities/characters/vananh.js), đặt knockback = 0 ở hitEnemy(target, 22, 0, false) và chọn mục tiêu tính theo vị trí gốc ox (_tlOriginX) phía trước (e.x - ox) * dir >= -30 giống hệt Văn Anh mặc định. 2. Nâng cache-bust vananh.js?v=6.12 trong index.html.",
+  "allowedFiles": [
+    "js/entities/characters/vananh.js",
+    "index.html",
+    "ndex.html",
+    "tasks/TASK-036.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-CMB-001"
+  ],
+  "dependencies": [
+    "CharacterRegistry"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 10,
+    "authorizedRemovals": [
+      "Updating target distance reference to origin ox and knockback=0 in vananh.js Thuong Luong ult",
+      "Bumping vananh.js?v=6.12 in index.html"
+    ]
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-036.json"
+  ]
+}

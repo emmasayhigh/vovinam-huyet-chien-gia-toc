@@ -1,7 +1,7 @@
-# TASK VERIFICATION REPORT: TASK-035
+# TASK VERIFICATION REPORT: TASK-036
 
-> **Title**: Account Local Mirror Auto-Recovery + Thuong Luong Origin-Return Ult & Premium Sea-Serpent VFX  
-> **Timestamp**: 2026-11-21T19:32:04.387Z  
+> **Title**: Ensure Thuong Luong Ultimate Pass-Through Has Zero Knockback & Strict Non-P2W Parity  
+> **Timestamp**: 2026-11-21T19:37:51.212Z  
 > **Final Classification**: **`PASS`**
 
 ## 1. QUALITY GATES SUMMARY
@@ -16,13 +16,13 @@
 
 ## 2. MODIFIED FILES AUDIT
 
-- **Files Added** (1): `tasks/TASK-035.json`
-- **Files Modified** (6): `ndex.html`, `js/core/account.js`, `js/core/effects.js`, `js/entities/animation/animationRenderBase.js`, `js/entities/characters/vananh.js`, `tests/test_skin_registry_and_cloud_auth.js`
+- **Files Added** (1): `tasks/TASK-036.json`
+- **Files Modified** (2): `ndex.html`, `js/entities/characters/vananh.js`
 - **Files Deleted** (0): None (Zero deletion budget respected)
 
 ## 3. FEATURE IMPACT & PRESERVATION
 
-- **Features Affected**: `FEAT-SAV-001`, `FEAT-CHR-001`, `FEAT-CMB-001`
+- **Features Affected**: `FEAT-CHR-001`, `FEAT-CMB-001`
 - **Protected Features Preserved**: `FEAT-CMB-001`, `FEAT-CMB-002`, `FEAT-CMB-003`, `FEAT-CMB-004`, `FEAT-CMB-005`, `FEAT-CMB-006`, `FEAT-CMB-007`, `FEAT-CMB-008`, `FEAT-BOS-001`, `FEAT-BOS-002`, `FEAT-ALY-001`, `FEAT-ALY-002`, `FEAT-CHR-001`, `FEAT-TRN-001`, `FEAT-SAV-001`
 
 ## 6. FINAL CLASSIFICATION

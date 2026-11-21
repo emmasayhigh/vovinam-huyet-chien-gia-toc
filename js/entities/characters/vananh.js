@@ -740,7 +740,8 @@
               let best = 560;
               for (const e of enemies) {
                 if (!e || e.isDead) continue;
-                const d = Math.hypot(e.x - player.x, (e.y - player.y) * 1.5);
+                if ((e.x - ox) * dir < -30) continue;
+                const d = Math.hypot(e.x - ox, (e.y - player.y) * 1.5);
                 if (d < best) { best = d; target = e; }
               }
               if (fx) {
@@ -753,7 +754,8 @@
                 spawnThuongLuongWave(fx, player.x - dir * 20, player.y + player.z - 45, -dir, 6, 30);
               }
               if (target) {
-                hitEnemy(target, 22, 2, false);
+                // Chỉ xuyên qua đẹp mắt, không đẩy lùi (knockback = 0), giữ nguyên sát thương chuẩn Văn Anh mặc định (không P2W)
+                hitEnemy(target, 22, 0, false);
                 target.stunTimer = Math.max(target.stunTimer || 0, 0.25);
                 if (typeof target.poise === 'number') target.poise = Math.max(0, target.poise - 2);
                 if (fx && player._ultStep % 2 === 0 && typeof fx.createSerpentTidalSlash === 'function') {

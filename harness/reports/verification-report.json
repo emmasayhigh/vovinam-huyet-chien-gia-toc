@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-035",
-  "taskTitle": "Account Local Mirror Auto-Recovery + Thuong Luong Origin-Return Ult & Premium Sea-Serpent VFX",
-  "generatedAt": "2026-11-21T19:32:04.387Z",
+  "taskId": "TASK-036",
+  "taskTitle": "Ensure Thuong Luong Ultimate Pass-Through Has Zero Knockback & Strict Non-P2W Parity",
+  "generatedAt": "2026-11-21T19:37:51.212Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 6,
+    "filesModifiedCount": 2,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,21 +13,16 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-035.json"
+      "tasks/TASK-036.json"
     ],
     "filesModified": [
       "ndex.html",
-      "js/core/account.js",
-      "js/core/effects.js",
-      "js/entities/animation/animationRenderBase.js",
-      "js/entities/characters/vananh.js",
-      "tests/test_skin_registry_and_cloud_auth.js"
+      "js/entities/characters/vananh.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
-      "FEAT-SAV-001",
       "FEAT-CHR-001",
       "FEAT-CMB-001"
     ],
