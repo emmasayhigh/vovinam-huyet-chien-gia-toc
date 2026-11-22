@@ -956,6 +956,30 @@ class EffectManager {
     return obj;
   }
 
+  createThanTrungCrowFlock(x, y, dir = 1, scale = 1.0) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'thantrung_crow_flock',
+      x, y, dir: dir >= 0 ? 1 : -1,
+      scale: scale || 1.0,
+      seed: Math.random() * 10,
+      t: 0,
+      life: 0.48, maxLife: 0.48, alpha: 1
+    });
+  }
+
+  createThanTrungCursedMoon(x, y, radius = 110, isUlt = false) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    const dur = isUlt ? 1.45 : 0.64;
+    this.serpentFx.push({
+      kind: 'thantrung_moon',
+      x, y, radius: radius || 110,
+      isUlt: !!isUlt,
+      t: 0,
+      life: dur, maxLife: dur, alpha: 1
+    });
+  }
+
   createDimensionalSlash(x, y, angle = -0.3, length = 220, color = '#38bdf8', opts = null) {
     const darkCore = !!(opts && opts.darkCore);
     const width = (opts && opts.width) || (darkCore ? 7.2 : 5);
@@ -2030,6 +2054,144 @@ class EffectManager {
               }
             }
           }
+        } else if (sf.kind === 'thantrung_crow_flock') {
+          const sc = sf.scale || 1.0;
+          ctx.translate(sf.x, sf.y);
+          ctx.scale(sf.dir * sc, sc);
+          // 4 Linh Quạ Đen lao xé gió kèm vệt tím & 6 lông quạ rụng
+          for (let c = 0; c < 4; c++) {
+            const delay = c * 0.08;
+            const u = Math.max(0, Math.min(1, (prog - delay) / Math.max(0.2, 1 - delay)));
+            if (u <= 0) continue;
+            const cx = -20 + u * 135 - c * 14;
+            const cy = Math.sin(u * Math.PI * 2 + c * 1.3 + (sf.seed || 0)) * 22 + (c - 1.5) * 16;
+            const flap = Math.sin(sf.t * 36 + c * 1.9) * 10;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.globalAlpha *= (1 - u * 0.45);
+            // Vệt cánh tím U Minh
+            ctx.strokeStyle = 'rgba(168, 85, 247, 0.72)';
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.moveTo(-42, 4);
+            ctx.quadraticCurveTo(-18, -flap * 0.4, 0, 0);
+            ctx.stroke();
+            // Thân quạ đen viền tím
+            ctx.fillStyle = '#09090b';
+            ctx.strokeStyle = '#c084fc';
+            ctx.lineWidth = 1.3;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 12, 5.5, -0.15, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-3, -2); ctx.lineTo(-18, -14 + flap); ctx.lineTo(2, -5);
+            ctx.moveTo(2, -2); ctx.lineTo(-9, -16 - flap * 0.6); ctx.lineTo(7, -4);
+            ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(10, -3); ctx.lineTo(19, 0); ctx.lineTo(10, 3); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#e879f9';
+            ctx.beginPath(); ctx.arc(9, -1.5, 1.5, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+          }
+          // Lông quạ đen ánh tím bay tản ra
+          for (let f = 0; f < 6; f++) {
+            const ang = (f / 6) * Math.PI * 2 + (sf.seed || 0);
+            const dist = 16 + prog * 68;
+            ctx.save();
+            ctx.translate(Math.cos(ang) * dist, Math.sin(ang) * dist * 0.75 + prog * 18);
+            ctx.rotate(ang + prog * 3);
+            ctx.fillStyle = '#09090b';
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 6.5, 2.2, 0, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+            ctx.restore();
+          }
+        } else if (sf.kind === 'thantrung_moon') {
+          if (sf.isUlt) {
+            // HẮC NGUYỆT U MINH TREO CAO + CỰ QUẠ THẦN TRÙNG DANG CÁNH KHỔNG LỒ!
+            const mx = sf.x;
+            const my = sf.y - 185;
+            const mr = Math.min(138, sf.radius) * (0.85 + Math.sin(Math.min(1, prog * 2.5) * Math.PI * 0.5) * 0.18);
+            ctx.save();
+            const halo = ctx.createRadialGradient(mx, my, mr * 0.4, mx, my, mr * 1.55);
+            halo.addColorStop(0, 'rgba(147, 51, 234, 0.52)');
+            halo.addColorStop(0.6, 'rgba(88, 28, 135, 0.25)');
+            halo.addColorStop(1, 'rgba(9, 9, 13, 0)');
+            ctx.fillStyle = halo;
+            ctx.beginPath(); ctx.arc(mx, my, mr * 1.55, 0, Math.PI * 2); ctx.fill();
+
+            // Đĩa trăng đen-tím nứt ấn chú
+            ctx.fillStyle = 'rgba(12, 10, 24, 0.86)';
+            ctx.strokeStyle = '#c084fc';
+            ctx.lineWidth = 3.2;
+            ctx.beginPath(); ctx.arc(mx, my, mr * 0.85, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+            // Vết nứt năng lượng tím trên vầng trăng
+            ctx.strokeStyle = '#e879f9';
+            ctx.lineWidth = 2.0;
+            for (let k = 0; k < 5; k++) {
+              const a = (k / 5) * Math.PI * 2 + sf.t * 0.6;
+              ctx.beginPath();
+              ctx.moveTo(mx + Math.cos(a) * mr * 0.2, my + Math.sin(a) * mr * 0.2);
+              ctx.lineTo(mx + Math.cos(a + 0.15) * mr * 0.78, my + Math.sin(a - 0.1) * mr * 0.78);
+              ctx.stroke();
+            }
+
+            // Bóng Cự Quạ Thần Trùng dang sải cánh rộng che vầng trăng!
+            const wingSpan = mr * (1.15 + Math.sin(sf.t * 9) * 0.08);
+            ctx.fillStyle = '#050409';
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 2.0;
+            ctx.beginPath();
+            ctx.moveTo(mx, my + 24);
+            ctx.quadraticCurveTo(mx - wingSpan * 0.55, my - 58, mx - wingSpan, my - 16);
+            ctx.lineTo(mx - wingSpan * 0.72, my + 18);
+            ctx.lineTo(mx - 14, my + 12);
+            ctx.lineTo(mx, my - 28);
+            ctx.lineTo(mx + 14, my + 12);
+            ctx.lineTo(mx + wingSpan * 0.72, my + 18);
+            ctx.lineTo(mx + wingSpan, my - 16);
+            ctx.quadraticCurveTo(mx + wingSpan * 0.55, my - 58, mx, my + 24);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+
+            // Đôi mắt đỏ-tím sắc lẹm của Cự Quạ trên vầng trăng
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.moveTo(mx - 10, my - 8); ctx.lineTo(mx - 3, my - 5); ctx.lineTo(mx - 8, my - 3); ctx.closePath();
+            ctx.moveTo(mx + 10, my - 8); ctx.lineTo(mx + 3, my - 5); ctx.lineTo(mx + 8, my - 3); ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          } else {
+            // Pháp trận Hắc Nguyệt dưới chân khi Né [L] hoặc [W+U]
+            const rad = sf.radius * (0.85 + Math.min(1, prog * 2.2) * 0.3);
+            ctx.save();
+            ctx.translate(sf.x, sf.y);
+            ctx.fillStyle = 'rgba(9, 9, 13, 0.55)';
+            ctx.beginPath(); ctx.ellipse(0, 0, rad, rad * 0.34, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 3.0;
+            ctx.beginPath(); ctx.ellipse(0, 0, rad, rad * 0.34, 0, 0, Math.PI * 2); ctx.stroke();
+            ctx.strokeStyle = '#e879f9';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath(); ctx.ellipse(0, 0, rad * 0.68, rad * 0.22, 0, 0, Math.PI * 2); ctx.stroke();
+            // 6 sợi lông quạ đen ánh tím bốc lên quanh vòng chú
+            for (let f = 0; f < 6; f++) {
+              const ang = sf.t * 6.0 + (f / 6) * Math.PI * 2;
+              const fx = Math.cos(ang) * rad * 0.72;
+              const fy = -18 - prog * 75 + Math.sin(ang) * 10;
+              ctx.save();
+              ctx.translate(fx, fy);
+              ctx.rotate(ang);
+              ctx.fillStyle = '#09090b';
+              ctx.strokeStyle = '#c084fc';
+              ctx.lineWidth = 1.1;
+              ctx.beginPath(); ctx.ellipse(0, 0, 6, 2.1, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+              ctx.restore();
+            }
+            ctx.restore();
+          }
         }
         ctx.restore();
       }
@@ -2855,14 +3017,17 @@ class EffectManager {
             if (lunging) {
               ctx.globalCompositeOperation = 'source-over';
               ctx.strokeStyle = '#09090d';
-              ctx.lineWidth = 5.0;
-              ctx.beginPath(); ctx.arc(28, 4, 24, -0.8, 0.8); ctx.stroke();
+              ctx.lineWidth = 5.2;
+              ctx.beginPath(); ctx.arc(28, 4, 24, -0.85, 0.85); ctx.stroke();
               ctx.globalCompositeOperation = 'lighter';
-              ctx.strokeStyle = '#a855f7';
-              ctx.lineWidth = 2.8;
-              ctx.beginPath();
-              ctx.arc(28, 4, 24, -0.8, 0.8);
-              ctx.stroke();
+              // Tam Trảo Quạ Đen: 3 vệt vuốt tím-đỏ rạch chéo mục tiêu
+              for (let c = -1; c <= 1; c++) {
+                ctx.strokeStyle = c === 0 ? '#e879f9' : '#9333ea';
+                ctx.lineWidth = c === 0 ? 3.2 : 2.2;
+                ctx.beginPath();
+                ctx.arc(26 + Math.abs(c) * 3, 4 + c * 9, 25, -0.78, 0.78);
+                ctx.stroke();
+              }
             }
             ctx.restore();
           } else {

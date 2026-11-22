@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-042",
+  "title": "Upgrade Thien Khanh Than Trung Skin & Rebalance All Skin Tiers Pyramid",
+  "author": "Antigravity Senior Visual Design & Gameplay Engineer",
+  "date": "2026-11-22",
+  "objective": "1. Sửa lại phân bậc toàn bộ skin để không còn cảnh skin nào cũng là bậc Đỏ Chí Tôn (cân đối 5 bậc: Xám Phàm Phẩm -> Lam Linh Phẩm -> Tím Địa Phẩm [Chó Đội Nón, Hổ Xám] -> Vàng Thần Phẩm [Thần Trùng, Ngư Tinh] -> Đỏ Chí Tôn Phẩm [Ông Năm Chèo, Thuồng Luồng]) kèm CSS cho Cửa Hàng. 2. Nâng cấp skin Thần Trùng của Thiên Khánh với lông quạ & quạ hộ vệ sau vai, Đàn Quạ Đen Xé Gió, Hắc Nguyệt U Minh (L/W+U/I), Tam Trảo Quạ Đen và bão trảm không gian ở Tuyệt Kỹ (giữ nguyên 100% thông số gốc).",
+  "requestedBehavior": "1. Cập nhật js/data/skins.js để phân bậc Địa Phẩm (Tím), Thần Phẩm (Vàng) và Chí Tôn Phẩm (Đỏ) hợp lý, thêm thanTrungFeathers & thanTrungCrowFamiliar cho Thần Trùng. 2. Bổ sung CSS theme-epic/theme-legendary trong css/modals-chronicles.css. 3. Nâng cấp ngoại hình Thần Trùng trong animationArchetypes.js, thêm createThanTrungCrowFlock & createThanTrungCursedMoon + Tam Trảo Quạ trong effects.js, và nối vào toàn bộ bộ chiêu thienkhanh.js (L, W+U, U+J/K, I). 4. Nâng cache-bust ?v=6.18 trong index.html và bổ sung kiểm chứng trong tests/test_skin_registry_and_cloud_auth.js.",
+  "allowedFiles": [
+    "js/data/skins.js",
+    "css/modals-chronicles.css",
+    "ss/modals-chronicles.css",
+    "js/entities/animation/animationArchetypes.js",
+    "js/core/effects.js",
+    "js/entities/characters/thienkhanh.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tasks/TASK-042.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-CHR-001",
+    "FEAT-CMB-001",
+    "FEAT-UI-001"
+  ],
+  "dependencies": [
+    "SkinRegistry",
+    "CharacterRegistry",
+    "EffectManager",
+    "SkeletalRenderer"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 90,
+    "authorizedRemovals": []
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-042.json"
+  ]
+}

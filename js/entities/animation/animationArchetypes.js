@@ -235,6 +235,45 @@ class SkeletalRendererArchetypes extends window.SkeletalRendererWeapon {
         ctx.moveTo(cBotL[0] + 2, cBotL[1] - 1);
         ctx.quadraticCurveTo(cBotM[0], cBotM[1] + 4.0, cBotR[0] - 2, cBotR[1] - 1);
         ctx.stroke();
+
+        // Nâng cấp Thần Trùng: Chùm lông quạ đen ánh tím bay phất phơ ở gấu áo & Linh Quạ Hộ Vệ sau vai!
+        if (st.thanTrungFeathers) {
+          for (let f = 0; f < 4; f++) {
+            const u = f / 3;
+            const fx = cBotL[0] + (cBotR[0] - cBotL[0]) * u;
+            const fy = cBotL[1] + (cBotR[1] - cBotL[1]) * u;
+            const fw = Math.sin(((motion && motion.now) || 0) * 0.012 + f * 1.4) * 3.2;
+            ctx.fillStyle = '#09090b';
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(fx - 2.2, fy);
+            ctx.lineTo(fx - 4.5 + wind * 0.25 + fw, fy + 8.5);
+            ctx.lineTo(fx + 2.2, fy + 1.5);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+          }
+        }
+        if (st.thanTrungCrowFamiliar) {
+          const tNow = (motion && motion.now) || 0;
+          const hoverY = Math.sin(tNow * 0.008) * 3.4;
+          const flap = Math.sin(tNow * 0.022) * 5.2;
+          const cp = P(sh, -18.5 + wind * 0.28, 12.5 + hoverY);
+          ctx.save();
+          ctx.translate(cp[0], cp[1]);
+          ctx.fillStyle = '#09090b';
+          ctx.strokeStyle = '#c084fc';
+          ctx.lineWidth = 1.1;
+          ctx.beginPath(); ctx.ellipse(0, 0, 7.2, 4.0, -0.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-2, -1); ctx.lineTo(-11, -9 + flap); ctx.lineTo(-1, -4);
+          ctx.moveTo(1, -2); ctx.lineTo(-4, -10 - flap * 0.6); ctx.lineTo(4, -3);
+          ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(6, -2); ctx.lineTo(11, -0.5); ctx.lineTo(6, 1.5); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#e879f9';
+          ctx.beginPath(); ctx.arc(5.2, -1.5, 1.1, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
       }
     }
 

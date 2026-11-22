@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-041",
-  "taskTitle": "Refine Ngu Tinh Ultimate: Single Sky-Drop Submerge -> Emerge Bite -> Ascend Into Sky",
-  "generatedAt": "2026-11-21T20:22:36.126Z",
+  "taskId": "TASK-042",
+  "taskTitle": "Upgrade Thien Khanh Than Trung Skin & Rebalance All Skin Tiers Pyramid",
+  "generatedAt": "2026-11-22T04:42:10.461Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 5,
+    "filesModifiedCount": 10,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,13 +13,18 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-041.json"
+      "tasks/TASK-042.json"
     ],
     "filesModified": [
-      "ndex.html",
+      "ss/modals-chronicles.css",
+      "harness/reports/latest-test-run.json",
+      "harness/reports/verification-report.json",
+      "harness/reports/verification-report.md",
+      "index.html",
       "js/core/effects.js",
       "js/data/skins.js",
-      "js/entities/characters/tiendang.js",
+      "js/entities/animation/animationArchetypes.js",
+      "js/entities/characters/thienkhanh.js",
       "tests/test_skin_registry_and_cloud_auth.js"
     ],
     "filesDeleted": []

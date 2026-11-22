@@ -349,6 +349,21 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     assert.ok(tiendangSrc.includes('isNguTinhSkin') && tiendangSrc.includes('createNguTinhSkyDrop') && tiendangSrc.includes('emergeTriggered = true') && tiendangSrc.includes('createNguTinhFangsBite') && tiendangSrc.includes('hitEnemy(target, 42, 5, false)') && tiendangSrc.includes('hitEnemy(e, 175, 18, true)'), 'Skin Ngư Tinh rơi 1 lần chìm đất -> kết thúc I trồi lên cắn rồi bay lên trời biến mất (42/175 dmg)');
     assert.ok(effectsSrc.includes("sf.kind === 'ngutinh_sky_drop'") && effectsSrc.includes("sf.kind === 'ngutinh_fangs'") && effectsSrc.includes("sf.kind === 'ngutinh_seal'") && effectsSrc.includes("sf.kind === 'ngutinh_spines'"), 'Effects có đủ 4 VFX Ngư Tinh độc quyền');
 
+    // TEST 8: Phân bậc lại toàn bộ Skin (Tím/Vàng/Đỏ) & Nâng cấp Thần Trùng (Thiên Khánh)
+    const dogSk = window.SkinRegistry.getSkin('huavudai', 'chodoinon');
+    const tigerSk = window.SkinRegistry.getSkin('nghi', 'hoxam');
+    const crowSk = window.SkinRegistry.getSkin('thienkhanh', 'thantrung');
+    const fishSk = window.SkinRegistry.getSkin('tiendang', 'ngutinh');
+    const boatSk = window.SkinRegistry.getSkin('bichlam', 'namcheo');
+    const dragonSk = window.SkinRegistry.getSkin('vananh', 'thuongluong');
+    assert.ok(dogSk.rarity === 'epic' && tigerSk.rarity === 'epic', 'Chó Đội Nón & Hổ Xám phân hạng Địa Phẩm (Tím)');
+    assert.ok(crowSk.rarity === 'legendary' && fishSk.rarity === 'legendary', 'Thần Trùng & Ngư Tinh phân hạng Thần Phẩm (Vàng)');
+    assert.ok(boatSk.rarity === 'mythic' && dragonSk.rarity === 'mythic', 'Ông Năm Chèo & Thuồng Luồng phân hạng Chí Tôn Phẩm (Đỏ)');
+    const crowRuntime = window.SkinRegistry.getRuntimeStyle('thienkhanh', 'thantrung');
+    assert.ok(crowRuntime && crowRuntime.style && crowRuntime.style.thanTrungFeathers && crowRuntime.style.thanTrungCrowFamiliar, 'Skin Thần Trùng nâng cấp có lông quạ & Linh Quạ hộ vệ sau vai');
+    const thienKhanhSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/characters/thienkhanh.js'), 'utf8');
+    assert.ok(thienKhanhSrc.includes('createThanTrungCursedMoon') && thienKhanhSrc.includes('createThanTrungCrowFlock') && thienKhanhSrc.includes('hitEnemy(target, isPvpOnlineMatch() ? 58 : 74, 10, false)'), 'Thần Trùng nâng cấp dùng Hắc Nguyệt & Đàn Quạ Đen, giữ đúng thông số sát thương Thiên Khánh gốc');
+
     // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
     {
       const amRec = new window.AccountManager();

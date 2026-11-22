@@ -488,29 +488,51 @@
         const slashOpts = isVoid ? { theme: 'void' } : null;
         if (st === 'dodge' && cross(0.06)) {
           if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(gx, gy - 50, dir, 0.2, 54, slashOpts);
+          if (isVoid) {
+            if (typeof fx.createThanTrungCursedMoon === 'function') fx.createThanTrungCursedMoon(gx, gy, 76, false);
+            if (typeof fx.createThanTrungCrowFlock === 'function') fx.createThanTrungCrowFlock(gx, gy - 55, dir, 0.9);
+          }
           fx.createHitSparks(gx, gy - 45, 9, true);
         } else if ((st === 'punch_straight' || st === 'punch_hook' || st === 'elbow_strike') && cross(0.32)) {
           if (typeof fx.createFlameCoinSlash === 'function') {
             fx.createFlameCoinSlash(gx + dir * 48, gy - 68, dir, st === 'punch_hook' ? -0.32 : 0.18, 72, slashOpts);
           }
-          if (isVoid && typeof fx.createDimensionalSlash === 'function') {
-            fx.createDimensionalSlash(gx + dir * 64, gy - 68, st === 'punch_hook' ? -0.45 : 0.22, 130, '#9333ea', { darkCore: true, width: 5.5 });
+          if (isVoid) {
+            if (typeof fx.createDimensionalSlash === 'function') {
+              fx.createDimensionalSlash(gx + dir * 64, gy - 68, st === 'punch_hook' ? -0.45 : 0.22, 130, '#9333ea', { darkCore: true, width: 5.5 });
+            }
+            if (st === 'punch_hook' && typeof fx.createThanTrungCrowFlock === 'function') {
+              fx.createThanTrungCrowFlock(gx + dir * 45, gy - 68, dir, 0.92);
+            }
           }
         } else if ((st === 'uppercut' || st === 'kick_roundhouse' || st === 'wk') && cross(0.36)) {
           if (typeof fx.createFlameCoinSlash === 'function') {
             fx.createFlameCoinSlash(gx + dir * 52, gy - 72, dir, -0.55, 86, slashOpts);
           }
-          if (isVoid && typeof fx.createDimensionalSlash === 'function') {
-            fx.createDimensionalSlash(gx + dir * 68, gy - 72, -0.62 * dir, 155, '#a855f7', { darkCore: true, width: 6.2 });
+          if (isVoid) {
+            if (typeof fx.createDimensionalSlash === 'function') {
+              fx.createDimensionalSlash(gx + dir * 68, gy - 72, -0.62 * dir, 155, '#a855f7', { darkCore: true, width: 6.2 });
+            }
+            if (typeof fx.createThanTrungCrowFlock === 'function') {
+              fx.createThanTrungCrowFlock(gx + dir * 48, gy - 70, dir, 1.05);
+            }
           }
           fx.createHitSparks(gx + dir * 54, gy - 70, 10, true);
         } else if ((st === 'counter_hand_strike' || st === 'counter_leg_strike' || st === 'boss_riposte') && cross(0.30)) {
           if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(gx + dir * 56, gy - 66, dir, 0, 95, slashOpts);
-          if (isVoid && typeof fx.createDimensionalSlash === 'function') {
-            fx.createDimensionalSlash(gx + dir * 62, gy - 66, -0.35, 175, '#9333ea', { darkCore: true, width: 6.8 });
+          if (isVoid) {
+            if (typeof fx.createDimensionalSlash === 'function') {
+              fx.createDimensionalSlash(gx + dir * 62, gy - 66, -0.35, 175, '#9333ea', { darkCore: true, width: 6.8 });
+            }
+            if (typeof fx.createThanTrungCrowFlock === 'function') {
+              fx.createThanTrungCrowFlock(gx + dir * 48, gy - 66, dir, 1.15);
+            }
           }
           fx.createShockRing(gx + dir * 40, gy, isVoid ? '#9333ea' : '#dc2626');
         } else if (st === 'ultimate_precision') {
+          if (cross(0.05) && isVoid && typeof fx.createThanTrungCursedMoon === 'function') {
+            fx.createThanTrungCursedMoon(gx + dir * 65, gy, 148, true);
+          }
           if (cross(0.15) || cross(0.45) || cross(0.75)) {
             if (typeof fx.createFlameCoinSlash === 'function') {
               fx.createFlameCoinSlash(gx + dir * 56, gy - 72, dir, (p - 0.5) * 1.4, 118, slashOpts);
@@ -556,6 +578,14 @@
             igniteTarget(player, e, 12, 3.0);
           }
         }
+        if (isThanTrungSkin(player) && window.effectManager) {
+          if (typeof window.effectManager.createThanTrungCursedMoon === 'function') {
+            window.effectManager.createThanTrungCursedMoon(player.x, player.y || 580, 78, false);
+          }
+          if (typeof window.effectManager.addFloatingText === 'function') {
+            window.effectManager.addFloatingText('🪶 TÀN ẢNH QUẠ ĐEN!', player.x, (player.y || 580) - 145, 'dodge');
+          }
+        }
       },
       onDodgeFollowup(player, btn) {
         if (btn === 'K') {
@@ -588,6 +618,14 @@
         player._fiendSummonCd = 3.5;
         player.stanceSkillCooldown = 3.5;
         player._fiendSummonFlashTimer = 0.55;
+        if (isThanTrungSkin(player) && window.effectManager) {
+          if (typeof window.effectManager.createThanTrungCursedMoon === 'function') {
+            window.effectManager.createThanTrungCursedMoon(player.x, player.y || 580, 94, false);
+          }
+          if (typeof window.effectManager.createThanTrungCrowFlock === 'function') {
+            window.effectManager.createThanTrungCrowFlock(player.x, (player.y || 580) - 62, player.facing || 1, 1.05);
+          }
+        }
         spawnTaoistFiend(player, player.x, player.y, 6.2, 22);
         if (typeof player.addEnergy === 'function') player.addEnergy(8);
         return true;
@@ -678,6 +716,9 @@
                 fx.createDimensionalSlash(target.x + 12, ty - 14, 0.72 - (step - 1) * 0.2, 230, '#a855f7', { darkCore: true, width: 7.0 });
                 fx.createDimensionalSlash(target.x - 10, ty + 8, (step % 2 ? 1.38 : -1.32), 205, '#7c3aed', { darkCore: true, width: 6.4 });
               }
+              if (isVoid && typeof fx.createThanTrungCrowFlock === 'function') {
+                fx.createThanTrungCrowFlock(target.x, (target.y || 580) - 64, player.facing || 1, 1.25);
+              }
               fx.createShockRing(target.x, target.y, isVoid ? '#9333ea' : '#f97316');
             }
             const maxW = window.stageManager ? window.stageManager.stageWidth - 30 : 2570;
@@ -690,6 +731,9 @@
             const cy = (player.y || 580) - 68;
             fx.createDimensionalSlash(cx, cy, (step % 2 ? 0.55 : -0.55), 255, '#9333ea', { darkCore: true, width: 7.4 });
             fx.createDimensionalSlash(cx + (player.facing || 1) * 35, cy - 16, (step % 2 ? -0.9 : 0.9), 225, '#a855f7', { darkCore: true, width: 6.8 });
+            if (typeof fx.createThanTrungCrowFlock === 'function') {
+              fx.createThanTrungCrowFlock(cx, cy, player.facing || 1, 1.2);
+            }
           }
         }
         if (p >= 1) {
@@ -697,6 +741,10 @@
             if (isVoid && typeof fx.createDimensionalSlash === 'function') {
               const bx = player.x + (player.facing || 1) * 70;
               const by = (player.y || 580) - 66;
+              if (typeof fx.createThanTrungCrowFlock === 'function') {
+                fx.createThanTrungCrowFlock(bx - 35, by, 1, 1.4);
+                fx.createThanTrungCrowFlock(bx + 35, by, -1, 1.4);
+              }
               const voidAngles = [-0.28, 0.42, -0.88, 1.05, 0.08, -1.42];
               voidAngles.forEach((ang, idx) => {
                 fx.createDimensionalSlash(
