@@ -160,7 +160,31 @@ class TrainingManagerModes extends window.TrainingManagerBase {
     if (!window.game || !window.game.player) return;
     const p = window.game.player;
     this.selectedTrainingChar = charId;
+    if (Array.isArray(p._summonedFiends)) {
+      for (const f of p._summonedFiends) {
+        if (f) f.life = 0;
+      }
+      p._summonedFiends = [];
+    }
+    p._activeNguTinhUltFx = null;
+    if (window.effectManager && typeof window.effectManager.clearCombatEffects === 'function') {
+      window.effectManager.clearCombatEffects();
+    }
+    if (window.skeletalRenderer) window.skeletalRenderer._styles = {};
+    if (typeof p.clearAuraArmor === 'function') p.clearAuraArmor();
+    if (p.hitTargets && typeof p.hitTargets.clear === 'function') p.hitTargets.clear();
+    p.comboStep = 0;
+    p.comboWindowTimer = 0;
     p.setCharacter(charId);
+    if (this.dummy) {
+      this.dummy._maMarks = 0;
+      this.dummy.burnTimer = 0;
+      this.dummy.bleedTimer = 0;
+      this.dummy.chillTimer = 0;
+      this.dummy.frostStacks = 0;
+      this.dummy.stunTimer = 0;
+      this.dummy.armorBreakTimer = 0;
+    }
     p.hp = p.maxHp;
     p.energy = p.maxEnergy;
     p.guardGauge = 100;

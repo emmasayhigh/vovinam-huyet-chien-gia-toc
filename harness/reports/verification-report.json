@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-042",
-  "taskTitle": "Upgrade Thien Khanh Than Trung Skin & Rebalance All Skin Tiers Pyramid",
-  "generatedAt": "2026-11-22T04:42:10.461Z",
+  "taskId": "TASK-043",
+  "taskTitle": "Fix Orphaned Summons & Stale Combat VFX When Switching Heroes or Resetting in Training Dojo",
+  "generatedAt": "2026-11-22T04:47:16.535Z",
   "classification": "PASS",
   "summary": {
     "filesAddedCount": 1,
-    "filesModifiedCount": 10,
+    "filesModifiedCount": 6,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,27 +13,23 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-042.json"
+      "tasks/TASK-043.json"
     ],
     "filesModified": [
-      "ss/modals-chronicles.css",
-      "harness/reports/latest-test-run.json",
-      "harness/reports/verification-report.json",
-      "harness/reports/verification-report.md",
-      "index.html",
+      "ndex.html",
       "js/core/effects.js",
-      "js/data/skins.js",
-      "js/entities/animation/animationArchetypes.js",
-      "js/entities/characters/thienkhanh.js",
+      "js/entities/player/playerBase.js",
+      "js/ui/training/trainingManagerBase.js",
+      "js/ui/training/trainingModes.js",
       "tests/test_skin_registry_and_cloud_auth.js"
     ],
     "filesDeleted": []
   },
   "features": {
     "affected": [
+      "FEAT-TRN-001",
       "FEAT-CHR-001",
-      "FEAT-CMB-001",
-      "FEAT-UI-001"
+      "FEAT-CMB-001"
     ],
     "preserved": [
       "FEAT-CMB-001",

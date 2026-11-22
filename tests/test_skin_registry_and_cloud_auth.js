@@ -364,6 +364,13 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     const thienKhanhSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/characters/thienkhanh.js'), 'utf8');
     assert.ok(thienKhanhSrc.includes('createThanTrungCursedMoon') && thienKhanhSrc.includes('createThanTrungCrowFlock') && thienKhanhSrc.includes('hitEnemy(target, isPvpOnlineMatch() ? 58 : 74, 10, false)'), 'Thần Trùng nâng cấp dùng Hắc Nguyệt & Đàn Quạ Đen, giữ đúng thông số sát thương Thiên Khánh gốc');
 
+    // TEST 9: Võ Đường dọn sạch linh vật triệu hồi & hiệu ứng tồn đọng khi đổi tướng / reset [R]
+    const playerBaseSrc = fs.readFileSync(path.resolve(__dirname, '../js/entities/player/playerBase.js'), 'utf8');
+    const trainingModesSrc = fs.readFileSync(path.resolve(__dirname, '../js/ui/training/trainingModes.js'), 'utf8');
+    const trainingBaseSrc = fs.readFileSync(path.resolve(__dirname, '../js/ui/training/trainingManagerBase.js'), 'utf8');
+    assert.ok(playerBaseSrc.includes('f.life = 0') && effectsSrc.includes('sp._staleWatch'), 'Linh vật cũ tự thu hồi khi đổi tướng hoặc ngưng cập nhật');
+    assert.ok(trainingModesSrc.includes('clearCombatEffects') && trainingBaseSrc.includes('clearCombatEffects'), 'Đổi tướng và Reset [R] trong Võ Đường dọn sạch hiệu ứng cũ');
+
     // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
     {
       const amRec = new window.AccountManager();

@@ -1248,13 +1248,26 @@ class EffectManager {
     for (let i = this.skillProps.length - 1; i >= 0; i--) {
       const sp = this.skillProps[i];
       if (sp.kind === 'taoist_fiend' && sp.fiend) {
-        if ((sp.fiend.life || 0) <= 0) {
+        const fiendLife = sp.fiend.life || 0;
+        if (fiendLife <= 0) {
           this.skillProps.splice(i, 1);
           continue;
         }
+        // Tự động thu hồi nếu linh vật bị mồ côi khi đổi tướng / reset Võ Đường (life không còn được chủ giảm)
+        if (sp._lastSyncedLife === fiendLife) {
+          sp._staleWatch = (sp._staleWatch || 0) + dt;
+          if (sp._staleWatch > 0.25) {
+            sp.fiend.life = 0;
+            this.skillProps.splice(i, 1);
+            continue;
+          }
+        } else {
+          sp._staleWatch = 0;
+          sp._lastSyncedLife = fiendLife;
+        }
         sp.x = sp.fiend.x;
         sp.y = sp.fiend.y;
-        sp.life = sp.fiend.life;
+        sp.life = fiendLife;
         sp.alpha = sp.life > 0.35 ? 1.0 : Math.max(0, sp.life / 0.35);
         continue;
       } else {

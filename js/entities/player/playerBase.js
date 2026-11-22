@@ -254,7 +254,13 @@ class PlayerBase {
     this._finisherState = null;
     this._pose = null;
     this._trail = [];
+    if (Array.isArray(this._summonedFiends)) {
+      for (const f of this._summonedFiends) {
+        if (f) f.life = 0;
+      }
+    }
     this._summonedFiends = [];
+    this._activeNguTinhUltFx = null;
     this._fiendSummonCd = 0;
 
     this.applySelectedPassives();
@@ -299,7 +305,13 @@ class PlayerBase {
     this.clearAuraArmor();
     this._pose = null;
     this._trail = [];
+    if (Array.isArray(this._summonedFiends)) {
+      for (const f of this._summonedFiends) {
+        if (f) f.life = 0;
+      }
+    }
     this._summonedFiends = [];
+    this._activeNguTinhUltFx = null;
     this._fiendSummonCd = 0;
     // Nhịp ra đòn (chống spam): đánh dồn dập thì lực nhạt dần
     this.attackClock = 0;

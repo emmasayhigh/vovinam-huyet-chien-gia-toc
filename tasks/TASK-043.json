@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "taskId": "TASK-043",
+  "title": "Fix Orphaned Summons & Stale Combat VFX When Switching Heroes or Resetting in Training Dojo",
+  "author": "Antigravity Senior Gameplay & Engine Reliability Engineer",
+  "date": "2026-11-22",
+  "objective": "Sửa triệt để lỗi trong Võ Đường khi đổi tướng hoặc đặt lại vị trí [R]: linh vật triệu hồi của tướng cũ (Quạ Thần Trùng / Hỏa Âm Binh) và hiệu ứng chiến đấu tồn đọng không bị kẹt/đứng yên vĩnh viễn trên sân.",
+  "requestedBehavior": "1. Trong js/entities/player/playerBase.js: trước khi ghi đè this._summonedFiends = [] trong setCharacter() và reset(), đặt f.life = 0 cho mọi linh vật cũ và xóa _activeNguTinhUltFx. 2. Trong js/core/effects.js: thêm bộ dọn dẹp tự động _staleWatch nếu taoist_fiend bị mồ côi (sp.fiend.life đứng im > 0.25s khi chủ sở hữu đã đổi tướng/reset). 3. Trong js/ui/training/trainingModes.js (setPlayerCharacter) và js/ui/training/trainingManagerBase.js (resetPositions): gọi window.effectManager.clearCombatEffects(), reset bộ nhớ đệm style và dọn trạng thái debuff (_maMarks, burnTimer, chillTimer, frostStacks) trên Mộc Nhân. 4. Nâng cache-bust ?v=6.19 trong index.html và bổ sung test hồi quy vào tests/test_v5_features.js hoặc tests/test_skin_registry_and_cloud_auth.js.",
+  "allowedFiles": [
+    "js/entities/player/playerBase.js",
+    "js/core/effects.js",
+    "js/ui/training/trainingModes.js",
+    "js/ui/training/trainingManagerBase.js",
+    "index.html",
+    "ndex.html",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "tasks/TASK-043.json",
+    "harness/reports/latest-test-run.json",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/verification-report.json",
+    "arness/reports/verification-report.json",
+    "harness/reports/verification-report.md",
+    "arness/reports/verification-report.md"
+  ],
+  "relatedFeatures": [
+    "FEAT-TRN-001",
+    "FEAT-CHR-001",
+    "FEAT-CMB-001"
+  ],
+  "dependencies": [
+    "PlayerBase",
+    "EffectManager",
+    "TrainingManager"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 20,
+    "authorizedRemovals": []
+  },
+  "requiredChecks": [
+    "node harness/run-tests.js",
+    "node harness/browser-smoke.js",
+    "node harness/gate.js --task=tasks/TASK-043.json"
+  ]
+}

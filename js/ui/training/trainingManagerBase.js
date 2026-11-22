@@ -203,6 +203,16 @@ class TrainingManagerBase {
       p.stateTimer = 0;
       p.stateDuration = 0;
       p.isAttacking = false;
+      p.comboStep = 0;
+      p.comboWindowTimer = 0;
+      if (typeof p.clearAuraArmor === 'function') p.clearAuraArmor();
+      if (Array.isArray(p._summonedFiends)) {
+        for (const f of p._summonedFiends) {
+          if (f) f.life = 0;
+        }
+        p._summonedFiends = [];
+      }
+      p._activeNguTinhUltFx = null;
       if (p.hitTargets && typeof p.hitTargets.clear === 'function') p.hitTargets.clear();
       p.hp = p.maxHp || 100;
       if (this.noCooldown) p.energy = p.maxEnergy || 100;
@@ -232,12 +242,20 @@ class TrainingManagerBase {
       this.dummy.bleedTimer = 0;
       this.dummy.bleedTickTimer = 0;
       this.dummy.bleedDmg = 0;
+      this.dummy.burnTimer = 0;
+      this.dummy.chillTimer = 0;
+      this.dummy.frostStacks = 0;
+      this.dummy.armorBreakTimer = 0;
+      this.dummy._maMarks = 0;
     }
     if (game.camera) {
       game.camera.x = 0;
       game.camera.y = 0;
     }
     if (window.effectManager) {
+      if (typeof window.effectManager.clearCombatEffects === 'function') {
+        window.effectManager.clearCombatEffects();
+      }
       window.effectManager.createShockRing(360, 580, '#00d2ff');
       window.effectManager.createShockRing(500, 580, '#ffd700');
       window.effectManager.addFloatingText('ĐẶT LẠI VỊ TRÍ [R]', 430, 480, 'heal');
