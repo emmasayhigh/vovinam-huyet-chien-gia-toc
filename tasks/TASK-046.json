@@ -1,0 +1,23 @@
+{
+  "taskId": "TASK-046",
+  "title": "Refine Quỷ Dạ Xoa to Calm Dignified Samurai Animations and Enforce Strict Zero-P2W Ultimate Parity",
+  "allowedFiles": [
+    "arness/reports/latest-test-run.json",
+    "harness/reports/latest-test-run.json",
+    "index.html",
+    "ndex.html",
+    "js/entities/characters/thienkhanh.js",
+    "s/entities/characters/thienkhanh.js",
+    "tasks/TASK-046.json",
+    "asks/TASK-046.json",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "ests/test_skin_registry_and_cloud_auth.js"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 60,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "node harness/run-tests.js"
+  ]
+}

@@ -1,7 +1,7 @@
-# TASK VERIFICATION REPORT: TASK-045
+# TASK VERIFICATION REPORT: TASK-046
 
-> **Title**: Upgrade Thiên Khánh Quỷ Dạ Xoa: White-Red Katana Smear, Air-Slash Sheath Barrage Ult, Sprite Demon Hands (W+J/S+K), and Ngạ Quỷ Summons  
-> **Timestamp**: 2026-11-22T05:17:07.767Z  
+> **Title**: Refine Quỷ Dạ Xoa to Calm Dignified Samurai Animations and Enforce Strict Zero-P2W Ultimate Parity  
+> **Timestamp**: 2026-11-22T05:23:21.940Z  
 > **Final Classification**: **`PASS`**
 
 ## 1. QUALITY GATES SUMMARY
@@ -16,8 +16,8 @@
 
 ## 2. MODIFIED FILES AUDIT
 
-- **Files Added** (4): `assets/images/effects/nga_quy_fiend.png`, `assets/images/effects/oni_push_palm.png`, `assets/images/effects/oni_uppercut_fist.png`, `tasks/TASK-045.json`
-- **Files Modified** (4): `ndex.html`, `js/core/effects.js`, `js/entities/characters/thienkhanh.js`, `tests/test_skin_registry_and_cloud_auth.js`
+- **Files Added** (1): `tasks/TASK-046.json`
+- **Files Modified** (3): `ndex.html`, `js/entities/characters/thienkhanh.js`, `tests/test_skin_registry_and_cloud_auth.js`
 - **Files Deleted** (0): None (Zero deletion budget respected)
 
 ## 3. FEATURE IMPACT & PRESERVATION

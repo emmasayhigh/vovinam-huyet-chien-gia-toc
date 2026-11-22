@@ -408,7 +408,21 @@
         { id: 'ultimate_precision', input: 'I', name: 'Tuyệt Kỹ: Huyết Đạo Luân Hồi Trảm', dur: 1.30, category: 'ultimate' }
       ],
       poses: {
-        idle(P, { t }) {
+        idle(P, { t, e }) {
+          if (isQuyDaXoaSkin(e)) {
+            // Quỷ Dạ Xoa: Thế đứng Samurai điềm tĩnh, lưng thẳng uy nghiêm, tay phải hạ kiếm gọn bên hông, tay trái giữ vỏ kiếm
+            const b = Math.sin(t * 1.85);
+            P.torso = 0.02 + 0.008 * b;
+            P.head = -0.01 + 0.005 * b;
+            P.hx = 0;
+            P.lift = 0.45 * b;
+            P.nT = 0.28 + 0.008 * b; P.nS = -0.34 - 0.008 * b;
+            P.fT = -0.24 - 0.008 * b; P.fS = 0.08 + 0.008 * b;
+            P.nA = -0.22 + 0.018 * b; P.nE = 0.88 - 0.015 * b;
+            P.fA = 0.26 + 0.012 * b; P.fE = 1.12;
+            P.grip = -0.74;
+            return true;
+          }
           const b = Math.sin(t * 3.1);
           P.torso = 0.05 + 0.015 * b;
           P.head = -0.02 + 0.01 * b;
@@ -422,10 +436,36 @@
           P.grip = -0.28;
           return true;
         },
-        punch_straight(P, { U, p }) {
-          // Chém ngang thanh Kiếm Xu rực lửa từ sau vút qua trước
+        run(P, { t, e }) {
+          if (!isQuyDaXoaSkin(e)) return false;
+          // Quỷ Dạ Xoa: Bước lướt Samurai thanh lịch, giữ kiếm thu gọn xuôi hông sau, đầu giữ vững
+          const c = Math.sin(t * 10.5);
+          const s = Math.cos(t * 10.5);
+          P.torso = 0.15 + 0.02 * Math.abs(c);
+          P.head = -0.08;
+          P.lift = -Math.abs(c) * 2.5;
+          P.nT = 0.62 * c; P.nS = -0.45 - 0.38 * Math.max(0, -s);
+          P.fT = -0.62 * c; P.fS = -0.45 - 0.38 * Math.max(0, s);
+          P.nA = -0.58 + 0.05 * c; P.nE = 0.28; P.grip = -0.42;
+          P.fA = 0.26 - 0.04 * c; P.fE = 1.08;
+          return true;
+        },
+        punch_straight(P, { U, p, e }) {
           const s = U.stage5(p, { a: 0.18, c: 0.36, i: 0.56, f: 0.80 });
           const ex = Math.max(0, s.strike + s.overshoot * 0.45 - s.recover * 0.65);
+          if (isQuyDaXoaSkin(e)) {
+            // Samurai Iaido Hoành Trảm: 1 đường kiếm ngang dứt khoát, thân giữ thẳng thanh lịch
+            P.torso = 0.03 - 0.06 * s.windup + 0.09 * ex;
+            P.head = -0.02;
+            P.hx = 4 * ex;
+            P.nA = U.lerp(-0.36, 1.16, ex);
+            P.nE = U.lerp(1.04, 0.14, ex);
+            P.grip = U.lerp(-0.82, -0.24, ex);
+            P.fA = 0.24; P.fE = 1.12;
+            P.nT = 0.48; P.nS = -0.56; P.fT = -0.42; P.fS = 0.14;
+            return true;
+          }
+          // Chém ngang thanh Kiếm Xu rực lửa từ sau vút qua trước
           P.torso = 0.08 - 0.18 * s.windup + 0.20 * ex;
           P.hx = -3 * s.windup + 7 * ex;
           P.nA = U.lerp(1.48, -0.32, ex);
@@ -435,10 +475,21 @@
           P.nT = 0.65; P.nS = -0.78; P.fT = -0.58; P.fS = 0.22;
           return true;
         },
-        punch_hook(P, { U, p }) {
-          // Múa kiếm xoay chéo nghịch tay + tay trái tung bùa
+        punch_hook(P, { U, p, e }) {
           const s = U.stage5(p, { a: 0.18, c: 0.36, i: 0.58, f: 0.80 });
           const ex = Math.max(0, s.strike + s.overshoot * 0.48 - s.recover * 0.65);
+          if (isQuyDaXoaSkin(e)) {
+            // Kesa-giri Samurai: Chém chéo từ vai trên xuống dứt khoát, không vung tay thừa
+            P.torso = 0.02 - 0.07 * s.windup + 0.10 * ex;
+            P.head = -0.01;
+            P.nA = U.lerp(1.62, -0.26, ex);
+            P.nE = U.lerp(0.36, 0.18, ex);
+            P.grip = U.lerp(0.22, -0.62, ex);
+            P.fA = 0.26; P.fE = 1.08;
+            P.nT = 0.52; P.nS = -0.60; P.fT = -0.44; P.fS = 0.15;
+            return true;
+          }
+          // Múa kiếm xoay chéo nghịch tay + tay trái tung bùa
           P.torso = 0.12 - 0.20 * s.windup + 0.18 * ex;
           P.nA = U.lerp(-0.45, 1.55, ex);
           P.nE = U.lerp(0.45, 0.12, ex);
@@ -447,10 +498,19 @@
           P.nT = 0.72; P.nS = -0.84; P.fT = -0.62; P.fS = 0.24;
           return true;
         },
-        uppercut(P, { U, p }) {
-          // Hất Kiếm Xu từ thấp chém vút lên trời mở vòng tròn lửa
+        uppercut(P, { U, p, e }) {
           const s = U.stage5(p, { a: 0.18, c: 0.36, i: 0.56, f: 0.80 });
           const ex = Math.max(0, s.strike + s.overshoot * 0.5 - s.recover * 0.65);
+          if (isQuyDaXoaSkin(e)) {
+            // Gyaku-kesa: Hất ngược kiếm từ bao hông lên thanh thoát, dáng đứng vững chãi
+            P.torso = 0.06 - 0.11 * ex; P.lift = -4 * ex;
+            P.nA = U.lerp(-0.42, 1.88, ex); P.nE = U.lerp(0.76, 0.12, ex);
+            P.grip = U.lerp(-0.45, -0.18, ex);
+            P.fA = 0.28; P.fE = 1.06;
+            P.nT = 0.56; P.nS = -0.66; P.fT = -0.40; P.fS = 0.14;
+            return true;
+          }
+          // Hất Kiếm Xu từ thấp chém vút lên trời mở vòng tròn lửa
           P.torso = -0.14 * ex; P.lift = -10 * ex;
           P.nA = U.lerp(-0.55, 2.35, ex); P.nE = U.lerp(0.95, 0.08, ex);
           P.grip = U.lerp(0.3, -0.4, ex);
@@ -458,10 +518,19 @@
           P.nT = 0.85; P.nS = -1.0; P.fT = -0.52; P.fS = 0.18;
           return true;
         },
-        kick_roundhouse(P, { U, p }) {
-          // Xoay người vung cả Kiếm Xu lẫn tà áo bào đỏ quét ngang
+        kick_roundhouse(P, { U, p, e }) {
           const s = U.stage5(p, { a: 0.18, c: 0.38, i: 0.58, f: 0.82 });
           const ex = Math.max(0, s.strike + s.overshoot * 0.48 - s.recover * 0.68);
+          if (isQuyDaXoaSkin(e)) {
+            P.torso = U.lerp(0.08 * s.windup, -0.18, ex);
+            P.lift = 2 * s.windup - 5 * ex;
+            P.nT = U.lerp(0.48, 1.72, ex); P.nS = U.lerp(-1.12, 0.04, ex);
+            P.fT = -0.30; P.fS = 0.12;
+            P.nA = U.lerp(-0.18, 1.18, ex); P.nE = 0.22; P.grip = -0.35;
+            P.fA = 0.22; P.fE = 1.05;
+            return true;
+          }
+          // Xoay người vung cả Kiếm Xu lẫn tà áo bào đỏ quét ngang
           P.torso = U.lerp(0.24 * s.windup, -0.34, ex);
           P.lift = 4 * s.windup - 9 * ex;
           P.nT = U.lerp(0.65, 1.98, ex); P.nS = U.lerp(-1.45, 0.04, ex);
@@ -470,10 +539,18 @@
           P.fA = -0.65 * ex; P.fE = 0.4;
           return true;
         },
-        counter_hand_strike(P, { U, p }) {
-          // Rút Kiếm Xu đâm xuyên kết ấn triệu hồi
+        counter_hand_strike(P, { U, p, e }) {
           const s = U.stage5(p, { a: 0.16, c: 0.34, i: 0.54, f: 0.80 });
           const ex = Math.max(0, s.strike + s.overshoot * 0.52 - s.recover * 0.65);
+          if (isQuyDaXoaSkin(e)) {
+            // Bạt Đao Phản Trảm: Rút kiếm ngang chớp nhoáng, thân vững chãi
+            P.torso = 0.06 + 0.08 * ex; P.hx = 5 * ex;
+            P.nA = U.lerp(-0.46, 1.24, ex); P.nE = U.lerp(1.14, 0.08, ex); P.grip = U.lerp(-0.85, -0.22, ex);
+            P.fA = 0.28; P.fE = 1.12;
+            P.nT = 0.56; P.nS = -0.64; P.fT = -0.48; P.fS = 0.16;
+            return true;
+          }
+          // Rút Kiếm Xu đâm xuyên kết ấn triệu hồi
           P.torso = 0.22 * ex; P.hx = 8 * ex;
           P.nA = U.lerp(-0.58, 1.32, ex); P.nE = U.lerp(1.25, 0.02, ex); P.grip = -0.42;
           P.fA = 1.65; P.fE = 0.42;
@@ -483,26 +560,33 @@
         ultimate_precision(P, { U, p, e }) {
           if (isQuyDaXoaSkin(e)) {
             if (p >= 0.72) {
-              // Quỷ Dạ Xoa: Pha tra kiếm Katana vào bao bên hông đầy khí chất Iaijutsu!
+              // Quỷ Dạ Xoa: Pha Nōtō — điềm tĩnh đứng thẳng, nhẹ nhàng tra Katana vào bao bên hông!
               const k = Math.min(1, (p - 0.72) / 0.22);
-              P.torso = U.lerp(0.22, 0.06, k);
-              P.lift = U.lerp(-8, 0, k);
-              P.nA = U.lerp(1.15, -0.35, k);
-              P.nE = U.lerp(0.28, 1.32, k);
-              P.grip = U.lerp(-0.3, -1.05, k);
-              P.fA = U.lerp(1.35, 0.42, k);
-              P.fE = 1.15;
-              P.nT = 0.48; P.nS = -0.62;
-              P.fT = -0.45; P.fS = 0.16;
+              P.torso = U.lerp(0.10, 0.01, k);
+              P.head = U.lerp(-0.02, 0.03, k);
+              P.lift = U.lerp(-2, 0, k);
+              P.nA = U.lerp(0.95, -0.32, k);
+              P.nE = U.lerp(0.24, 1.24, k);
+              P.grip = U.lerp(-0.28, -1.0, k);
+              P.fA = U.lerp(0.36, 0.32, k);
+              P.fE = 1.18;
+              P.nT = 0.28; P.nS = -0.34;
+              P.fT = -0.24; P.fS = 0.08;
               return true;
             }
-            const slashWave = Math.sin((p / 0.72) * Math.PI * 5);
-            P.torso = 0.24 + 0.16 * slashWave;
-            P.lift = -10 * Math.sin(Math.min(1, p * 1.45) * Math.PI);
-            P.nA = 0.95 + 1.45 * slashWave; P.nE = 0.18; P.grip = -0.45 + 0.55 * slashWave;
-            P.fA = 1.32 - 0.65 * slashWave; P.fE = 0.52;
-            P.nT = 0.72 + 0.35 * Math.abs(slashWave); P.nS = -0.82;
-            P.fT = -0.68; P.fS = 0.22;
+            // Pha chém Iaido điềm tĩnh 3 nhịp dứt khoát (không quay cuồng mất dáng Samurai)
+            const beat = (p / 0.72) * 3;
+            const local = beat - Math.floor(beat);
+            const swing = Math.sin(local * Math.PI);
+            const alt = Math.floor(beat) % 2 === 0 ? 1 : -1;
+            P.torso = 0.05 + 0.08 * swing;
+            P.head = -0.02;
+            P.lift = -2.5 * swing;
+            P.nA = 0.35 + alt * 0.92 * swing; P.nE = 0.24 + 0.32 * (1 - swing);
+            P.grip = -0.38 + alt * 0.26 * swing;
+            P.fA = 0.28; P.fE = 1.12;
+            P.nT = 0.44; P.nS = -0.52;
+            P.fT = -0.36; P.fS = 0.12;
             return true;
           }
           // Múa kiếm xu luân hồi liên hoàn trong bão lửa
@@ -788,24 +872,26 @@
           }
           if (target) {
             if (isOni) {
-              // Quỷ Dạ Xoa: Chém vài nhát Trắng+Đỏ sắc lẹm vào không khí tại chỗ, tích sát thương chờ khoảnh khắc rút/tra kiếm vào bao mới bùng nổ hàng chục vết chém!
-              const stepDmg = isPvpOnlineMatch() ? 58 : 74;
+              // Quỷ Dạ Xoa (CHUẨN 100% NON-P2W): Giữ nguyên tầm 560, vị trí lướt, sát thương 58/74 & thiêu đốt y hệt bản gốc;
+              // chỉ thay đổi hoàn toàn hiệu ứng hình ảnh thành chém Trắng+Đỏ & ghim dấu trảm chờ nổ lúc tra kiếm!
               const dir = player.facing || 1;
-              if (fx && typeof fx.createOniKatanaSmear === 'function') {
-                const airAng = step === 1 ? -0.35 : (step === 2 ? 0.38 : -0.06);
-                fx.createOniKatanaSmear(player.x + dir * 58, (player.y || 580) - 68, dir, airAng, 122, step === 2);
-              }
-              target._oniPendingDmg = (target._oniPendingDmg || 0) + stepDmg;
-              target.stunTimer = Math.max(target.stunTimer || 0, 0.72);
               if (fx) {
+                fx.addGhostTrail(player, 'rgba(220, 38, 38, 0.85)');
+                if (typeof fx.createOniKatanaSmear === 'function') {
+                  const airAng = step === 1 ? -0.35 : (step === 2 ? 0.38 : -0.06);
+                  fx.createOniKatanaSmear(target.x - dir * 18, (target.y || 580) - 66, dir, airAng, 118, step === 2);
+                }
                 if (typeof fx.createOniPinnedSlash === 'function') {
                   const ang = step === 1 ? -0.48 : (step === 2 ? 0.52 : -0.18);
                   fx.createOniPinnedSlash(target, dir, ang, step);
                 }
-                if (typeof fx.addFloatingText === 'function' && step === 1) {
-                  fx.addFloatingText('⚔️ KHÔNG TRẢM GHIM HỒN!', target.x, (target.y || 580) - 118, 'crit');
-                }
+                fx.createShockRing(target.x, target.y, '#ef4444');
               }
+              const maxW = window.stageManager ? window.stageManager.stageWidth - 30 : 2570;
+              player.x = Math.max(30, Math.min(maxW, target.x - dir * 62));
+              player.y = target.y;
+              hitEnemy(target, isPvpOnlineMatch() ? 58 : 74, 10, false);
+              igniteTarget(player, target, isPvpOnlineMatch() ? 8 : 13, 3.2);
             } else {
               if (fx) {
                 fx.addGhostTrail(player, isVoid ? 'rgba(147, 51, 234, 0.85)' : 'rgba(220, 38, 38, 0.85)');
@@ -889,17 +975,12 @@
             fx.triggerScreenShake(isOni ? 22 : 18, 0.45);
           }
           for (const e of enemies) {
-            if (!e || e.isDead) continue;
-            const pending = isOni ? (e._oniPendingDmg || 0) : 0;
-            if (e._oniPendingDmg) e._oniPendingDmg = 0;
-            const inRange = Math.hypot(e.x - player.x, (e.y - player.y) * 1.4) <= (isOni ? 440 : 280);
-            if (inRange || pending > 0) {
+            if (e && !e.isDead && Math.hypot(e.x - player.x, (e.y - player.y) * 1.4) <= 280) {
               if (isOni && fx && typeof fx.createOniJudgmentBarrage === 'function') {
                 fx.createOniJudgmentBarrage(e.x, (e.y || 580) - 62, 16);
               }
-              const finDmg = inRange ? (isPvpOnlineMatch() ? 82 : 98) : 0;
-              hitEnemy(e, pending + finDmg, 16, true);
-              igniteTarget(player, e, isPvpOnlineMatch() ? 12 : 14, 3.5);
+              hitEnemy(e, isPvpOnlineMatch() ? 82 : 98, 16, true);
+              igniteTarget(player, e, isPvpOnlineMatch() ? 9 : 14, 3.5);
             }
           }
           player.setState('idle');
