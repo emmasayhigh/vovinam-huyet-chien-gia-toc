@@ -378,7 +378,8 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     assert.ok(oniRuntime && oniRuntime.style && oniRuntime.style.oniMask && oniRuntime.style.oniArmor && oniRuntime.style.weapon === 'oni_katana', 'Quỷ Dạ Xoa có mặt nạ Dạ Xoa, giáp Samurai Đỏ-Vàng & Katana');
     assert.ok(oniRuntime.cinematic && oniRuntime.cinematic.style === 'oni_demon', 'Quỷ Dạ Xoa dùng Cutscene riêng style oni_demon');
     assert.ok(effectsSrc.includes('createOniDemonUppercutHand') && effectsSrc.includes('createOniDemonPushHand') && effectsSrc.includes('createOniDemonAerialSlash') && effectsSrc.includes('createOniPinnedSlash') && effectsSrc.includes('detonateOniPinnedSlashes') && effectsSrc.includes("c.style === 'oni_demon'"), 'Effects có đủ 3 VFX Quỷ Thủ/Không Trảm, nhát chém ghim nổ & Cutscene code Quỷ Dạ Xoa');
-    assert.ok(thienKhanhSrc.includes('isQuyDaXoaSkin') && thienKhanhSrc.includes('target._oniPendingDmg') && thienKhanhSrc.includes('detonateOniPinnedSlashes'), 'Thiên Khánh Quỷ Dạ Xoa tích nhát chém ghim và kích nổ đúng khi tra kiếm vào bao');
+    assert.ok(effectsSrc.includes('createOniKatanaSmear') && effectsSrc.includes('createOniJudgmentBarrage') && effectsSrc.includes('oni_uppercut_fist.png') && effectsSrc.includes('oni_push_palm.png') && effectsSrc.includes('nga_quy_fiend.png'), 'Quỷ Dạ Xoa có hiệu ứng chém Trắng+Đỏ, bão hàng chục vết chém, sprite nắm đấm/bàn tay & Ngạ Quỷ');
+    assert.ok(thienKhanhSrc.includes('isQuyDaXoaSkin') && thienKhanhSrc.includes('target._oniPendingDmg') && thienKhanhSrc.includes('detonateOniPinnedSlashes') && thienKhanhSrc.includes('createOniJudgmentBarrage') && thienKhanhSrc.includes("'ngaquy'"), 'Thiên Khánh Quỷ Dạ Xoa triệu hồi Ngạ Quỷ, chém không khí và kích nổ hàng chục vết chém khi tra kiếm vào bao');
 
     // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
     {

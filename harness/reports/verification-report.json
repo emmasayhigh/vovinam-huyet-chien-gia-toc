@@ -1,22 +1,28 @@
 {
-  "taskId": "TASK-044",
-  "taskTitle": "Add Thiên Khánh Mythic Skin Quỷ Dạ Xoa with Oni Demon VFX, Iaijutsu Delayed Ultimate & Full-Screen Code Cutscene",
-  "generatedAt": "2026-11-22T05:08:40.151Z",
+  "taskId": "TASK-045",
+  "taskTitle": "Upgrade Thiên Khánh Quỷ Dạ Xoa: White-Red Katana Smear, Air-Slash Sheath Barrage Ult, Sprite Demon Hands (W+J/S+K), and Ngạ Quỷ Summons",
+  "generatedAt": "2026-11-22T05:17:07.767Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 0,
-    "filesModifiedCount": 3,
+    "filesAddedCount": 4,
+    "filesModifiedCount": 4,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
     "testsFailed": 0
   },
   "scope": {
-    "filesAdded": [],
+    "filesAdded": [
+      "assets/images/effects/nga_quy_fiend.png",
+      "assets/images/effects/oni_push_palm.png",
+      "assets/images/effects/oni_uppercut_fist.png",
+      "tasks/TASK-045.json"
+    ],
     "filesModified": [
-      "arness/reports/latest-test-run.json",
-      "index.html",
-      "js/entities/animation/animationWeapon.js"
+      "ndex.html",
+      "js/core/effects.js",
+      "js/entities/characters/thienkhanh.js",
+      "tests/test_skin_registry_and_cloud_auth.js"
     ],
     "filesDeleted": []
   },

@@ -43,7 +43,8 @@
     const resolvedLife = inPvp ? Math.min(life, 4.5) : life;
     const resolvedDmg = inPvp ? Math.min(dmg, 12) : Math.min(dmg, 18);
     const isCrow = isThanTrungSkin(owner);
-    // Tối đa 2 Âm Binh Hỏa / Quạ trong PvP (3 trong PvE): nếu đầy thì thay con cũ nhất
+    const isNgaQuy = isQuyDaXoaSkin(owner);
+    // Tối đa 2 Âm Binh Hỏa / Quạ / Ngạ Quỷ trong PvP (3 trong PvE): nếu đầy thì thay con cũ nhất
     while (owner._summonedFiends.length >= maxFiends) {
       const oldest = owner._summonedFiends.shift();
       if (oldest) oldest.life = 0;
@@ -58,7 +59,7 @@
       dmg: resolvedDmg,
       attackCd: 0.12,
       slashTimer: 0,
-      summonKind: isCrow ? 'crow' : 'imp',
+      summonKind: isNgaQuy ? 'ngaquy' : (isCrow ? 'crow' : 'imp'),
       seed: Math.random() * 10
     };
     owner._summonedFiends.push(fiend);
@@ -69,7 +70,10 @@
       if (typeof fx.createShockRing === 'function') fx.createShockRing(fiend.x, fiend.y, isCrow ? '#9333ea' : '#dc2626');
       if (typeof fx.createHitSparks === 'function') fx.createHitSparks(fiend.x, fiend.y - 45, 10, true);
       if (typeof fx.addFloatingText === 'function') {
-        fx.addFloatingText(isCrow ? '🦅 TRIỆU HỒI QUẠ THẦN TRÙNG!' : '👹 TRIỆU HỒI HỎA ÂM BINH!', fiend.x, fiend.y - 120, 'crit');
+        fx.addFloatingText(
+          isNgaQuy ? '👹 TRIỆU HỒI NGẠ QUỶ!' : (isCrow ? '🦅 TRIỆU HỒI QUẠ THẦN TRÙNG!' : '👹 TRIỆU HỒI HỎA ÂM BINH!'),
+          fiend.x, fiend.y - 120, 'crit'
+        );
       }
     }
     return fiend;
@@ -198,7 +202,9 @@
             }
           }
           if (fx) {
-            if (typeof fx.createFlameCoinSlash === 'function') {
+            if (f.summonKind === 'ngaquy' && typeof fx.createOniKatanaSmear === 'function') {
+              fx.createOniKatanaSmear(f.x + f.facing * 24, f.y - 44, f.facing, (Math.random() - 0.5) * 0.65, 62, Math.random() > 0.5);
+            } else if (typeof fx.createFlameCoinSlash === 'function') {
               fx.createFlameCoinSlash(
                 f.x + f.facing * 24,
                 f.y - 44,
@@ -212,7 +218,7 @@
               if (typeof fx.createHitSparks === 'function') fx.createHitSparks(tx, ty - 64, 7, true);
               if (typeof fx.addFloatingText === 'function') {
                 fx.addFloatingText(
-                  f.summonKind === 'crow' ? `🦅 QUẠ MỔ (-${dmg})` : `🔥 ÂM BINH TRẢM (-${dmg})`,
+                  f.summonKind === 'ngaquy' ? `🩸 NGẠ QUỶ CÀO (-${dmg})` : (f.summonKind === 'crow' ? `🦅 QUẠ MỔ (-${dmg})` : `🔥 ÂM BINH TRẢM (-${dmg})`),
                   tx,
                   ty - 110,
                   'crit'
@@ -519,16 +525,20 @@
         const isOni = isQuyDaXoaSkin(e);
         const slashOpts = isVoid ? { theme: 'void' } : null;
         if (st === 'dodge' && cross(0.06)) {
-          if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(gx, gy - 50, dir, 0.2, 54, slashOpts);
+          if (isOni && typeof fx.createOniKatanaSmear === 'function') {
+            fx.createOniKatanaSmear(gx, gy - 54, dir, -0.25, 76, false);
+          } else if (typeof fx.createFlameCoinSlash === 'function') {
+            fx.createFlameCoinSlash(gx, gy - 50, dir, 0.2, 54, slashOpts);
+          }
           if (isVoid) {
             if (typeof fx.createThanTrungCursedMoon === 'function') fx.createThanTrungCursedMoon(gx, gy, 76, false);
             if (typeof fx.createThanTrungCrowFlock === 'function') fx.createThanTrungCrowFlock(gx, gy - 55, dir, 0.9);
-          } else if (isOni && typeof fx.createDimensionalSlash === 'function') {
-            fx.createDimensionalSlash(gx + dir * 24, gy - 54, -0.35 * dir, 115, '#ef4444', { coreColor: '#facc15', width: 4.5 });
           }
           fx.createHitSparks(gx, gy - 45, 9, true);
         } else if ((st === 'punch_straight' || st === 'punch_hook' || st === 'elbow_strike') && cross(0.32)) {
-          if (typeof fx.createFlameCoinSlash === 'function') {
+          if (isOni && typeof fx.createOniKatanaSmear === 'function') {
+            fx.createOniKatanaSmear(gx + dir * 42, gy - 66, dir, st === 'punch_hook' ? -0.34 : 0.22, 98, st === 'punch_hook');
+          } else if (typeof fx.createFlameCoinSlash === 'function') {
             fx.createFlameCoinSlash(gx + dir * 48, gy - 68, dir, st === 'punch_hook' ? -0.32 : 0.18, 72, slashOpts);
           }
           if (isVoid) {
@@ -538,8 +548,6 @@
             if (st === 'punch_hook' && typeof fx.createThanTrungCrowFlock === 'function') {
               fx.createThanTrungCrowFlock(gx + dir * 45, gy - 68, dir, 0.92);
             }
-          } else if (isOni && typeof fx.createDimensionalSlash === 'function') {
-            fx.createDimensionalSlash(gx + dir * 64, gy - 68, st === 'punch_hook' ? -0.42 : 0.2, 140, '#ef4444', { coreColor: '#fef08a', width: 5.2 });
           }
         } else if (st === 'uppercut' && cross(0.32)) {
           if (isOni && typeof fx.createOniDemonUppercutHand === 'function') {
@@ -567,7 +575,9 @@
           }
           fx.createHitSparks(gx + dir * 42, gy - 64, 9, true);
         } else if ((st === 'kick_roundhouse' || st === 'wk') && cross(0.36)) {
-          if (typeof fx.createFlameCoinSlash === 'function') {
+          if (isOni && typeof fx.createOniKatanaSmear === 'function') {
+            fx.createOniKatanaSmear(gx + dir * 48, gy - 68, dir, -0.28, 104, false);
+          } else if (typeof fx.createFlameCoinSlash === 'function') {
             fx.createFlameCoinSlash(gx + dir * 52, gy - 72, dir, -0.55, 86, slashOpts);
           }
           if (isVoid) {
@@ -580,7 +590,11 @@
           }
           fx.createHitSparks(gx + dir * 54, gy - 70, 10, true);
         } else if ((st === 'counter_hand_strike' || st === 'counter_leg_strike' || st === 'boss_riposte') && cross(0.30)) {
-          if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(gx + dir * 56, gy - 66, dir, 0, 95, slashOpts);
+          if (isOni && typeof fx.createOniKatanaSmear === 'function') {
+            fx.createOniKatanaSmear(gx + dir * 52, gy - 66, dir, 0.08, 114, st === 'counter_leg_strike');
+          } else if (typeof fx.createFlameCoinSlash === 'function') {
+            fx.createFlameCoinSlash(gx + dir * 56, gy - 66, dir, 0, 95, slashOpts);
+          }
           if (isVoid) {
             if (typeof fx.createDimensionalSlash === 'function') {
               fx.createDimensionalSlash(gx + dir * 62, gy - 66, -0.35, 175, '#9333ea', { darkCore: true, width: 6.8 });
@@ -774,23 +788,23 @@
           }
           if (target) {
             if (isOni) {
-              // Quỷ Dạ Xoa: Chém GHIM nhát kiếm ánh sáng lên thân địch, tích sát thương chờ khoảnh khắc tra kiếm vào bao mới kích nổ!
+              // Quỷ Dạ Xoa: Chém vài nhát Trắng+Đỏ sắc lẹm vào không khí tại chỗ, tích sát thương chờ khoảnh khắc rút/tra kiếm vào bao mới bùng nổ hàng chục vết chém!
               const stepDmg = isPvpOnlineMatch() ? 58 : 74;
+              const dir = player.facing || 1;
+              if (fx && typeof fx.createOniKatanaSmear === 'function') {
+                const airAng = step === 1 ? -0.35 : (step === 2 ? 0.38 : -0.06);
+                fx.createOniKatanaSmear(player.x + dir * 58, (player.y || 580) - 68, dir, airAng, 122, step === 2);
+              }
               target._oniPendingDmg = (target._oniPendingDmg || 0) + stepDmg;
               target.stunTimer = Math.max(target.stunTimer || 0, 0.72);
-              const maxW = window.stageManager ? window.stageManager.stageWidth - 30 : 2570;
-              player.x = Math.max(30, Math.min(maxW, target.x - (player.facing || 1) * 58));
-              player.y = target.y;
               if (fx) {
-                fx.addGhostTrail(player, 'rgba(220, 38, 38, 0.85)');
                 if (typeof fx.createOniPinnedSlash === 'function') {
                   const ang = step === 1 ? -0.48 : (step === 2 ? 0.52 : -0.18);
-                  fx.createOniPinnedSlash(target, player.facing || 1, ang, step);
+                  fx.createOniPinnedSlash(target, dir, ang, step);
                 }
                 if (typeof fx.addFloatingText === 'function' && step === 1) {
-                  fx.addFloatingText('⚔️ GHIM TRẢM!', target.x, (target.y || 580) - 118, 'crit');
+                  fx.addFloatingText('⚔️ KHÔNG TRẢM GHIM HỒN!', target.x, (target.y || 580) - 118, 'crit');
                 }
-                fx.createHitSparks(target.x, (target.y || 580) - 62, 6, true);
               }
             } else {
               if (fx) {
@@ -823,10 +837,11 @@
             if (typeof fx.createThanTrungCrowFlock === 'function') {
               fx.createThanTrungCrowFlock(cx, cy, player.facing || 1, 1.2);
             }
-          } else if (isOni && fx && typeof fx.createDimensionalSlash === 'function') {
-            const cx = player.x + (player.facing || 1) * 95;
-            const cy = (player.y || 580) - 66;
-            fx.createDimensionalSlash(cx, cy, (step % 2 ? 0.45 : -0.45), 230, '#ef4444', { coreColor: '#fef08a', width: 6.5 });
+          } else if (isOni && fx) {
+            const dir = player.facing || 1;
+            if (typeof fx.createOniKatanaSmear === 'function') {
+              fx.createOniKatanaSmear(player.x + dir * 58, (player.y || 580) - 68, dir, step === 2 ? 0.36 : -0.32, 120, step === 2);
+            }
           }
         }
         if (p >= 1) {
@@ -835,7 +850,7 @@
               fx.detonateOniPinnedSlashes();
             }
             if (typeof fx.addFloatingText === 'function') {
-              fx.addFloatingText('💥 ĐOẠN HỒN BỘC PHÁT!', player.x, (player.y || 580) - 135, 'crit');
+              fx.addFloatingText('💥 VẠN TRẢM ĐOẠN HỒN!', player.x, (player.y || 580) - 135, 'crit');
             }
           }
           if (fx) {
@@ -862,19 +877,26 @@
               primary: '#09090b',
               secondary: '#a855f7',
               flash: '#7c3aed'
+            } : (isOni ? {
+              primary: '#dc2626',
+              secondary: '#ffffff',
+              flash: '#ef4444'
             } : {
               primary: '#dc2626',
               secondary: '#facc15',
               flash: '#f97316'
-            });
+            }));
             fx.triggerScreenShake(isOni ? 22 : 18, 0.45);
           }
           for (const e of enemies) {
             if (!e || e.isDead) continue;
             const pending = isOni ? (e._oniPendingDmg || 0) : 0;
             if (e._oniPendingDmg) e._oniPendingDmg = 0;
-            const inRange = Math.hypot(e.x - player.x, (e.y - player.y) * 1.4) <= 280;
+            const inRange = Math.hypot(e.x - player.x, (e.y - player.y) * 1.4) <= (isOni ? 440 : 280);
             if (inRange || pending > 0) {
+              if (isOni && fx && typeof fx.createOniJudgmentBarrage === 'function') {
+                fx.createOniJudgmentBarrage(e.x, (e.y || 580) - 62, 16);
+              }
               const finDmg = inRange ? (isPvpOnlineMatch() ? 82 : 98) : 0;
               hitEnemy(e, pending + finDmg, 16, true);
               igniteTarget(player, e, isPvpOnlineMatch() ? 12 : 14, 3.5);

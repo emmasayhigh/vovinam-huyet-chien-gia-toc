@@ -1,0 +1,33 @@
+{
+  "taskId": "TASK-045",
+  "title": "Upgrade Thiên Khánh Quỷ Dạ Xoa: White-Red Katana Smear, Air-Slash Sheath Barrage Ult, Sprite Demon Hands (W+J/S+K), and Ngạ Quỷ Summons",
+  "allowedFiles": [
+    "arness/reports/latest-test-run.json",
+    "harness/reports/latest-test-run.json",
+    "assets/images/effects/oni_uppercut_fist.png",
+    "ssets/images/effects/oni_uppercut_fist.png",
+    "assets/images/effects/oni_push_palm.png",
+    "ssets/images/effects/oni_push_palm.png",
+    "assets/images/effects/nga_quy_fiend.png",
+    "ssets/images/effects/nga_quy_fiend.png",
+    "index.html",
+    "ndex.html",
+    "js/core/effects.js",
+    "s/core/effects.js",
+    "js/data/skins.js",
+    "s/data/skins.js",
+    "js/entities/characters/thienkhanh.js",
+    "s/entities/characters/thienkhanh.js",
+    "tasks/TASK-045.json",
+    "asks/TASK-045.json",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "ests/test_skin_registry_and_cloud_auth.js"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 120,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "node harness/run-tests.js"
+  ]
+}

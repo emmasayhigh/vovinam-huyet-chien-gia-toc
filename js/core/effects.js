@@ -1010,7 +1010,51 @@ class EffectManager {
       x, y, dir: dir || 1, scale: scale || 1,
       t: 0, life: 0.48, maxLife: 0.48, alpha: 1
     });
+    this.createOniKatanaSmear(x + (dir || 1) * 18, y, dir || 1, 0.36, 108, false);
     this.createHitSparks(x + (dir || 1) * 32, y, 10, true);
+  }
+
+  createOniKatanaSmear(x, y, dir = 1, angle = 0, radius = 96, flip = false) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'oni_katana_smear',
+      x, y, dir: dir || 1, angle: angle || 0,
+      radius: radius || 96, flip: !!flip,
+      t: 0, life: 0.34, maxLife: 0.34, alpha: 1
+    });
+  }
+
+  createOniJudgmentBarrage(x, y, count = 16) {
+    const total = Math.max(10, Math.min(24, count || 16));
+    for (let i = 0; i < total; i++) {
+      const ang = (i / total) * Math.PI * 2 + (Math.random() - 0.5) * 0.55;
+      const ox = (Math.random() - 0.5) * 76;
+      const oy = (Math.random() - 0.5) * 92;
+      const len = 145 + Math.random() * 145;
+      const isWhiteMain = (i % 3 !== 0);
+      const delay = (i % 4) * 0.035;
+      const spawnOne = () => {
+        if (typeof this.createDimensionalSlash === 'function') {
+          this.createDimensionalSlash(
+            x + ox,
+            y + oy,
+            ang,
+            len,
+            isWhiteMain ? '#ef4444' : '#dc2626',
+            { coreColor: '#ffffff', width: isWhiteMain ? 5.8 : 4.2 }
+          );
+        }
+      };
+      if (delay <= 0.001 || typeof this.scheduleEffect !== 'function') {
+        spawnOne();
+      } else {
+        this.scheduleEffect(delay, spawnOne);
+      }
+    }
+    this.createOniKatanaSmear(x, y, 1, -0.32, 118, false);
+    this.createOniKatanaSmear(x, y, -1, 0.38, 112, true);
+    this.createHitSparks(x, y, 18, true);
+    this.createShockRing(x, y + 60, '#ef4444');
   }
 
   createOniPinnedSlash(target, dir = 1, angle = -0.45, step = 1) {
@@ -2299,10 +2343,11 @@ class EffectManager {
             ctx.restore();
           }
         } else if (sf.kind === 'oni_uppercut_hand') {
-            // [W+J] Bàn Tay Quỷ Đỏ-Đen khổng lồ trồi lên từ lòng đất đấm vút lên trời!
+            // [W+J] Bàn Tay Quỷ Đỏ-Đen khổng lồ trồi lên từ lòng đất đấm vút lên trời! (Ưu tiên sprite ảnh tạo)
             const rise = Math.min(1, prog * 2.4);
             const ease = 1 - Math.pow(1 - rise, 3);
             const sc = sf.scale || 1;
+            const fistSprite = this._getEffectSprite('oni_uppercut_fist', 'assets/images/effects/oni_uppercut_fist.png');
             ctx.save();
             ctx.translate(sf.x, sf.y);
             // Hố nứt hắc hỏa dưới nền đất
@@ -2311,49 +2356,56 @@ class EffectManager {
             ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3.2;
             ctx.beginPath(); ctx.ellipse(0, 0, 62 * sc, 21 * sc, 0, 0, Math.PI * 2); ctx.stroke();
 
-            // Cánh tay & nắm đấm Quỷ Dạ Xoa phóng thẳng lên
             const reachY = -168 * ease * sc;
-            ctx.save();
-            ctx.scale(sf.dir * sc, sc);
-            const armGrad = ctx.createLinearGradient(0, 0, 0, reachY);
-            armGrad.addColorStop(0, '#09090b');
-            armGrad.addColorStop(0.42, '#7f1d1d');
-            armGrad.addColorStop(0.85, '#dc2626');
-            armGrad.addColorStop(1, '#fca5a5');
-            ctx.fillStyle = armGrad;
-            ctx.beginPath();
-            ctx.moveTo(-24, 0);
-            ctx.lineTo(-18, reachY + 34);
-            ctx.lineTo(-28, reachY + 12);
-            ctx.lineTo(-16, reachY - 14);
-            ctx.lineTo(18, reachY - 12);
-            ctx.lineTo(28, reachY + 16);
-            ctx.lineTo(18, reachY + 36);
-            ctx.lineTo(24, 0);
-            ctx.closePath();
-            ctx.fill();
-            ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2.0; ctx.stroke();
-
-            // Vòng xích vàng ở cổ tay quỷ + gân máu + khớp nắm đấm sắc nhọn
-            ctx.strokeStyle = '#eab308'; ctx.lineWidth = 4.2;
-            ctx.beginPath(); ctx.moveTo(-18, reachY + 36); ctx.lineTo(18, reachY + 36); ctx.stroke();
-            ctx.fillStyle = '#fef08a';
-            for (let k = -1; k <= 1; k++) {
-              ctx.beginPath(); ctx.moveTo(k * 10 - 3, reachY - 10); ctx.lineTo(k * 10, reachY - 26); ctx.lineTo(k * 10 + 3, reachY - 10); ctx.fill();
+            if (fistSprite) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.rect(-140 * sc, -260 * sc, 280 * sc, 266 * sc);
+              ctx.clip();
+              ctx.scale(sf.dir * sc, sc);
+              const size = 212;
+              const drawY = 38 - ease * 212;
+              ctx.drawImage(fistSprite, -size * 0.5, drawY, size, size);
+              ctx.restore();
+            } else {
+              // Vector fallback (headless Node)
+              ctx.save();
+              ctx.scale(sf.dir * sc, sc);
+              const armGrad = ctx.createLinearGradient(0, 0, 0, reachY);
+              armGrad.addColorStop(0, '#09090b');
+              armGrad.addColorStop(0.42, '#7f1d1d');
+              armGrad.addColorStop(0.85, '#dc2626');
+              armGrad.addColorStop(1, '#fca5a5');
+              ctx.fillStyle = armGrad;
+              ctx.beginPath();
+              ctx.moveTo(-24, 0);
+              ctx.lineTo(-18, reachY + 34);
+              ctx.lineTo(-28, reachY + 12);
+              ctx.lineTo(-16, reachY - 14);
+              ctx.lineTo(18, reachY - 12);
+              ctx.lineTo(28, reachY + 16);
+              ctx.lineTo(18, reachY + 36);
+              ctx.lineTo(24, 0);
+              ctx.closePath();
+              ctx.fill();
+              ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2.0; ctx.stroke();
+              ctx.restore();
             }
-            ctx.restore();
 
-            // Vòng xung kích đấm xuyên không
+            // Vòng xung kích đấm xuyên không Trắng-Đỏ
             ctx.globalCompositeOperation = 'lighter';
             ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)'; ctx.lineWidth = 3.5;
-            ctx.beginPath(); ctx.ellipse(0, reachY + 14, 48 * ease * sc, 13 * ease * sc, 0, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(0, reachY + 14, 52 * ease * sc, 14 * ease * sc, 0, 0, Math.PI * 2); ctx.stroke();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.72)'; ctx.lineWidth = 1.8;
+            ctx.beginPath(); ctx.ellipse(0, reachY + 10, 34 * ease * sc, 9 * ease * sc, 0, 0, Math.PI * 2); ctx.stroke();
             ctx.restore();
           } else if (sf.kind === 'oni_push_hand') {
-            // [S+K] Ấn Hắc Phong bùng nổ & Bàn Tay Quỷ khổng lồ lao đẩy thẳng về trước!
+            // [S+K] Ấn Hắc Phong bùng nổ & Bàn Tay Quỷ khổng lồ lao đẩy thẳng về trước! (Ưu tiên sprite ảnh tạo)
             const surge = Math.min(1, prog * 2.5);
             const ease = 1 - Math.pow(1 - surge, 3);
             const sc = sf.scale || 1;
             const reach = 165 * ease * sc;
+            const palmSprite = this._getEffectSprite('oni_push_palm', 'assets/images/effects/oni_push_palm.png');
             ctx.save();
             ctx.translate(sf.x, sf.y);
             ctx.scale(sf.dir * sc, sc);
@@ -2361,37 +2413,106 @@ class EffectManager {
             // Cổng triệu hồi thẳng đứng sau bàn tay
             ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 3.2;
             ctx.beginPath(); ctx.ellipse(0, 0, 16, 48, 0, 0, Math.PI * 2); ctx.stroke();
-            ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.6;
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4;
             ctx.beginPath(); ctx.ellipse(0, 0, 10, 34, 0, 0, Math.PI * 2); ctx.stroke();
 
-            // Cánh tay Quỷ xòe 5 ngón vuốt nhọn đẩy mạnh tới
-            const pushGrad = ctx.createLinearGradient(0, 0, reach, 0);
-            pushGrad.addColorStop(0, 'rgba(9,9,11,0.15)');
-            pushGrad.addColorStop(0.35, '#7f1d1d');
-            pushGrad.addColorStop(0.85, '#dc2626');
-            pushGrad.addColorStop(1, '#fecaca');
-            ctx.fillStyle = pushGrad;
+            if (palmSprite) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.rect(-6, -120, 260, 240);
+              ctx.clip();
+              const size = 205;
+              const drawX = -size + ease * (size + 14);
+              ctx.drawImage(palmSprite, drawX, -size * 0.5, size, size);
+              ctx.restore();
+            } else {
+              // Vector fallback (headless Node)
+              const pushGrad = ctx.createLinearGradient(0, 0, reach, 0);
+              pushGrad.addColorStop(0, 'rgba(9,9,11,0.15)');
+              pushGrad.addColorStop(0.35, '#7f1d1d');
+              pushGrad.addColorStop(0.85, '#dc2626');
+              pushGrad.addColorStop(1, '#fecaca');
+              ctx.fillStyle = pushGrad;
+              ctx.beginPath();
+              ctx.moveTo(0, -18);
+              ctx.lineTo(reach - 36, -16);
+              ctx.lineTo(reach - 18, -32);
+              ctx.lineTo(reach + 10, -24);
+              ctx.lineTo(reach - 10, -10);
+              ctx.lineTo(reach + 18, -6);
+              ctx.lineTo(reach - 8, 2);
+              ctx.lineTo(reach + 16, 12);
+              ctx.lineTo(reach - 12, 16);
+              ctx.lineTo(reach + 4, 28);
+              ctx.lineTo(reach - 28, 22);
+              ctx.lineTo(0, 18);
+              ctx.closePath();
+              ctx.fill();
+              ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.8; ctx.stroke();
+            }
+
+            // Sóng khí Trắng-Đỏ xé gió trước lòng bàn tay quỷ
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)'; ctx.lineWidth = 3.8;
+            ctx.beginPath(); ctx.ellipse(reach + 8, 0, 15, 42 * ease, 0, -1.2, 1.2); ctx.stroke();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)'; ctx.lineWidth = 2.0;
+            ctx.beginPath(); ctx.ellipse(reach + 12, 0, 11, 30 * ease, 0, -1.1, 1.1); ctx.stroke();
+            ctx.restore();
+          } else if (sf.kind === 'oni_katana_smear') {
+            // Hiệu ứng chém Katana Trắng + Đỏ kiểu anime brush-sweep smear rộng bản!
+            ctx.save();
+            ctx.translate(sf.x, sf.y);
+            ctx.scale(sf.dir, sf.flip ? -1 : 1);
+            ctx.rotate(sf.angle || 0);
+            const r = (sf.radius || 96) * (0.88 + prog * 0.28);
+            const fade = Math.max(0, 1 - prog);
+            const sweepStart = -1.35 + prog * 0.42;
+            const sweepEnd = 1.02;
+
+            // 1. Dải viền Đỏ Huyết rộng bản bên ngoài
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.fillStyle = `rgba(220, 38, 38, ${0.78 * fade})`;
             ctx.beginPath();
-            ctx.moveTo(0, -18);
-            ctx.lineTo(reach - 36, -16);
-            ctx.lineTo(reach - 18, -32);
-            ctx.lineTo(reach + 10, -24);
-            ctx.lineTo(reach - 10, -10);
-            ctx.lineTo(reach + 18, -6);
-            ctx.lineTo(reach - 8, 2);
-            ctx.lineTo(reach + 16, 12);
-            ctx.lineTo(reach - 12, 16);
-            ctx.lineTo(reach + 4, 28);
-            ctx.lineTo(reach - 28, 22);
-            ctx.lineTo(0, 18);
+            ctx.arc(0, 0, r * 1.12, sweepStart, sweepEnd, false);
+            ctx.arc(r * 0.14, r * 0.04, r * 0.64, sweepEnd, sweepStart, true);
             ctx.closePath();
             ctx.fill();
-            ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.8; ctx.stroke();
 
-            // 3 vệt sóng khí xé gió trước lòng bàn tay quỷ
-            ctx.globalCompositeOperation = 'lighter';
-            ctx.strokeStyle = 'rgba(250, 204, 21, 0.85)'; ctx.lineWidth = 3.2;
-            ctx.beginPath(); ctx.ellipse(reach + 6, 0, 14, 38 * ease, 0, -1.2, 1.2); ctx.stroke();
+            // 2. Dải lõi chém Trắng Tuyền sắc nét (smear ribbon kiểu ảnh vẽ)
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.95 * fade})`;
+            ctx.beginPath();
+            ctx.arc(0, 0, r * 1.03, sweepStart + 0.12, sweepEnd, false);
+            ctx.arc(r * 0.12, r * 0.03, r * 0.78, sweepEnd, sweepStart + 0.12, true);
+            ctx.closePath();
+            ctx.fill();
+
+            // 3. Gờ mép ngoài răng cưa tia tốc độ Đỏ + Trắng
+            ctx.strokeStyle = `rgba(239, 68, 68, ${0.92 * fade})`;
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.arc(0, 0, r * 1.14, sweepStart + 0.25, sweepEnd + 0.05);
+            ctx.stroke();
+
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.85 * fade})`;
+            ctx.lineWidth = 2.0;
+            ctx.beginPath();
+            ctx.arc(0, 0, r * 1.05, sweepStart + 0.35, sweepEnd + 0.08);
+            ctx.stroke();
+
+            // Các vệt xước mực đỏ-trắng bay dọc theo đuôi nhát chém
+            for (let k = 0; k < 5; k++) {
+              const a = sweepStart + 0.2 + (k / 5) * (sweepEnd - sweepStart - 0.15);
+              const rIn = r * (0.85 + (k % 2) * 0.14);
+              const rOut = r * (1.16 + (k % 3) * 0.08);
+              ctx.strokeStyle = k % 2 === 0 ? `rgba(255,255,255,${0.8 * fade})` : `rgba(239,68,68,${0.85 * fade})`;
+              ctx.lineWidth = 1.8;
+              ctx.beginPath();
+              ctx.moveTo(Math.cos(a) * rIn, Math.sin(a) * rIn);
+              ctx.lineTo(Math.cos(a - 0.18) * rOut, Math.sin(a - 0.18) * rOut);
+              ctx.stroke();
+            }
+            ctx.restore();
             ctx.restore();
           } else if (sf.kind === 'oni_aerial_slash') {
             // [Space+K] Không Trảm Quỷ Ảnh: Bán nguyệt Katana đỏ-vàng & Bóng Quỷ Dạ Xoa lao xuống!
@@ -3300,6 +3421,37 @@ class EffectManager {
             ctx.fillStyle = '#ef4444';
             ctx.beginPath(); ctx.arc(14, -4, 2.2, 0, Math.PI * 2); ctx.fill();
             ctx.restore();
+          }
+        } else if (f.summonKind === 'ngaquy') {
+          const ngaQuySprite = this._getEffectSprite('nga_quy_fiend', 'assets/images/effects/nga_quy_fiend.png');
+          const lunging = f.slashTimer > 0;
+          if (ngaQuySprite) {
+            const size = 108;
+            ctx.save();
+            ctx.translate(lunging ? 12 : 0, bob + (lunging ? -5 : 0));
+            if (lunging) ctx.rotate(0.18);
+            ctx.drawImage(ngaQuySprite, -size * 0.5, -size + 10, size, size);
+            if (lunging) {
+              ctx.globalCompositeOperation = 'lighter';
+              ctx.strokeStyle = '#ef4444';
+              ctx.lineWidth = 3.6;
+              ctx.beginPath(); ctx.arc(24, -40, 28, -0.82, 0.82); ctx.stroke();
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 2.0;
+              ctx.beginPath(); ctx.arc(26, -40, 23, -0.75, 0.75); ctx.stroke();
+            }
+            ctx.restore();
+          } else {
+            // Vector Ngạ Quỷ fallback (headless Node)
+            ctx.fillStyle = '#1f2937';
+            ctx.beginPath();
+            ctx.moveTo(-10, -2 + bob); ctx.lineTo(-14, -44 + bob); ctx.lineTo(12, -40 + bob); ctx.lineTo(14, 0 + bob);
+            ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.6; ctx.stroke();
+            ctx.fillStyle = '#d6d3d1';
+            ctx.beginPath(); ctx.arc(4, -50 + bob, 9.5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath(); ctx.arc(8, -51 + bob, 2.2, 0, Math.PI * 2); ctx.fill();
           }
         } else {
           const impSprite = this._getEffectSprite('tieuquy_imp', 'assets/images/effects/tieuquy_imp.png');
