@@ -1,0 +1,510 @@
+/* ==========================================================================
+   VOVINAM: HUYẾT CHIẾN GIA TỘC — MOBILE & COMPACT LANDSCAPE RESPONSIVE CSS
+   Chỉ kích hoạt trên thiết bị di động / màn hình nhỏ (Desktop >= 1024x600 giữ nguyên 100%)
+   ========================================================================== */
+
+@media (max-width: 960px), (max-height: 560px) {
+  /* ------------------------------------------------------------------------
+     1. PHÍM CẢM ỨNG ẢO (TOUCH CONTROLS) — Gọn gàng, không che modal/menu
+     ------------------------------------------------------------------------ */
+  .touch-controls {
+    z-index: 28;
+    padding: 8px 14px;
+  }
+
+  .touch-dpad {
+    gap: 4px;
+  }
+
+  .touch-dpad-middle {
+    gap: 4px;
+  }
+
+  .touch-dpad .touch-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .touch-actions {
+    gap: 6px;
+  }
+
+  .touch-action-row {
+    gap: 7px;
+  }
+
+  .touch-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 14px;
+    background: rgba(12, 18, 30, 0.72);
+    opacity: 0.88;
+  }
+
+  .touch-btn .btn-primary-char {
+    font-size: 14px;
+  }
+
+  .touch-btn .touch-label {
+    font-size: 7.5px;
+    letter-spacing: 0.2px;
+  }
+
+  /* ------------------------------------------------------------------------
+     2. CỔNG ĐĂNG NHẬP (LOGIN GATE) — Gọn trong 390px chiều cao ngang, không bị cắt
+     ------------------------------------------------------------------------ */
+  .vov-login-gate {
+    padding: 8px 12px !important;
+    overflow-y: auto !important;
+    align-items: center !important;
+  }
+
+  .vov-gate-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    gap: 14px !important;
+    padding: 4px 6px !important;
+    grid-template-columns: 1fr 1.05fr !important;
+    align-items: center !important;
+  }
+
+  .vov-gate-hero-side {
+    gap: 6px !important;
+  }
+
+  .vov-gate-server-pill {
+    padding: 3px 9px !important;
+    font-size: 9.5px !important;
+  }
+
+  .vov-gate-kicker {
+    font-size: 9.5px !important;
+  }
+
+  .vov-gate-logo {
+    font-size: 22px !important;
+    line-height: 1.05 !important;
+    margin: 2px 0 !important;
+  }
+
+  .vov-gate-logo span {
+    font-size: 14px !important;
+  }
+
+  .vov-gate-tagline {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    margin: 2px 0 !important;
+  }
+
+  .vov-gate-pillars {
+    gap: 5px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .vov-gate-pillar-pill {
+    padding: 3px 8px !important;
+    font-size: 10px !important;
+  }
+
+  .vov-gate-hero-art {
+    display: none !important;
+  }
+
+  .vov-gate-card {
+    padding: 10px 14px !important;
+    gap: 6px !important;
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+  }
+
+  .vov-gate-card-head .shop-header-badge {
+    font-size: 9px !important;
+    padding: 2px 8px !important;
+  }
+
+  .vov-gate-card-head h3 {
+    font-size: 15px !important;
+    margin: 2px 0 0 !important;
+  }
+
+  .vov-gate-tabs {
+    padding: 3px !important;
+  }
+
+  .vov-gate-tab {
+    padding: 5px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .vov-gate-form {
+    gap: 6px !important;
+  }
+
+  .vov-gate-form .online-field span {
+    font-size: 10.5px !important;
+  }
+
+  .vov-gate-input {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+    height: 32px !important;
+  }
+
+  .vov-gate-btn-main {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .vov-gate-mode-link {
+    font-size: 10.5px !important;
+    margin-top: 2px !important;
+  }
+
+  .vov-gate-footer-note {
+    display: none !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     3. MÀN HÌNH CHÍNH (TITLE SCREEN) — Thanh Top 1 dòng, nút gọn không tràn
+     ------------------------------------------------------------------------ */
+  .menu-top-bar {
+    padding: 4px 8px !important;
+    gap: 6px !important;
+    min-height: 36px !important;
+  }
+
+  .top-clan-section {
+    display: none !important;
+  }
+
+  .top-actions-section {
+    width: 100% !important;
+    justify-content: flex-end !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 5px !important;
+    scrollbar-width: none;
+  }
+
+  .top-actions-section::-webkit-scrollbar {
+    display: none;
+  }
+
+  .top-currency-bar {
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .top-currency-pill {
+    padding: 3px 7px !important;
+    font-size: 10.5px !important;
+    white-space: nowrap !important;
+  }
+
+  .top-pill-btn {
+    padding: 4px 8px !important;
+    font-size: 10.5px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    gap: 4px !important;
+  }
+
+  .top-pill-btn .top-pill-icon {
+    font-size: 12px !important;
+  }
+
+  .top-icon-mini {
+    width: 28px !important;
+    height: 28px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .menu-left-column {
+    padding: 48px 12px 6px !important;
+    max-width: 300px !important;
+    width: 42% !important;
+    gap: 4px !important;
+    justify-content: flex-start !important;
+    overflow-y: auto !important;
+    max-height: 100vh !important;
+  }
+
+  .menu-branding {
+    margin-bottom: 0 !important;
+  }
+
+  .vovinam-emblem-logo-img {
+    max-height: 66px !important;
+    width: auto !important;
+  }
+
+  .title-filigree-divider {
+    margin: 1px 0 3px !important;
+    font-size: 8px !important;
+  }
+
+  .menu-nav-list,
+  .menu-modes-stack,
+  .menu-buttons {
+    gap: 4px !important;
+  }
+
+  .menu-btn,
+  .mode-btn-cinematic,
+  .btn-cinematic-mode {
+    padding: 5px 10px !important;
+    min-height: 32px !important;
+  }
+
+  .mode-btn-title,
+  .btn-cinematic-title {
+    font-size: 12px !important;
+  }
+
+  .mode-btn-sub,
+  .btn-cinematic-sub {
+    font-size: 9px !important;
+  }
+
+  .menu-footer-bar,
+  .menu-bottom-bar {
+    padding: 3px 10px !important;
+    font-size: 9.5px !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     4. CHỌN NHÂN VẬT & TRANG PHỤC (CHAR SELECT) — 3 cột vừa khít 844x390
+     ------------------------------------------------------------------------ */
+  .cs-top-bar {
+    padding: 4px 10px !important;
+    min-height: 34px !important;
+  }
+
+  .cs-back-btn {
+    padding: 4px 10px !important;
+    font-size: 10.5px !important;
+  }
+
+  .cs-brand-logo {
+    font-size: 16px !important;
+    letter-spacing: 2px !important;
+  }
+
+  .cs-brand-subtitle {
+    display: none !important;
+  }
+
+  .cs-close-x {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 14px !important;
+  }
+
+  .cs-main-body {
+    grid-template-columns: 205px minmax(175px, 1fr) 235px !important;
+    gap: 8px !important;
+    padding: 4px 10px 8px !important;
+  }
+
+  .cs-col-header {
+    gap: 4px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .cs-lq-tabs {
+    padding: 2px !important;
+    gap: 3px !important;
+  }
+
+  .cs-lq-tab {
+    padding: 4px 3px !important;
+    font-size: 9.5px !important;
+    gap: 3px !important;
+  }
+
+  .cs-lq-tab-badge {
+    font-size: 9px !important;
+    padding: 0 4px !important;
+  }
+
+  .cs-filter-row,
+  .cs-filter-bar {
+    gap: 3px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .cs-filter-btn,
+  .cs-filter-chip {
+    padding: 2px 6px !important;
+    font-size: 9.5px !important;
+  }
+
+  .cs-grid,
+  .cs-skin-grid {
+    gap: 5px !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 145px) !important;
+    padding-right: 2px !important;
+  }
+
+  .cs-left-brand,
+  .cs-left-footer {
+    display: none !important;
+  }
+
+  .cs-center-col {
+    min-width: 0 !important;
+  }
+
+  .cs-skin-banner,
+  .cs-center-pill,
+  .cs-skin-status-pill {
+    font-size: 9.5px !important;
+    padding: 3px 8px !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .cs-hero-stage,
+  .cs-preview-wrap {
+    max-height: calc(100vh - 135px) !important;
+  }
+
+  .cs-preview-actions,
+  .cs-mode-pills {
+    gap: 5px !important;
+  }
+
+  .cs-preview-actions button,
+  .cs-mode-pills button {
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+  }
+
+  .cs-confirm-bar,
+  .cs-bottom-cta {
+    gap: 6px !important;
+  }
+
+  .cs-confirm-btn,
+  #btn-confirm-char {
+    padding: 7px 14px !important;
+    font-size: 11.5px !important;
+    letter-spacing: 1px !important;
+  }
+
+  .cs-nav-arrow {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 13px !important;
+  }
+
+  .cs-right-col {
+    padding: 8px 10px !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 50px) !important;
+    min-width: 0 !important;
+  }
+
+  .cs-char-name,
+  .cs-right-col h2 {
+    font-size: 12.5px !important;
+  }
+
+  .cs-dossier-btn,
+  .cs-right-col .cs-detail-btn {
+    font-size: 8.5px !important;
+    padding: 3px 6px !important;
+    white-space: nowrap !important;
+  }
+
+  .cs-char-title {
+    font-size: 10px !important;
+  }
+
+  .cs-char-bio,
+  .cs-right-col p {
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  .cs-stat-row {
+    font-size: 10.5px !important;
+    gap: 5px !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     5. HUD CHIẾN ĐẤU TRONG TRẬN — Thu gọn tỷ lệ để không đè nhân vật & D-pad
+     ------------------------------------------------------------------------ */
+  .player-hud {
+    transform: scale(0.70);
+    transform-origin: top left;
+    top: 6px !important;
+    left: 8px !important;
+  }
+
+  .hud-top-center,
+  .stage-objective-pill,
+  #objective-banner {
+    transform: scale(0.74);
+    transform-origin: top center;
+    top: 6px !important;
+  }
+
+  .hud-top-right,
+  .hud-actions-bar {
+    transform: scale(0.76);
+    transform-origin: top right;
+    top: 6px !important;
+    right: 8px !important;
+  }
+
+  .boss-hud {
+    transform: scale(0.76);
+    transform-origin: bottom center;
+  }
+
+  .combo-counter {
+    transform: scale(0.74);
+    transform-origin: left center;
+  }
+
+  /* ------------------------------------------------------------------------
+     6. VÕ ĐƯỜNG VOVINAM (TRAINING OVERLAY) — Gọn, cuộn mượt, nằm trên Touch Controls
+     ------------------------------------------------------------------------ */
+  .training-overlay,
+  #training-overlay {
+    z-index: 65 !important;
+  }
+
+  .training-panel,
+  #training-panel {
+    width: 268px !important;
+    max-height: calc(100vh - 14px) !important;
+    overflow-y: auto !important;
+    padding: 8px 10px !important;
+    top: 7px !important;
+    right: 7px !important;
+    font-size: 11px !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     7. CÁC MODAL (SHOP, CÀI ĐẶT, ONLINE, CHIẾN DỊCH, ĐỒNG MINH) — Không bị cắt mép
+     ------------------------------------------------------------------------ */
+  .modal-content,
+  .shop-modal-content,
+  .settings-modal-content,
+  .online-modal-content,
+  .campaign-hub-content,
+  .ally-select-content {
+    max-width: 96vw !important;
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+    padding: 12px 14px !important;
+  }
+}

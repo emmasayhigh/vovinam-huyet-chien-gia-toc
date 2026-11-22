@@ -255,14 +255,21 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   const btnTouchToggle = document.getElementById('btn-touch-toggle');
+  window._touchControlsMode = 'auto';
   if (btnTouchToggle) {
     btnTouchToggle.addEventListener('click', () => {
       unlockAudio();
       const tc = document.getElementById('touch-controls');
       if (tc) {
-        const isHidden = tc.classList.toggle('hidden');
+        const nextOff = (window._touchControlsMode === 'force-on') || (window._touchControlsMode === 'auto' && !tc.classList.contains('hidden'));
+        window._touchControlsMode = nextOff ? 'force-off' : 'force-on';
+        if (typeof window.syncTouchControlsVisibility === 'function') {
+          window.syncTouchControlsVisibility();
+        } else {
+          tc.classList.toggle('hidden', nextOff);
+        }
         if (window.uiManager) {
-          window.uiManager.showToast(isHidden ? 'ĐÃ ẨN PHÍM CẢM ỨNG' : 'ĐÃ BẬT PHÍM CẢM ỨNG (MOBILE)');
+          window.uiManager.showToast(nextOff ? 'ĐÃ ẨN PHÍM CẢM ỨNG' : 'ĐÃ BẬT PHÍM CẢM ỨNG (MOBILE)');
         }
       }
     });
@@ -735,18 +742,49 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 9. Khởi tạo phím ảo cảm ứng (Virtual Touch Controls cho Mobile & Tablet)
+  // 9. Khởi tạo phím ảo cảm ứng (Virtual Touch Controls cho Mobile & Tablet — CHỈ hiện trong trận chiến, tự ẩn ở Login/Menu/Modal)
   const touchContainer = document.getElementById('touch-controls');
   const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  let hasTouchInteraction = isTouchDevice;
 
-  if (isTouchDevice && touchContainer) {
-    touchContainer.classList.remove('hidden');
+  const ACTIVE_COMBAT_STATES = new Set(['PLAYING', 'TRAINING', 'TUTORIAL', 'BOSS_RUSH', 'ONLINE', 'CONFRONTATION']);
+  const BLOCKING_OVERLAY_IDS = [
+    'login-gate-overlay', 'title-screen', 'char-select-screen', 'ally-select-screen',
+    'campaign-hub', 'shop-modal', 'settings-modal', 'pause-modal', 'controls-modal',
+    'online-lobby-modal', 'ranking-modal', 'dossier-modal', 'account-modal',
+    'victory-screen', 'gameover-screen', 'ending-screen'
+  ];
+
+  function syncTouchControlsVisibility() {
+    if (!touchContainer) return;
+    if (window._touchControlsMode === 'force-off') {
+      touchContainer.classList.add('hidden');
+      return;
+    }
+    const gState = window.game && window.game.state;
+    const inCombat = ACTIVE_COMBAT_STATES.has(gState);
+    let hasBlockingOverlay = false;
+    for (let i = 0; i < BLOCKING_OVERLAY_IDS.length; i++) {
+      const el = document.getElementById(BLOCKING_OVERLAY_IDS[i]);
+      if (el && !el.classList.contains('hidden')) {
+        hasBlockingOverlay = true;
+        break;
+      }
+    }
+    const trainingOv = document.querySelector('.training-overlay');
+    if (trainingOv && !trainingOv.classList.contains('hidden') && !trainingOv.classList.contains('collapsed')) {
+      hasBlockingOverlay = true;
+    }
+    const shouldShow = inCombat && !hasBlockingOverlay && (window._touchControlsMode === 'force-on' || hasTouchInteraction);
+    touchContainer.classList.toggle('hidden', !shouldShow);
   }
+  window.syncTouchControlsVisibility = syncTouchControlsVisibility;
+  syncTouchControlsVisibility();
+  setInterval(syncTouchControlsVisibility, 220);
 
   window.addEventListener('touchstart', () => {
-    if (touchContainer && touchContainer.classList.contains('hidden')) {
-      touchContainer.classList.remove('hidden');
-    }
+    hasTouchInteraction = true;
+    syncTouchControlsVisibility();
     unlockAudio();
   }, { passive: true, once: true });
 

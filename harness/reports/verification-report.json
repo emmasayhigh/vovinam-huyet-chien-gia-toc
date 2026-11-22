@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-046",
-  "taskTitle": "Refine Quỷ Dạ Xoa to Calm Dignified Samurai Animations and Enforce Strict Zero-P2W Ultimate Parity",
-  "generatedAt": "2026-11-22T05:23:21.940Z",
+  "taskId": "TASK-047",
+  "taskTitle": "Fix Mobile Responsive Layout Across Login, Main Menu, Character Select, Combat HUD, Võ Đường, Modals & Smart Touch Controls Visibility",
+  "generatedAt": "2026-11-22T05:49:14.609Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 1,
-    "filesModifiedCount": 3,
+    "filesAddedCount": 2,
+    "filesModifiedCount": 6,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,11 +13,15 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-046.json"
+      "css/mobile.css",
+      "tasks/TASK-047.json"
     ],
     "filesModified": [
-      "ndex.html",
-      "js/entities/characters/thienkhanh.js",
+      "arness/reports/latest-test-run.json",
+      "harness/reports/verification-report.json",
+      "harness/reports/verification-report.md",
+      "index.html",
+      "js/core/main.js",
       "tests/test_skin_registry_and_cloud_auth.js"
     ],
     "filesDeleted": []

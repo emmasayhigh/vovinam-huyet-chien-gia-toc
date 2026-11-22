@@ -1,0 +1,25 @@
+{
+  "taskId": "TASK-047",
+  "title": "Fix Mobile Responsive Layout Across Login, Main Menu, Character Select, Combat HUD, Võ Đường, Modals & Smart Touch Controls Visibility",
+  "allowedFiles": [
+    "arness/reports/latest-test-run.json",
+    "harness/reports/latest-test-run.json",
+    "css/mobile.css",
+    "ss/mobile.css",
+    "index.html",
+    "ndex.html",
+    "js/core/main.js",
+    "s/core/main.js",
+    "tasks/TASK-047.json",
+    "asks/TASK-047.json",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "ests/test_skin_registry_and_cloud_auth.js"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 25,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "node harness/run-tests.js"
+  ]
+}

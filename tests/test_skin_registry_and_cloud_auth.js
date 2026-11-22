@@ -381,6 +381,12 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     assert.ok(effectsSrc.includes('createOniKatanaSmear') && effectsSrc.includes('createOniJudgmentBarrage') && effectsSrc.includes('oni_uppercut_fist.png') && effectsSrc.includes('oni_push_palm.png') && effectsSrc.includes('nga_quy_fiend.png'), 'Quỷ Dạ Xoa có hiệu ứng chém Trắng+Đỏ, bão hàng chục vết chém, sprite nắm đấm/bàn tay & Ngạ Quỷ');
     assert.ok(thienKhanhSrc.includes('isQuyDaXoaSkin') && thienKhanhSrc.includes('detonateOniPinnedSlashes') && thienKhanhSrc.includes('createOniJudgmentBarrage') && thienKhanhSrc.includes("'ngaquy'") && !thienKhanhSrc.includes('<= (isOni ? 440 : 280)') && !thienKhanhSrc.includes('_oniPendingDmg'), 'Thiên Khánh Quỷ Dạ Xoa giữ chuẩn 100% Non-P2W (tầm 280 & sát thương y hệt bản gốc), có dáng Samurai điềm tĩnh, Ngạ Quỷ & bão chém Trắng+Đỏ khi tra kiếm');
 
+    // TEST 11: Giao diện Mobile Responsive & Ẩn/Hiện Touch Controls thông minh
+    const indexHtmlSrc = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
+    const mainJsSrc = fs.readFileSync(path.resolve(__dirname, '../js/core/main.js'), 'utf8');
+    assert.ok(indexHtmlSrc.includes('css/mobile.css') && fs.existsSync(path.resolve(__dirname, '../css/mobile.css')), 'index.html nạp stylesheet css/mobile.css dành riêng cho giao diện di động');
+    assert.ok(mainJsSrc.includes('syncTouchControlsVisibility') && mainJsSrc.includes('BLOCKING_OVERLAY_IDS'), 'Touch controls tự động ẩn ở Login/Menu/Modal và chỉ hiện khi vào trận');
+
     // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
     {
       const amRec = new window.AccountManager();
