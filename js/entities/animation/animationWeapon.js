@@ -408,7 +408,7 @@ class SkeletalRendererWeapon extends window.SkeletalRendererRenderBase {
   }
 
   drawWeapon(ctx, hand, foreAbs, st, len, grip = 0, far = false) {
-    this.drawWeaponBody(ctx, hand, foreAbs, st, len, grip);
+    this.drawWeaponBody(ctx, hand, foreAbs, st, len, grip, far);
     this.drawGripFist(ctx, hand, foreAbs, st, far, this.weaponAngle(st, foreAbs) + grip);
   }
 
@@ -445,7 +445,7 @@ class SkeletalRendererWeapon extends window.SkeletalRendererRenderBase {
     }
   }
 
-  drawWeaponBody(ctx, hand0, fore0, st, len, grip = 0) {
+  drawWeaponBody(ctx, hand0, fore0, st, len, grip = 0, far = false) {
     // Trục vũ khí xuyên qua tâm nắm đấm (cùng vị trí nắm đấm được vẽ ở drawGripFist)
     const hand = [hand0[0] + Math.sin(fore0) * 2.8, hand0[1] + Math.cos(fore0) * 2.8];
     const foreAbs = this.weaponAngle(st, fore0) + grip;
