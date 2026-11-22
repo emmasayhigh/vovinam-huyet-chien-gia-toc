@@ -1,0 +1,25 @@
+{
+  "taskId": "TASK-048",
+  "title": "Comprehensive Mobile UI Overhaul: Edge-to-Edge Wrapper, Menu/TopBar Z-Order, CharSelect Non-Overlap, Compact Combat HUD, Modals & Universal Touch Auto-Hide",
+  "allowedFiles": [
+    "arness/reports/latest-test-run.json",
+    "harness/reports/latest-test-run.json",
+    "css/mobile.css",
+    "ss/mobile.css",
+    "index.html",
+    "ndex.html",
+    "js/core/main.js",
+    "s/core/main.js",
+    "tasks/TASK-048.json",
+    "asks/TASK-048.json",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "ests/test_skin_registry_and_cloud_auth.js"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 450,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "node harness/run-tests.js"
+  ]
+}

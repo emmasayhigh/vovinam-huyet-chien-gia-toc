@@ -748,12 +748,6 @@ window.addEventListener('DOMContentLoaded', () => {
   let hasTouchInteraction = isTouchDevice;
 
   const ACTIVE_COMBAT_STATES = new Set(['PLAYING', 'TRAINING', 'TUTORIAL', 'BOSS_RUSH', 'ONLINE', 'CONFRONTATION']);
-  const BLOCKING_OVERLAY_IDS = [
-    'login-gate-overlay', 'title-screen', 'char-select-screen', 'ally-select-screen',
-    'campaign-hub', 'shop-modal', 'settings-modal', 'pause-modal', 'controls-modal',
-    'online-lobby-modal', 'ranking-modal', 'dossier-modal', 'account-modal',
-    'victory-screen', 'gameover-screen', 'ending-screen'
-  ];
 
   function syncTouchControlsVisibility() {
     if (!touchContainer) return;
@@ -763,18 +757,12 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     const gState = window.game && window.game.state;
     const inCombat = ACTIVE_COMBAT_STATES.has(gState);
-    let hasBlockingOverlay = false;
-    for (let i = 0; i < BLOCKING_OVERLAY_IDS.length; i++) {
-      const el = document.getElementById(BLOCKING_OVERLAY_IDS[i]);
-      if (el && !el.classList.contains('hidden')) {
-        hasBlockingOverlay = true;
-        break;
-      }
-    }
+    const loginGateOpen = !!(document.getElementById('login-gate-overlay') && !document.getElementById('login-gate-overlay').classList.contains('hidden'));
+    const titleOpen = !!(document.getElementById('title-screen') && !document.getElementById('title-screen').classList.contains('hidden'));
+    const anyModalOpen = !!document.querySelector('.modal-overlay:not(.hidden)');
     const trainingOv = document.querySelector('.training-overlay');
-    if (trainingOv && !trainingOv.classList.contains('hidden') && !trainingOv.classList.contains('collapsed')) {
-      hasBlockingOverlay = true;
-    }
+    const trainingOpen = !!(trainingOv && !trainingOv.classList.contains('hidden') && !trainingOv.classList.contains('collapsed'));
+    const hasBlockingOverlay = loginGateOpen || titleOpen || anyModalOpen || trainingOpen;
     const shouldShow = inCombat && !hasBlockingOverlay && (window._touchControlsMode === 'force-on' || hasTouchInteraction);
     touchContainer.classList.toggle('hidden', !shouldShow);
   }

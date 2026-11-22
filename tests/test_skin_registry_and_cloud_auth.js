@@ -384,8 +384,10 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     // TEST 11: Giao diện Mobile Responsive & Ẩn/Hiện Touch Controls thông minh
     const indexHtmlSrc = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
     const mainJsSrc = fs.readFileSync(path.resolve(__dirname, '../js/core/main.js'), 'utf8');
+    const mobileCssSrc = fs.readFileSync(path.resolve(__dirname, '../css/mobile.css'), 'utf8');
     assert.ok(indexHtmlSrc.includes('css/mobile.css') && fs.existsSync(path.resolve(__dirname, '../css/mobile.css')), 'index.html nạp stylesheet css/mobile.css dành riêng cho giao diện di động');
-    assert.ok(mainJsSrc.includes('syncTouchControlsVisibility') && mainJsSrc.includes('BLOCKING_OVERLAY_IDS'), 'Touch controls tự động ẩn ở Login/Menu/Modal và chỉ hiện khi vào trận');
+    assert.ok(mainJsSrc.includes('syncTouchControlsVisibility') && mainJsSrc.includes('.modal-overlay:not(.hidden)'), 'Touch controls tự động ẩn ở mọi Modal, Login, Menu, Char Select & Võ Đường');
+    assert.ok(mobileCssSrc.includes('.modal-card') && mobileCssSrc.includes('.cs-view-toggle-btn') && mobileCssSrc.includes('.menu-top-bar') && mobileCssSrc.includes('#game-wrapper'), 'mobile.css tối ưu tràn viền, menu top-bar, chọn tướng, HUD chiến đấu & tất cả modal');
 
     // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
     {

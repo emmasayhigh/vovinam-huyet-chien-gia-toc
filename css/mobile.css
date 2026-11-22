@@ -1,14 +1,25 @@
 /* ==========================================================================
    VOVINAM: HUYẾT CHIẾN GIA TỘC — MOBILE & COMPACT LANDSCAPE RESPONSIVE CSS
-   Chỉ kích hoạt trên thiết bị di động / màn hình nhỏ (Desktop >= 1024x600 giữ nguyên 100%)
+   Chỉ kích hoạt trên màn hình di động / nhỏ (Desktop >= 1024x600 giữ nguyên 100%)
    ========================================================================== */
 
 @media (max-width: 960px), (max-height: 560px) {
   /* ------------------------------------------------------------------------
-     1. PHÍM CẢM ỨNG ẢO (TOUCH CONTROLS) — Gọn gàng, không che modal/menu
+     0. KHUNG CHƠI TRÀN VIỀN MOBILE (Bỏ 2 dải đen thừa 2 bên trên màn 20:9)
+     ------------------------------------------------------------------------ */
+  #game-wrapper {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     1. PHÍM CẢM ỨNG ẢO (TOUCH CONTROLS) — Gọn tay cái, không che sàn đấu
      ------------------------------------------------------------------------ */
   .touch-controls {
-    z-index: 28;
+    z-index: 42;
     padding: 8px 14px;
   }
 
@@ -21,10 +32,10 @@
   }
 
   .touch-dpad .touch-btn {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 10px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .touch-actions {
@@ -36,27 +47,27 @@
   }
 
   .touch-btn {
-    width: 45px;
-    height: 45px;
-    font-size: 14px;
+    width: 44px;
+    height: 44px;
+    font-size: 13px;
     background: rgba(12, 18, 30, 0.72);
     opacity: 0.88;
   }
 
   .touch-btn .btn-primary-char {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .touch-btn .touch-label {
-    font-size: 7.5px;
+    font-size: 7px;
     letter-spacing: 0.2px;
   }
 
   /* ------------------------------------------------------------------------
-     2. CỔNG ĐĂNG NHẬP (LOGIN GATE) — Gọn trong 390px chiều cao ngang, không bị cắt
+     2. CỔNG ĐĂNG NHẬP (LOGIN GATE) — Gọn khít trong màn ngang 360px+
      ------------------------------------------------------------------------ */
   .vov-login-gate {
-    padding: 8px 12px !important;
+    padding: 8px 14px !important;
     overflow-y: auto !important;
     align-items: center !important;
   }
@@ -65,37 +76,37 @@
     max-width: 100% !important;
     width: 100% !important;
     gap: 14px !important;
-    padding: 4px 6px !important;
+    padding: 2px 4px !important;
     grid-template-columns: 1fr 1.05fr !important;
     align-items: center !important;
   }
 
   .vov-gate-hero-side {
-    gap: 6px !important;
+    gap: 5px !important;
   }
 
   .vov-gate-server-pill {
     padding: 3px 9px !important;
-    font-size: 9.5px !important;
+    font-size: 9px !important;
   }
 
   .vov-gate-kicker {
-    font-size: 9.5px !important;
+    font-size: 9px !important;
   }
 
   .vov-gate-logo {
-    font-size: 22px !important;
+    font-size: 21px !important;
     line-height: 1.05 !important;
     margin: 2px 0 !important;
   }
 
   .vov-gate-logo span {
-    font-size: 14px !important;
+    font-size: 13.5px !important;
   }
 
   .vov-gate-tagline {
-    font-size: 11px !important;
-    line-height: 1.35 !important;
+    font-size: 10.5px !important;
+    line-height: 1.32 !important;
     margin: 2px 0 !important;
   }
 
@@ -105,87 +116,83 @@
   }
 
   .vov-gate-pillar-pill {
-    padding: 3px 8px !important;
-    font-size: 10px !important;
-  }
-
-  .vov-gate-hero-art {
-    display: none !important;
-  }
-
-  .vov-gate-card {
-    padding: 10px 14px !important;
-    gap: 6px !important;
-    max-height: 94vh !important;
-    overflow-y: auto !important;
-  }
-
-  .vov-gate-card-head .shop-header-badge {
-    font-size: 9px !important;
     padding: 2px 8px !important;
+    font-size: 9.5px !important;
   }
 
-  .vov-gate-card-head h3 {
-    font-size: 15px !important;
-    margin: 2px 0 0 !important;
-  }
-
-  .vov-gate-tabs {
-    padding: 3px !important;
-  }
-
-  .vov-gate-tab {
-    padding: 5px 8px !important;
-    font-size: 11px !important;
-  }
-
-  .vov-gate-form {
-    gap: 6px !important;
-  }
-
-  .vov-gate-form .online-field span {
-    font-size: 10.5px !important;
-  }
-
-  .vov-gate-input {
-    padding: 6px 10px !important;
-    font-size: 12px !important;
-    height: 32px !important;
-  }
-
-  .vov-gate-btn-main {
-    padding: 8px 12px !important;
-    font-size: 12px !important;
-  }
-
-  .vov-gate-mode-link {
-    font-size: 10.5px !important;
-    margin-top: 2px !important;
-  }
-
+  .vov-gate-hero-art,
   .vov-gate-footer-note {
     display: none !important;
   }
 
-  /* ------------------------------------------------------------------------
-     3. MÀN HÌNH CHÍNH (TITLE SCREEN) — Thanh Top 1 dòng, nút gọn không tràn
-     ------------------------------------------------------------------------ */
-  .menu-top-bar {
-    padding: 4px 8px !important;
-    gap: 6px !important;
-    min-height: 36px !important;
+  .vov-gate-card {
+    padding: 9px 13px !important;
+    gap: 5px !important;
+    max-height: 94dvh !important;
+    overflow-y: auto !important;
   }
 
-  .top-clan-section {
-    display: none !important;
+  .vov-gate-card-head .shop-header-badge {
+    font-size: 8.5px !important;
+    padding: 2px 7px !important;
+  }
+
+  .vov-gate-card-head h3 {
+    font-size: 14px !important;
+    margin: 2px 0 0 !important;
+  }
+
+  .vov-gate-tabs {
+    padding: 2px !important;
+  }
+
+  .vov-gate-tab {
+    padding: 4px 8px !important;
+    font-size: 10.5px !important;
+  }
+
+  .vov-gate-form {
+    gap: 5px !important;
+  }
+
+  .vov-gate-form .online-field span {
+    font-size: 10px !important;
+  }
+
+  .vov-gate-input {
+    padding: 5px 9px !important;
+    font-size: 11.5px !important;
+    height: 30px !important;
+  }
+
+  .vov-gate-btn-main {
+    padding: 7px 12px !important;
+    font-size: 11.5px !important;
+  }
+
+  .vov-gate-mode-link {
+    font-size: 10px !important;
+    margin-top: 1px !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     3. MÀN HÌNH CHÍNH (TITLE SCREEN) — Top Bar trên cùng, Menu không đè/cắt
+     ------------------------------------------------------------------------ */
+  .menu-top-bar {
+    height: 38px !important;
+    padding: 0 10px !important;
+    justify-content: flex-start !important;
+    z-index: 30 !important;
+    background: linear-gradient(180deg, rgba(5, 8, 16, 0.92) 0%, rgba(5, 8, 16, 0.45) 100%) !important;
   }
 
   .top-actions-section {
     width: 100% !important;
-    justify-content: flex-end !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
-    gap: 5px !important;
+    gap: 3.5px !important;
     scrollbar-width: none;
   }
 
@@ -194,317 +201,839 @@
   }
 
   .top-currency-bar {
-    gap: 4px !important;
+    gap: 3px !important;
     flex-shrink: 0 !important;
+    margin-right: auto !important;
   }
 
   .top-currency-pill {
-    padding: 3px 7px !important;
-    font-size: 10.5px !important;
+    padding: 2.5px 6px !important;
+    font-size: 9.5px !important;
     white-space: nowrap !important;
   }
 
   .top-pill-btn {
-    padding: 4px 8px !important;
-    font-size: 10.5px !important;
+    padding: 3px 5.5px !important;
+    font-size: 9.5px !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
-    gap: 4px !important;
+    gap: 2.5px !important;
   }
 
-  .top-pill-btn .top-pill-icon {
-    font-size: 12px !important;
+  .top-utility-icons {
+    display: flex !important;
+    gap: 3px !important;
+    flex-shrink: 0 !important;
   }
 
   .top-icon-mini {
-    width: 28px !important;
-    height: 28px !important;
+    width: 24px !important;
+    height: 24px !important;
     flex-shrink: 0 !important;
   }
 
   .menu-left-column {
-    padding: 48px 12px 6px !important;
-    max-width: 300px !important;
-    width: 42% !important;
-    gap: 4px !important;
-    justify-content: flex-start !important;
+    left: 14px !important;
+    top: 42px !important;
+    bottom: 34px !important;
+    width: 248px !important;
+    max-width: 44vw !important;
+    max-height: calc(100dvh - 76px) !important;
     overflow-y: auto !important;
-    max-height: 100vh !important;
+    justify-content: flex-start !important;
+    gap: 4px !important;
+    z-index: 20 !important;
+    padding-right: 4px !important;
   }
 
   .menu-branding {
     margin-bottom: 0 !important;
   }
 
+  .main-title-cinematic {
+    margin: 0 !important;
+  }
+
   .vovinam-emblem-logo-img {
-    max-height: 66px !important;
+    max-height: 36px !important;
     width: auto !important;
+    object-position: center !important;
   }
 
   .title-filigree-divider {
-    margin: 1px 0 3px !important;
+    margin: 0 0 2px !important;
+    gap: 4px !important;
+  }
+
+  .filigree-text {
+    font-size: 7.5px !important;
+    letter-spacing: 0.6px !important;
+  }
+
+  .cinematic-nav-list {
+    gap: 3px !important;
+    margin: 1px 0 !important;
+  }
+
+  .nav-brush-btn {
+    padding: 3.5px 9px !important;
+    gap: 7px !important;
+    min-height: 27px !important;
+    border-radius: 6px !important;
+  }
+
+  .btn-brush-icon {
+    font-size: 13px !important;
+    width: 16px !important;
+  }
+
+  .btn-brush-main {
+    font-size: 11px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .btn-brush-sub {
     font-size: 8px !important;
   }
 
-  .menu-nav-list,
-  .menu-modes-stack,
-  .menu-buttons {
-    gap: 4px !important;
+  .menu-bottom-player-bar {
+    left: 14px !important;
+    bottom: 4px !important;
+    height: 26px !important;
+    gap: 6px !important;
   }
 
-  .menu-btn,
-  .mode-btn-cinematic,
-  .btn-cinematic-mode {
-    padding: 5px 10px !important;
-    min-height: 32px !important;
+  .player-clan-avatar {
+    width: 24px !important;
+    height: 24px !important;
   }
 
-  .mode-btn-title,
-  .btn-cinematic-title {
-    font-size: 12px !important;
+  .player-clan-name {
+    font-size: 10px !important;
   }
 
-  .mode-btn-sub,
-  .btn-cinematic-sub {
+  .player-clan-level {
     font-size: 9px !important;
   }
 
-  .menu-footer-bar,
-  .menu-bottom-bar {
-    padding: 3px 10px !important;
+  .menu-cinematic-watermark {
+    right: 12px !important;
+    bottom: 6px !important;
+    max-width: 50vw !important;
+    text-align: right !important;
+  }
+
+  .watermark-quote {
     font-size: 9.5px !important;
+    letter-spacing: 0.3px !important;
+  }
+
+  .watermark-sub {
+    font-size: 8px !important;
+    letter-spacing: 1px !important;
+    margin-top: 1px !important;
   }
 
   /* ------------------------------------------------------------------------
-     4. CHỌN NHÂN VẬT & TRANG PHỤC (CHAR SELECT) — 3 cột vừa khít 844x390
+     4. CHỌN NHÂN VẬT & ĐỒNG MINH (#char-select-modal, #ally-select-modal)
      ------------------------------------------------------------------------ */
   .cs-top-bar {
-    padding: 4px 10px !important;
-    min-height: 34px !important;
+    padding: 3px 10px !important;
+    min-height: 32px !important;
+    height: 32px !important;
   }
 
   .cs-back-btn {
-    padding: 4px 10px !important;
-    font-size: 10.5px !important;
+    padding: 3px 9px !important;
+    font-size: 10px !important;
+    gap: 4px !important;
   }
 
   .cs-brand-logo {
-    font-size: 16px !important;
+    font-size: 14px !important;
     letter-spacing: 2px !important;
   }
 
-  .cs-brand-subtitle {
-    display: none !important;
-  }
-
-  .cs-close-x {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 14px !important;
-  }
-
-  .cs-main-body {
-    grid-template-columns: 205px minmax(175px, 1fr) 235px !important;
-    gap: 8px !important;
-    padding: 4px 10px 8px !important;
-  }
-
-  .cs-col-header {
-    gap: 4px !important;
-    margin-bottom: 4px !important;
-  }
-
-  .cs-lq-tabs {
-    padding: 2px !important;
-    gap: 3px !important;
-  }
-
-  .cs-lq-tab {
-    padding: 4px 3px !important;
-    font-size: 9.5px !important;
-    gap: 3px !important;
-  }
-
-  .cs-lq-tab-badge {
-    font-size: 9px !important;
-    padding: 0 4px !important;
-  }
-
-  .cs-filter-row,
-  .cs-filter-bar {
-    gap: 3px !important;
-    flex-wrap: wrap !important;
-  }
-
-  .cs-filter-btn,
-  .cs-filter-chip {
-    padding: 2px 6px !important;
-    font-size: 9.5px !important;
-  }
-
-  .cs-grid,
-  .cs-skin-grid {
-    gap: 5px !important;
-    overflow-y: auto !important;
-    max-height: calc(100vh - 145px) !important;
-    padding-right: 2px !important;
-  }
-
-  .cs-left-brand,
+  .cs-brand-subtitle,
+  .cs-top-motto,
   .cs-left-footer {
     display: none !important;
   }
 
-  .cs-center-col {
-    min-width: 0 !important;
+  .cs-main-body {
+    grid-template-columns: 185px minmax(200px, 1fr) 235px !important;
+    gap: 8px !important;
+    padding: 4px 10px 6px !important;
   }
 
-  .cs-skin-banner,
-  .cs-center-pill,
-  .cs-skin-status-pill {
-    font-size: 9.5px !important;
-    padding: 3px 8px !important;
+  .cs-left-col {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .cs-col-header {
+    gap: 3px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .cs-lq-tabs,
+  #training-mode-modal #t-lq-tabs.cs-lq-tabs {
+    padding: 2px !important;
+    gap: 2px !important;
     max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  #training-mode-modal #t-lq-tabs.cs-lq-tabs {
+    grid-template-columns: auto 1.15fr 1fr !important;
+  }
+
+  .cs-lq-tab,
+  #training-mode-modal #t-lq-tabs .cs-lq-tab {
+    padding: 3.5px 2px !important;
+    font-size: 7.5px !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .cs-lq-tab-ico {
+    display: none !important;
+  }
+
+  .cs-lq-tab-badge,
+  #training-mode-modal #t-lq-tabs .cs-lq-tab-badge {
+    font-size: 7px !important;
+    padding: 0 3px !important;
+  }
+
+  .cs-col-title {
+    font-size: 9.5px !important;
+  }
+
+  #char-select-modal .cs-grid,
+  #char-select-modal .cs-skin-grid,
+  .cs-grid,
+  .cs-skin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: none !important;
+    grid-auto-rows: max-content !important;
+    align-content: start !important;
+    gap: 5px !important;
+    overflow-y: auto !important;
+    max-height: calc(100dvh - 125px) !important;
+  }
+
+  #char-select-modal .cs-card {
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: 3 / 3.85 !important;
+  }
+
+  .cs-center-col {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .cs-hero-stage {
+    overflow: hidden !important;
+  }
+
+  .cs-skin-stage-banner {
+    top: 2px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    padding: 2px 7px !important;
+    gap: 4px !important;
+    max-width: 92% !important;
+    overflow: hidden !important;
+  }
+
+  .cs-skin-tier-tag {
+    font-size: 7.5px !important;
+    padding: 1px 4px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .cs-skin-stage-name {
+    font-size: 9px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
   }
 
-  .cs-hero-stage,
-  .cs-preview-wrap {
-    max-height: calc(100vh - 135px) !important;
+  .cs-hero-img,
+  .cs-hero-skin-canvas {
+    max-height: 80% !important;
   }
 
-  .cs-preview-actions,
-  .cs-mode-pills {
-    gap: 5px !important;
+  .cs-view-toggle-btn {
+    bottom: 4px !important;
+    left: 4px !important;
+    padding: 3px 7px !important;
+    font-size: 9px !important;
+    letter-spacing: 0.2px !important;
   }
 
-  .cs-preview-actions button,
-  .cs-mode-pills button {
-    padding: 4px 8px !important;
-    font-size: 10px !important;
+  .cs-demo-move-btn {
+    bottom: 4px !important;
+    right: 4px !important;
+    padding: 3px 7px !important;
+    font-size: 9px !important;
+    letter-spacing: 0.2px !important;
   }
 
-  .cs-confirm-bar,
-  .cs-bottom-cta {
-    gap: 6px !important;
+  .cs-bottom-actions {
+    gap: 8px !important;
+    padding-top: 3px !important;
   }
 
-  .cs-confirm-btn,
-  #btn-confirm-char {
-    padding: 7px 14px !important;
-    font-size: 11.5px !important;
-    letter-spacing: 1px !important;
-  }
-
-  .cs-nav-arrow {
+  .cs-arrow-btn {
     width: 30px !important;
     height: 30px !important;
+    font-size: 16px !important;
+  }
+
+  .cs-confirm-brush-btn {
+    min-width: 130px !important;
+    height: 34px !important;
     font-size: 13px !important;
+    letter-spacing: 2px !important;
   }
 
   .cs-right-col {
-    padding: 8px 10px !important;
-    overflow-y: auto !important;
-    max-height: calc(100vh - 50px) !important;
     min-width: 0 !important;
   }
 
-  .cs-char-name,
-  .cs-right-col h2 {
+  .cs-dossier-card {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+  }
+
+  .cs-name-header-row,
+  #char-select-modal .cs-name-header-row {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  .cs-hero-name,
+  #char-select-modal .cs-hero-name {
     font-size: 12.5px !important;
+    white-space: normal !important;
+    line-height: 1.15 !important;
   }
 
-  .cs-dossier-btn,
-  .cs-right-col .cs-detail-btn {
+  .cs-hero-subname {
+    font-size: 9px !important;
+    letter-spacing: 0.8px !important;
+  }
+
+  .cs-open-dossier-btn,
+  #btn-cs-open-dossier.cs-open-dossier-btn {
     font-size: 8.5px !important;
-    padding: 3px 6px !important;
-    white-space: nowrap !important;
+    padding: 2px 6px !important;
   }
 
-  .cs-char-title {
+  .cs-dossier-card p,
+  .cs-hero-bio {
     font-size: 10px !important;
-  }
-
-  .cs-char-bio,
-  .cs-right-col p {
-    font-size: 10.5px !important;
-    line-height: 1.35 !important;
+    line-height: 1.32 !important;
   }
 
   .cs-stat-row {
-    font-size: 10.5px !important;
+    font-size: 10px !important;
+  }
+
+  /* Màn hình Chọn Võ Sĩ Võ Đường (#training-mode-modal) */
+  .t-char-badge-full {
+    padding: 2px 7px !important;
+    font-size: 8.5px !important;
+    white-space: nowrap !important;
+  }
+
+  #training-mode-modal .training-cs-main-body {
+    grid-template-columns: 196px minmax(220px, 1fr) 216px !important;
+    gap: 7px !important;
+    padding: 4px 10px 6px !important;
+  }
+
+  #training-mode-modal .training-left-col {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #training-mode-modal .t-roster-filters {
+    gap: 3px !important;
+    margin-bottom: 4px !important;
+  }
+
+  #training-mode-modal .t-filter-pills-row {
+    gap: 3px !important;
+  }
+
+  #training-mode-modal .t-filter-pill {
+    padding: 2px 6px !important;
+    font-size: 8px !important;
+  }
+
+  #training-mode-modal .t-roster-search {
+    padding: 3px 7px !important;
+    font-size: 9.5px !important;
+    height: 24px !important;
+  }
+
+  #training-mode-modal #training-char-grid.cs-grid,
+  #training-mode-modal #training-support-grid.cs-grid,
+  #training-mode-modal .training-skin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    max-height: calc(100dvh - 135px) !important;
+  }
+
+  #training-mode-modal .training-center-col {
+    min-width: 0 !important;
+    gap: 4px !important;
+    padding-bottom: 4px !important;
+  }
+
+  #training-mode-modal .cs-support-companion-card {
+    max-width: 136px !important;
+    top: 26px !important;
+    left: 4px !important;
+    padding: 3px 5px !important;
+    gap: 4px !important;
+  }
+
+  #training-mode-modal .cs-support-comp-avatar-wrap {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  #training-mode-modal .cs-support-comp-tag {
+    font-size: 6.5px !important;
+  }
+
+  #training-mode-modal #t-support-companion-name {
+    font-size: 8px !important;
+  }
+
+  #training-mode-modal .cs-support-comp-role,
+  #training-mode-modal .cs-support-comp-skill {
+    display: none !important;
+  }
+
+  #training-mode-modal .t-loadout-summary-bar {
+    padding: 3px 6px !important;
+    gap: 4px !important;
+    font-size: 8px !important;
+    overflow: hidden !important;
+  }
+
+  #training-mode-modal .t-loadout-summary-bar .lbl,
+  #training-mode-modal .t-loadout-summary-bar .cs-loadout-status {
+    display: none !important;
+  }
+
+  #training-mode-modal .training-hero-actions-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  #training-mode-modal .t-mode-action-row {
     gap: 5px !important;
   }
 
+  #training-mode-modal .btn-training-mode-action {
+    padding: 5px 6px !important;
+    gap: 4px !important;
+  }
+
+  #training-mode-modal .t-btn-icon {
+    font-size: 13px !important;
+  }
+
+  #training-mode-modal .t-btn-main {
+    font-size: 9px !important;
+    letter-spacing: 0.2px !important;
+  }
+
+  #training-mode-modal .t-btn-sub {
+    display: none !important;
+  }
+
+  #training-mode-modal .t-btn-arrow {
+    font-size: 11px !important;
+  }
+
+  #training-mode-modal .t-drill-dropdown-wrap {
+    padding: 2px 5px !important;
+    gap: 4px !important;
+  }
+
+  #training-mode-modal .t-drill-dropdown-wrap label {
+    font-size: 8px !important;
+  }
+
+  #training-mode-modal .t-drill-dropdown-wrap .training-select {
+    font-size: 8.5px !important;
+  }
+
+  #training-mode-modal .training-right-col {
+    min-width: 0 !important;
+  }
+
   /* ------------------------------------------------------------------------
-     5. HUD CHIẾN ĐẤU TRONG TRẬN — Thu gọn tỷ lệ để không đè nhân vật & D-pad
+     5. HUD CHIẾN ĐẤU TRONG TRẬN — Kích thước thực gọn gàng (không scale lệch)
      ------------------------------------------------------------------------ */
+  .hud-container {
+    padding: 6px 8px !important;
+  }
+
   .player-hud {
-    transform: scale(0.70);
-    transform-origin: top left;
-    top: 6px !important;
-    left: 8px !important;
+    gap: 7px !important;
+    transform: none !important;
+    align-self: flex-start !important;
+    width: fit-content !important;
+    max-width: 245px !important;
   }
 
-  .hud-top-center,
-  .stage-objective-pill,
-  #objective-banner {
-    transform: scale(0.74);
-    transform-origin: top center;
+  .mission-objective {
+    position: fixed !important;
     top: 6px !important;
+    left: 254px !important;
+    right: 142px !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 3px 8px !important;
+    font-size: 8.5px !important;
+    gap: 4px !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
   }
 
-  .hud-top-right,
-  .hud-actions-bar {
-    transform: scale(0.76);
-    transform-origin: top right;
+  .mission-objective .objective-label,
+  .mission-objective .objective-content {
+    font-size: 8.5px !important;
+  }
+
+  .avatar-frame {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .bars-container {
+    width: 192px !important;
+    max-width: 192px !important;
+    gap: 2px !important;
+  }
+
+  .character-name-tag .name {
+    font-size: 11px !important;
+  }
+
+  .character-name-tag .title {
+    font-size: 8px !important;
+  }
+
+  .hp-shell {
+    height: 13px !important;
+  }
+
+  .energy-shell {
+    height: 10px !important;
+  }
+
+  .flow-shell,
+  .boss-poise-shell {
+    height: 9px !important;
+  }
+
+  .bar-text {
+    font-size: 8px !important;
+  }
+
+  .hud-passive-widget {
+    padding: 2px 5px !important;
+    gap: 5px !important;
+    margin-top: 1px !important;
+  }
+
+  .hud-passive-orb {
+    width: 19px !important;
+    height: 19px !important;
+    font-size: 10px !important;
+  }
+
+  .hud-passive-name {
+    font-size: 8px !important;
+  }
+
+  .hud-passive-state {
+    font-size: 7.5px !important;
+  }
+
+  .hud-passive-pips,
+  .passive-pip {
+    height: 3.5px !important;
+  }
+
+  .ultimate-badge,
+  .ally-badge {
+    font-size: 8.5px !important;
+    padding: 1.5px 6px !important;
+    margin-top: 1px !important;
+  }
+
+  .skill-cooldowns-container {
+    gap: 2px 3px !important;
+    margin-top: 1px !important;
+  }
+
+  .skill-badge {
+    padding: 1.5px 4px !important;
+    font-size: 7.5px !important;
+  }
+
+  .skill-badge .skill-key,
+  .skill-badge .skill-name,
+  .skill-badge .skill-cd-val {
+    font-size: 7.5px !important;
+  }
+
+  .top-controls {
     top: 6px !important;
     right: 8px !important;
+    gap: 4px !important;
+  }
+
+  .top-controls .icon-btn {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 12px !important;
   }
 
   .boss-hud {
     transform: scale(0.76);
-    transform-origin: bottom center;
+    transform-origin: top right;
   }
 
-  .combo-counter {
-    transform: scale(0.74);
+  .combo-tracker {
+    transform: scale(0.75);
     transform-origin: left center;
   }
 
   /* ------------------------------------------------------------------------
-     6. VÕ ĐƯỜNG VOVINAM (TRAINING OVERLAY) — Gọn, cuộn mượt, nằm trên Touch Controls
+     6. VÕ ĐƯỜNG VOVINAM (.training-overlay) — Gọn phải màn, cuộn mượt
      ------------------------------------------------------------------------ */
-  .training-overlay,
-  #training-overlay {
-    z-index: 65 !important;
+  .training-overlay {
+    width: 285px !important;
+    max-width: calc(100vw - 14px) !important;
+    max-height: calc(100dvh - 12px) !important;
+    top: 6px !important;
+    bottom: 6px !important;
+    right: 6px !important;
+    overflow-y: auto !important;
+    z-index: 220 !important;
   }
 
-  .training-panel,
-  #training-panel {
-    width: 268px !important;
-    max-height: calc(100vh - 14px) !important;
-    overflow-y: auto !important;
-    padding: 8px 10px !important;
-    top: 7px !important;
-    right: 7px !important;
+  .training-overlay.collapsed {
+    top: 40px !important;
+    bottom: auto !important;
+    right: 8px !important;
+    left: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    z-index: 25 !important;
+  }
+
+  .training-overlay.collapsed .btn-training-expand-pill {
+    padding: 4px 9px !important;
+    gap: 5px !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+  }
+
+  .training-overlay.collapsed .pill-icon,
+  .training-overlay.collapsed .pill-chevron {
     font-size: 11px !important;
   }
 
+  .training-overlay.collapsed .pill-title {
+    font-size: 9.5px !important;
+    white-space: nowrap !important;
+  }
+
+  .training-overlay.collapsed .pill-subtitle {
+    display: none !important;
+  }
+
   /* ------------------------------------------------------------------------
-     7. CÁC MODAL (SHOP, CÀI ĐẶT, ONLINE, CHIẾN DỊCH, ĐỒNG MINH) — Không bị cắt mép
+     7. TẤT CẢ MODAL (.modal-card) — Shop, Cài Đặt, Online, Chiến Dịch, Hồ Sơ...
      ------------------------------------------------------------------------ */
-  .modal-content,
-  .shop-modal-content,
-  .settings-modal-content,
-  .online-modal-content,
-  .campaign-hub-content,
-  .ally-select-content {
+  .modal-overlay {
+    padding: 6px !important;
+  }
+
+  .modal-card {
     max-width: 96vw !important;
-    max-height: 94vh !important;
+    max-height: 94dvh !important;
     overflow-y: auto !important;
-    padding: 12px 14px !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+  }
+
+  .modal-card .modal-title {
+    font-size: 15px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .modal-close-icon {
+    top: 8px !important;
+    right: 8px !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 15px !important;
+  }
+
+  /* Cửa hàng */
+  .shop-modal-header {
+    gap: 8px !important;
+    margin-bottom: 6px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .shop-header-badge {
+    font-size: 8.5px !important;
+    padding: 2px 6px !important;
+  }
+
+  .shop-modal-subtitle {
+    font-size: 10.5px !important;
+    margin: 2px 0 0 !important;
+  }
+
+  .shop-wallet-pill {
+    padding: 4px 8px !important;
+  }
+
+  .shop-tab-btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+
+  .shop-items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* Cài đặt */
+  .ui-studio-settings {
+    padding: 10px 14px !important;
+  }
+
+  .studio-modal-header {
+    padding-bottom: 6px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .settings-studio-grid {
+    gap: 8px !important;
+    overflow-y: auto !important;
+  }
+
+  .settings-section-card {
+    padding: 8px 10px !important;
+  }
+
+  .studio-modal-footer {
+    padding-top: 6px !important;
+    margin-top: 6px !important;
+  }
+
+  /* Chiến dịch 4 poster */
+  .campaign-modal-card {
+    padding: 10px 14px !important;
+  }
+
+  .campaign-header {
+    margin-bottom: 6px !important;
+  }
+
+  .vov-posters-row {
+    gap: 8px !important;
+  }
+
+  .vov-poster-frame {
+    height: 112px !important;
+  }
+
+  .vov-poster-divider {
+    margin: 2px 0 !important;
+  }
+
+  .vov-poster-plate {
+    padding: 4px 6px !important;
+  }
+
+  .vov-plate-title {
+    font-size: 10.5px !important;
+  }
+
+  .vov-plate-sub {
+    font-size: 8px !important;
+  }
+
+  .vov-plate-btn {
+    padding: 4px 7px !important;
+    font-size: 9.5px !important;
+  }
+
+  /* Lôi Đài Online */
+  .online-modal-header {
+    margin-bottom: 6px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .aov-lobby-grid,
+  .online-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .online-subnav-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+    padding: 3px !important;
+  }
+
+  .online-subnav-tab {
+    padding: 4px 5px !important;
+    font-size: 9.5px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+
+  .online-join-row {
+    gap: 5px !important;
+  }
+
+  .online-join-row .online-input {
+    min-width: 85px !important;
+    padding: 5px 6px !important;
+    font-size: 10px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .online-join-row .btn {
+    padding: 5px 8px !important;
+    font-size: 10px !important;
+    white-space: nowrap !important;
   }
 }

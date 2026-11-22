@@ -1,7 +1,7 @@
 {
   "pass": true,
-  "timestamp": "2026-11-22T05:49:12.497Z",
-  "totalDuration": "3.80s",
+  "timestamp": "2026-11-22T06:10:06.356Z",
+  "totalDuration": "3.85s",
   "totalSuites": 28,
   "passedSuites": 28,
   "failedSuites": 0,
@@ -55,7 +55,7 @@
       "file": "test_char_select_passives_and_ally_title.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.04s",
+      "duration": "0.05s",
       "exitCode": 0,
       "stdout": "✓ index.html contains all passives subtab and toggle elements\n✓ All playable characters have 4 valid passives and W+U skill description\n✓ Auto card banner uses ally-auto-title without dock ellipsis overlap\n✓ ally-select.css has ally-auto-title rules\n\nAll tests passed in test_char_select_passives_and_ally_title.js!\n",
       "stderr": ""
@@ -64,7 +64,7 @@
       "file": "test_character_visual_fidelity.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.15s",
+      "duration": "0.16s",
       "exitCode": 0,
       "stdout": "che cằm ở tư thế idle\n✅ PASSED: dunghai: mặt & mắt luôn thông thoáng trên mọi tư thế cốt lõi (0 lỗi)\n✅ PASSED: dunghai: có pose elbow_strike riêng biệt\n✅ PASSED: dunghai: elbow_strike có hình thế cẳng tay/vũ khí khác biệt rõ rệt với punch_straight (Δhand=26.1, Δdir=29.0)\n✅ PASSED: dunghai: có bảng màu Hit-Spark riêng biệt (#f43f5e)\n✅ PASSED: giangmanh: cổ áo/khăn cổ nằm dưới cằm (-97.8 >= -99.1)\n✅ PASSED: giangmanh: khớp vai gần không nâng che cằm ở tư thế idle\n✅ PASSED: giangmanh: mặt & mắt luôn thông thoáng trên mọi tư thế cốt lõi (0 lỗi)\n✅ PASSED: giangmanh: có pose elbow_strike riêng biệt\n✅ PASSED: giangmanh: elbow_strike có hình thế cẳng tay/vũ khí khác biệt rõ rệt với punch_straight (Δhand=28.5, Δdir=30.7)\n✅ PASSED: giangmanh: có bảng màu Hit-Spark riêng biệt (#7dd3fc)\n✅ PASSED: dunghai.uppercut cân bằng tay trước-sau bất đối xứng rõ ràng\n✅ PASSED: Tất cả 9 nhân vật vượt qua kiểm thử tạo hình, khung xương, silhouette & render\n\n🎉 TỔNG KẾT TEST VISUAL FIDELITY: 160 checks PASSED!\n",
       "stderr": ""
@@ -127,7 +127,7 @@
       "file": "test_online_multiplayer.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.53s",
+      "duration": "0.54s",
       "exitCode": 0,
       "stdout": "Screen passed\n✓ TEST 6: Commercial Multiplayer Features (Private Room, Ready Gating, Invites & Quick Match States) passed\n✓ TEST 7: Anti-Lag Optimization (Instant State Flush, Optimistic HP Lock & Co-op Interpolation) passed\n✓ TEST 8: Rematch Lifecycle, Leave Match Room Cleanup, Co-op Stage End & Intro Damage Guard passed\n✓ TEST 9: PvP Nộ (Energy) Gain Boost & RemotePlayer HUD Isolation passed\n✓ TEST 10: Giang Mạnh PvP Freeze Balance & Stunlock Immunity passed\n✓ TEST 11: PvP & Co-op HP Sync Integrity passed\n✓ TEST 12: Production Cloud Default Server URL Resolution passed\n✓ TEST 13: Thien Khanh PvP Balance, Fiends Chase Sync, High-Ping ACK & Co-op Wave Stability passed\n✓ TEST 14: Groups A-E Overhaul (Connection Recovery, PvP Hit ACK, Co-op Sync/Rewards, Lobby UX & Security) passed\n✓ TEST 15: TASK-025, TASK-030, TASK-031, TASK-032 & TASK-033 passed\n\n================================================\nALL ONLINE MULTIPLAYER TESTS PASSED 100%!\n================================================\n",
       "stderr": "cks (node:internal/process/task_queues:65:5)\n    at process.processTimers (node:internal/timers:520:9)\nWeb Audio API not supported on this browser: TypeError: AudioContext is not a constructor\n    at SoundEngine.init (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\audio.js:199:18)\n    at SoundEngine.startStageBGM (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\audio.js:1135:33)\n    at Game.startStage (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\gameBase.js:320:50)\n    at OnlineManager._startStageClean (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\game.js:2405:9)\n    at OnlineManager.startPvPMatch (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\game.js:2540:10)\n    at OnlineManager.handleServerMessage (C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\js\\core\\game.js:2046:16)\n    at C:\\Users\\ASUS\\Desktop\\edunext\\cucuvababa\\tests\\test_online_multiplayer.js:1663:26\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processTimers (node:internal/timers:520:9)\n"
@@ -163,7 +163,7 @@
       "file": "test_stage7_victory_flow.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.03s",
+      "duration": "0.04s",
       "exitCode": 0,
       "stdout": "=== BẮT ĐẦU TEST TOÀN DIỆN MÀN 7 & HỘI THOẠI ===\n\n✓ TEST 1: Nhánh A (Tin Dung Hải) chuyển thẳng sang STAGE_CLEAR và mở khóa Dung Hải thành công\n✓ TEST 2: Nhánh C (Đối chất bằng chứng) hoàn thành Màn 7 thành công\n✓ TEST 3: Nhánh B (Khống chế Dung Hải) mở khóa và chiến thắng Màn 7\n✓ TEST 4: Đánh hạ gục hoàn toàn Dung Hải (0 HP) kết thúc Màn 7 an toàn\n✓ TEST 5: playInlineDialogue giữa trận diễn ra thông suốt, không deadlock\n\n==========================================\nTẤT CẢ 5 BỘ TEST STAGE 7 VICTORY ĐỀU PASS 100%!\n==========================================\n",
       "stderr": ""
@@ -172,7 +172,7 @@
       "file": "test_tutorial_trigger.js",
       "pass": true,
       "status": "PASSED",
-      "duration": "0.03s",
+      "duration": "0.04s",
       "exitCode": 0,
       "stdout": "=== BẮT ĐẦU TEST KÍCH HOẠT HƯỚNG DẪN TÂN THỦ ===\n\n✓ TEST 1: Acc mới tinh ấn chơi Màn 1 hiển thị Hướng Dẫn Tân Thủ chuẩn xác\n✓ TEST 2: Người chơi chọn vào Hướng dẫn -> Võ đường TUTORIAL kích hoạt\n✓ TEST 3: Người chơi bấm Bỏ qua -> Lưu cờ skip và vào Màn 1 chiến dịch\n✓ TEST 4: Acc cũ đã hoàn thành hướng dẫn -> Vào thẳng Màn 1 không bị hỏi lại\n✓ TEST 5: Bấm Hành Trình Mới reset trạng thái tân thủ và kích hoạt Hướng Dẫn Tân Thủ\n✓ TEST 6: Xóa tiến trình trong Cài Đặt reset sạch và kích hoạt Hướng Dẫn Tân Thủ\n\n==========================================\nTẤT CẢ 6 BỘ TEST TUTORIAL TRIGGER PASS 100%!\n==========================================\n",
       "stderr": ""
