@@ -28,6 +28,13 @@
     ));
   }
 
+  function isQuyDaXoaSkin(entity) {
+    return !!(entity && (
+      entity.equippedSkin === 'quydaxoa' ||
+      (window.CharacterRegistry && typeof window.CharacterRegistry.getEquippedSkin === 'function' && window.CharacterRegistry.getEquippedSkin(entity) === 'quydaxoa')
+    ));
+  }
+
   function spawnTaoistFiend(owner, x, y, life = 6.5, dmg = 26) {
     if (!owner) return null;
     if (!Array.isArray(owner._summonedFiends)) owner._summonedFiends = [];
@@ -467,7 +474,31 @@
           P.nT = 0.88; P.nS = -0.94; P.fT = -0.74; P.fS = 0.22;
           return true;
         },
-        ultimate_precision(P, { U, p }) {
+        ultimate_precision(P, { U, p, e }) {
+          if (isQuyDaXoaSkin(e)) {
+            if (p >= 0.72) {
+              // Quỷ Dạ Xoa: Pha tra kiếm Katana vào bao bên hông đầy khí chất Iaijutsu!
+              const k = Math.min(1, (p - 0.72) / 0.22);
+              P.torso = U.lerp(0.22, 0.06, k);
+              P.lift = U.lerp(-8, 0, k);
+              P.nA = U.lerp(1.15, -0.35, k);
+              P.nE = U.lerp(0.28, 1.32, k);
+              P.grip = U.lerp(-0.3, -1.05, k);
+              P.fA = U.lerp(1.35, 0.42, k);
+              P.fE = 1.15;
+              P.nT = 0.48; P.nS = -0.62;
+              P.fT = -0.45; P.fS = 0.16;
+              return true;
+            }
+            const slashWave = Math.sin((p / 0.72) * Math.PI * 5);
+            P.torso = 0.24 + 0.16 * slashWave;
+            P.lift = -10 * Math.sin(Math.min(1, p * 1.45) * Math.PI);
+            P.nA = 0.95 + 1.45 * slashWave; P.nE = 0.18; P.grip = -0.45 + 0.55 * slashWave;
+            P.fA = 1.32 - 0.65 * slashWave; P.fE = 0.52;
+            P.nT = 0.72 + 0.35 * Math.abs(slashWave); P.nS = -0.82;
+            P.fT = -0.68; P.fS = 0.22;
+            return true;
+          }
           // Múa kiếm xu luân hồi liên hoàn trong bão lửa
           const s = U.stage5(p, { a: 0.12, c: 0.28, i: 0.72, f: 0.88 });
           const spinWave = Math.sin(p * Math.PI * 6);
@@ -485,12 +516,15 @@
         const dir = e.facing || 1;
         const gx = e.x || 0, gy = e.y || 580;
         const isVoid = isThanTrungSkin(e);
+        const isOni = isQuyDaXoaSkin(e);
         const slashOpts = isVoid ? { theme: 'void' } : null;
         if (st === 'dodge' && cross(0.06)) {
           if (typeof fx.createFlameCoinSlash === 'function') fx.createFlameCoinSlash(gx, gy - 50, dir, 0.2, 54, slashOpts);
           if (isVoid) {
             if (typeof fx.createThanTrungCursedMoon === 'function') fx.createThanTrungCursedMoon(gx, gy, 76, false);
             if (typeof fx.createThanTrungCrowFlock === 'function') fx.createThanTrungCrowFlock(gx, gy - 55, dir, 0.9);
+          } else if (isOni && typeof fx.createDimensionalSlash === 'function') {
+            fx.createDimensionalSlash(gx + dir * 24, gy - 54, -0.35 * dir, 115, '#ef4444', { coreColor: '#facc15', width: 4.5 });
           }
           fx.createHitSparks(gx, gy - 45, 9, true);
         } else if ((st === 'punch_straight' || st === 'punch_hook' || st === 'elbow_strike') && cross(0.32)) {
@@ -504,8 +538,35 @@
             if (st === 'punch_hook' && typeof fx.createThanTrungCrowFlock === 'function') {
               fx.createThanTrungCrowFlock(gx + dir * 45, gy - 68, dir, 0.92);
             }
+          } else if (isOni && typeof fx.createDimensionalSlash === 'function') {
+            fx.createDimensionalSlash(gx + dir * 64, gy - 68, st === 'punch_hook' ? -0.42 : 0.2, 140, '#ef4444', { coreColor: '#fef08a', width: 5.2 });
           }
-        } else if ((st === 'uppercut' || st === 'kick_roundhouse' || st === 'wk') && cross(0.36)) {
+        } else if (st === 'uppercut' && cross(0.32)) {
+          if (isOni && typeof fx.createOniDemonUppercutHand === 'function') {
+            fx.createOniDemonUppercutHand(gx + dir * 56, gy, dir, 1.12);
+          } else if (typeof fx.createFlameCoinSlash === 'function') {
+            fx.createFlameCoinSlash(gx + dir * 52, gy - 72, dir, -0.55, 86, slashOpts);
+          }
+          if (isVoid) {
+            if (typeof fx.createDimensionalSlash === 'function') {
+              fx.createDimensionalSlash(gx + dir * 68, gy - 72, -0.62 * dir, 155, '#a855f7', { darkCore: true, width: 6.2 });
+            }
+            if (typeof fx.createThanTrungCrowFlock === 'function') {
+              fx.createThanTrungCrowFlock(gx + dir * 48, gy - 70, dir, 1.05);
+            }
+          }
+          fx.createHitSparks(gx + dir * 54, gy - 70, 10, true);
+        } else if (st === 'kick_sweep' && cross(0.30)) {
+          if (isOni && typeof fx.createOniDemonPushHand === 'function') {
+            fx.createOniDemonPushHand(gx + dir * 32, gy - 58, dir, 1.12);
+          }
+          fx.createHitSparks(gx + dir * 54, gy - 54, 10, true);
+        } else if (st === 'flying_kick' && cross(0.26)) {
+          if (isOni && typeof fx.createOniDemonAerialSlash === 'function') {
+            fx.createOniDemonAerialSlash(gx + dir * 32, gy - 68, dir, 1.15);
+          }
+          fx.createHitSparks(gx + dir * 42, gy - 64, 9, true);
+        } else if ((st === 'kick_roundhouse' || st === 'wk') && cross(0.36)) {
           if (typeof fx.createFlameCoinSlash === 'function') {
             fx.createFlameCoinSlash(gx + dir * 52, gy - 72, dir, -0.55, 86, slashOpts);
           }
@@ -533,7 +594,13 @@
           if (cross(0.05) && isVoid && typeof fx.createThanTrungCursedMoon === 'function') {
             fx.createThanTrungCursedMoon(gx + dir * 65, gy, 148, true);
           }
-          if (cross(0.15) || cross(0.45) || cross(0.75)) {
+          if (isOni && cross(0.73)) {
+            fx.createShockRing(gx + dir * 18, gy - 52, '#facc15');
+            if (typeof fx.addFloatingText === 'function') {
+              fx.addFloatingText('🗡️ TRA KIẾM...', gx, gy - 125, 'ultimate');
+            }
+          }
+          if (!isOni && (cross(0.15) || cross(0.45) || cross(0.75))) {
             if (typeof fx.createFlameCoinSlash === 'function') {
               fx.createFlameCoinSlash(gx + dir * 56, gy - 72, dir, (p - 0.5) * 1.4, 118, slashOpts);
             }
@@ -691,6 +758,7 @@
       execute(player, st, dt, enemies, { p, hitEnemy }) {
         const fx = window.effectManager;
         const isVoid = isThanTrungSkin(player);
+        const isOni = isQuyDaXoaSkin(player);
         const step = Math.floor(p * 4);
         if (step > 0 && step <= 3 && step !== player._ultStep) {
           player._ultStep = step;
@@ -705,27 +773,48 @@
             if (d < min) { min = d; target = e; }
           }
           if (target) {
-            if (fx) {
-              fx.addGhostTrail(player, isVoid ? 'rgba(147, 51, 234, 0.85)' : 'rgba(220, 38, 38, 0.85)');
-              if (typeof fx.createFlameCoinSlash === 'function') {
-                fx.createFlameCoinSlash(target.x, (target.y || 580) - 60, player.facing || 1, (step % 2 ? 0.35 : -0.35), 110, isVoid ? { theme: 'void' } : null);
+            if (isOni) {
+              // Quỷ Dạ Xoa: Chém GHIM nhát kiếm ánh sáng lên thân địch, tích sát thương chờ khoảnh khắc tra kiếm vào bao mới kích nổ!
+              const stepDmg = isPvpOnlineMatch() ? 58 : 74;
+              target._oniPendingDmg = (target._oniPendingDmg || 0) + stepDmg;
+              target.stunTimer = Math.max(target.stunTimer || 0, 0.72);
+              const maxW = window.stageManager ? window.stageManager.stageWidth - 30 : 2570;
+              player.x = Math.max(30, Math.min(maxW, target.x - (player.facing || 1) * 58));
+              player.y = target.y;
+              if (fx) {
+                fx.addGhostTrail(player, 'rgba(220, 38, 38, 0.85)');
+                if (typeof fx.createOniPinnedSlash === 'function') {
+                  const ang = step === 1 ? -0.48 : (step === 2 ? 0.52 : -0.18);
+                  fx.createOniPinnedSlash(target, player.facing || 1, ang, step);
+                }
+                if (typeof fx.addFloatingText === 'function' && step === 1) {
+                  fx.addFloatingText('⚔️ GHIM TRẢM!', target.x, (target.y || 580) - 118, 'crit');
+                }
+                fx.createHitSparks(target.x, (target.y || 580) - 62, 6, true);
               }
-              if (isVoid && typeof fx.createDimensionalSlash === 'function') {
-                const ty = (target.y || 580) - 62;
-                fx.createDimensionalSlash(target.x, ty, -0.52 + (step - 1) * 0.25, 250, '#9333ea', { darkCore: true, width: 7.5 });
-                fx.createDimensionalSlash(target.x + 12, ty - 14, 0.72 - (step - 1) * 0.2, 230, '#a855f7', { darkCore: true, width: 7.0 });
-                fx.createDimensionalSlash(target.x - 10, ty + 8, (step % 2 ? 1.38 : -1.32), 205, '#7c3aed', { darkCore: true, width: 6.4 });
+            } else {
+              if (fx) {
+                fx.addGhostTrail(player, isVoid ? 'rgba(147, 51, 234, 0.85)' : 'rgba(220, 38, 38, 0.85)');
+                if (typeof fx.createFlameCoinSlash === 'function') {
+                  fx.createFlameCoinSlash(target.x, (target.y || 580) - 60, player.facing || 1, (step % 2 ? 0.35 : -0.35), 110, isVoid ? { theme: 'void' } : null);
+                }
+                if (isVoid && typeof fx.createDimensionalSlash === 'function') {
+                  const ty = (target.y || 580) - 62;
+                  fx.createDimensionalSlash(target.x, ty, -0.52 + (step - 1) * 0.25, 250, '#9333ea', { darkCore: true, width: 7.5 });
+                  fx.createDimensionalSlash(target.x + 12, ty - 14, 0.72 - (step - 1) * 0.2, 230, '#a855f7', { darkCore: true, width: 7.0 });
+                  fx.createDimensionalSlash(target.x - 10, ty + 8, (step % 2 ? 1.38 : -1.32), 205, '#7c3aed', { darkCore: true, width: 6.4 });
+                }
+                if (isVoid && typeof fx.createThanTrungCrowFlock === 'function') {
+                  fx.createThanTrungCrowFlock(target.x, (target.y || 580) - 64, player.facing || 1, 1.25);
+                }
+                fx.createShockRing(target.x, target.y, isVoid ? '#9333ea' : '#f97316');
               }
-              if (isVoid && typeof fx.createThanTrungCrowFlock === 'function') {
-                fx.createThanTrungCrowFlock(target.x, (target.y || 580) - 64, player.facing || 1, 1.25);
-              }
-              fx.createShockRing(target.x, target.y, isVoid ? '#9333ea' : '#f97316');
+              const maxW = window.stageManager ? window.stageManager.stageWidth - 30 : 2570;
+              player.x = Math.max(30, Math.min(maxW, target.x - (player.facing || 1) * 62));
+              player.y = target.y;
+              hitEnemy(target, isPvpOnlineMatch() ? 58 : 74, 10, false);
+              igniteTarget(player, target, isPvpOnlineMatch() ? 8 : 13, 3.2);
             }
-            const maxW = window.stageManager ? window.stageManager.stageWidth - 30 : 2570;
-            player.x = Math.max(30, Math.min(maxW, target.x - (player.facing || 1) * 62));
-            player.y = target.y;
-            hitEnemy(target, isPvpOnlineMatch() ? 58 : 74, 10, false);
-            igniteTarget(player, target, isPvpOnlineMatch() ? 8 : 13, 3.2);
           } else if (isVoid && fx && typeof fx.createDimensionalSlash === 'function') {
             const cx = player.x + (player.facing || 1) * 110;
             const cy = (player.y || 580) - 68;
@@ -734,9 +823,21 @@
             if (typeof fx.createThanTrungCrowFlock === 'function') {
               fx.createThanTrungCrowFlock(cx, cy, player.facing || 1, 1.2);
             }
+          } else if (isOni && fx && typeof fx.createDimensionalSlash === 'function') {
+            const cx = player.x + (player.facing || 1) * 95;
+            const cy = (player.y || 580) - 66;
+            fx.createDimensionalSlash(cx, cy, (step % 2 ? 0.45 : -0.45), 230, '#ef4444', { coreColor: '#fef08a', width: 6.5 });
           }
         }
         if (p >= 1) {
+          if (isOni && fx) {
+            if (typeof fx.detonateOniPinnedSlashes === 'function') {
+              fx.detonateOniPinnedSlashes();
+            }
+            if (typeof fx.addFloatingText === 'function') {
+              fx.addFloatingText('💥 ĐOẠN HỒN BỘC PHÁT!', player.x, (player.y || 580) - 135, 'crit');
+            }
+          }
           if (fx) {
             if (isVoid && typeof fx.createDimensionalSlash === 'function') {
               const bx = player.x + (player.facing || 1) * 70;
@@ -766,12 +867,17 @@
               secondary: '#facc15',
               flash: '#f97316'
             });
-            fx.triggerScreenShake(18, 0.45);
+            fx.triggerScreenShake(isOni ? 22 : 18, 0.45);
           }
           for (const e of enemies) {
-            if (e && !e.isDead && Math.hypot(e.x - player.x, (e.y - player.y) * 1.4) <= 280) {
-              hitEnemy(e, isPvpOnlineMatch() ? 82 : 98, 16, true);
-              igniteTarget(player, e, isPvpOnlineMatch() ? 9 : 14, 3.5);
+            if (!e || e.isDead) continue;
+            const pending = isOni ? (e._oniPendingDmg || 0) : 0;
+            if (e._oniPendingDmg) e._oniPendingDmg = 0;
+            const inRange = Math.hypot(e.x - player.x, (e.y - player.y) * 1.4) <= 280;
+            if (inRange || pending > 0) {
+              const finDmg = inRange ? (isPvpOnlineMatch() ? 82 : 98) : 0;
+              hitEnemy(e, pending + finDmg, 16, true);
+              igniteTarget(player, e, isPvpOnlineMatch() ? 12 : 14, 3.5);
             }
           }
           player.setState('idle');

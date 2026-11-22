@@ -1,11 +1,11 @@
 {
-  "taskId": "TASK-043",
-  "taskTitle": "Fix Orphaned Summons & Stale Combat VFX When Switching Heroes or Resetting in Training Dojo",
-  "generatedAt": "2026-11-22T04:47:16.535Z",
+  "taskId": "TASK-044",
+  "taskTitle": "Add Thiên Khánh Mythic Skin Quỷ Dạ Xoa with Oni Demon VFX, Iaijutsu Delayed Ultimate & Full-Screen Code Cutscene",
+  "generatedAt": "2026-11-22T05:00:34.826Z",
   "classification": "PASS",
   "summary": {
-    "filesAddedCount": 1,
-    "filesModifiedCount": 6,
+    "filesAddedCount": 2,
+    "filesModifiedCount": 14,
     "filesDeletedCount": 0,
     "testsExecuted": 28,
     "testsPassed": 28,
@@ -13,24 +13,29 @@
   },
   "scope": {
     "filesAdded": [
-      "tasks/TASK-043.json"
+      "assets/images/characters/char_thienkhanh_quydaxoa.png",
+      "tasks/TASK-044.json"
     ],
     "filesModified": [
-      "ndex.html",
+      "arness/reports/latest-test-run.json",
+      "harness/reports/verification-report.json",
+      "harness/reports/verification-report.md",
+      "index.html",
       "js/core/effects.js",
-      "js/entities/player/playerBase.js",
-      "js/ui/training/trainingManagerBase.js",
-      "js/ui/training/trainingModes.js",
+      "js/core/game.js",
+      "js/core/save.js",
+      "js/data/skins.js",
+      "js/entities/animation/animationArchetypes.js",
+      "js/entities/animation/animationBody.js",
+      "js/entities/animation/animationRenderBase.js",
+      "js/entities/animation/animationWeapon.js",
+      "js/entities/characters/thienkhanh.js",
       "tests/test_skin_registry_and_cloud_auth.js"
     ],
     "filesDeleted": []
   },
   "features": {
-    "affected": [
-      "FEAT-TRN-001",
-      "FEAT-CHR-001",
-      "FEAT-CMB-001"
-    ],
+    "affected": [],
     "preserved": [
       "FEAT-CMB-001",
       "FEAT-CMB-002",

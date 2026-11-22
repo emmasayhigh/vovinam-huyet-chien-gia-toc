@@ -511,6 +511,105 @@
     }
   });
 
+  // =========================================================================
+  // 8. CHÂU NGỌC THIÊN KHÁNH — SKIN CHÍ TÔN PHẨM (ĐỎ): QUỶ DẠ XOA
+  // =========================================================================
+  registry.register('thienkhanh', {
+    id: 'quydaxoa',
+    name: 'Quỷ Dạ Xoa — Nhất Đao Đoạn Hồn',
+    shortName: 'Quỷ Dạ Xoa 👹',
+    tier: SKIN_TIERS.chiton.tier,
+    tierKey: 'chiton',
+    badgeClass: SKIN_TIERS.chiton.badgeClass,
+    rarity: SKIN_TIERS.chiton.rarity,
+    themeClass: SKIN_TIERS.chiton.themeClass,
+    image: 'assets/images/characters/char_thienkhanh_quydaxoa.png',
+    styleKey: 'thienkhanh_quydaxoa',
+    shopSkin: false,
+    shopKey: 'skin_thienkhanh_quydaxoa',
+    shopCurrency: 'diamond',
+    shopPrice: 180,
+    shopRibbon: '👹 CHÍ TÔN PHẨM • CHÂU NGỌC THIÊN KHÁNH',
+    shopRoleSub: 'TRANG PHỤC CHÍ TÔN (ĐỎ) • MẶT NẠ DẠ XOA, KATANA & TRẢM ĐOẠN HỒN',
+    quote: '“Kiếm ra khỏi vỏ — nhát chém ghim hồn; kiếm tra vào bao — máu nhuộm nhật thực!”',
+    bio: 'Chí Tôn Phẩm dành cho Châu Ngọc Thiên Khánh: khoác mặt nạ Quỷ Dạ Xoa đỏ rực với cặp sừng quỷ cong vút, mái tóc bạc tung bay và bộ giáp Samurai Đỏ-Vàng quấn thừng hoàng kim cùng thanh Katana mạ vàng. Mọi chiêu thức thức tỉnh Quỷ Thủ Địa Ngục và Tuyệt Kỹ Iaijutsu Cutscene ghim nhát chém chờ khoảnh khắc đút kiếm vào bao mới kích nổ toàn bộ sát thương!',
+    skillsGrid: [
+      { key: 'W+J', name: 'Quỷ Trảo Địa Ngục — Bàn Tay Quỷ Trồi Đất Đấm Lên' },
+      { key: 'S+K', name: 'Dạ Xoa Đẩy Chưởng — Bàn Tay Quỷ Xuyên Phá' },
+      { key: 'Space+K', name: 'Không Trảm Quỷ Ảnh — Dạ Xoa Phi Trảm' },
+      { key: 'I (Ulti)', name: 'Cutscene Nhất Đao Đoạn Hồn — Tra Kiếm Nổ Sát Thương' }
+    ],
+    passiveNote: {
+      icon: '👹',
+      title: 'Chiêu Thức Dạ Xoa & Cơ Chế Tra Kiếm Kích Nổ:',
+      desc: 'W+J gọi Bàn Tay Quỷ trồi từ đất đấm tung; S+K phóng Bàn Tay Quỷ đẩy thẳng; Space+K vung Không Trảm Dạ Xoa. Tuyệt Kỹ (I) mở Cutscene Quỷ Dạ Xoa, lướt chém ghim dấu trảm lên kẻ địch rồi đồng loạt kích nổ đúng khoảnh khắc tra Katana vào bao (tổng sát thương giữ nguyên chuẩn cân bằng).'
+    },
+    fx: ['👹 Bàn Tay Quỷ Địa Ngục [W+J] & [S+K]', '⚔️ Không Trảm Quỷ Ảnh [Space+K]', '🎬 Cutscene Dạ Xoa + Tra Kiếm Nổ Sát Thương [I]'],
+    sub: 'Trang phục Chí Tôn Đỏ Độc Quyền: Mặt nạ Quỷ Dạ Xoa song sừng đỏ, tóc bạc bay, giáp Samurai đỏ-vàng thừng hoàng kim, 3 hiệu ứng Quỷ Thủ / Không Trảm riêng và Tuyệt Kỹ Cutscene Iaijutsu tra kiếm kích nổ nhát chém!',
+    toast: '👹 Đã trang bị Chí Tôn: Quỷ Dạ Xoa — Nhất Đao Đoạn Hồn!'
+  });
+
+  registry.registerRuntimeStyle('thienkhanh', 'quydaxoa', {
+    style: {
+      archetype: 'crimson_coin_taoist',
+      oniArmor: true,
+      oniMask: true,
+      oniHorns: true,
+      thanTrungHood: false,
+      thanTrungFeathers: false,
+      thanTrungCrowFamiliar: false,
+      coinVeil: false,
+      taoistQuiver: false,
+      cape: true,
+      hairStyle: 'oni_silver_mane',
+      skin: '#e5b89c',
+      skinL: '#f3d1bc',
+      skinD: '#b98365',
+      hair: '#f1f5f9',
+      gi: '#15192b',
+      giD: '#0b0e19',
+      giL: '#991b1b',
+      coatColor: '#991b1b',
+      coatD: '#450a0a',
+      coatTrim: '#facc15',
+      liningColor: '#312e81',
+      pants: '#1e1b38',
+      pantsD: '#0f0d1f',
+      belt: '#eab308',
+      beltD: '#854d0e',
+      beltTrim: '#fef08a',
+      under: '#0f172a',
+      cuffTrim: '#facc15',
+      cuffRedEmbroidery: true,
+      wideSleeves: false,
+      weapon: 'oni_katana',
+      weaponVoid: false,
+      weaponLen: 50,
+      shoes: 'kungfu',
+      shoeColor: '#1c1917',
+      eyeColor: '#facc15',
+      jawStyle: 'sharp',
+      aura: '#ef4444',
+      glow: true
+    },
+    trailProfile: {
+      primary: '#991b1b',
+      secondary: '#facc15',
+      core: '#fef08a',
+      width: 16,
+      dual: true,
+      dodgeGhost: 'rgba(220, 38, 38, 0.7)'
+    },
+    cinematic: {
+      title: 'QUỶ DẠ XOA • CHÂU NGỌC THIÊN KHÁNH',
+      ult: 'NHẤT ĐAO ĐOẠN HỒN',
+      color: '#dc2626',
+      accent: '#facc15',
+      style: 'oni_demon',
+      duration: 1.48
+    }
+  });
+
   registry.register('huavudai', {
     id: 'chodoinon',
     name: 'Chó Trắng Mũi Đỏ Đội Nón',

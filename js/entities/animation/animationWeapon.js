@@ -839,6 +839,88 @@ class SkeletalRendererWeapon extends window.SkeletalRendererRenderBase {
       return;
     }
 
+    // 4A-3. KATANA QUỶ DẠ XOA MẠ VÀNG (Thiên Khánh - Skin Chí Tôn Quỷ Dạ Xoa)
+    if (st.weapon === 'oni_katana') {
+      const isSheathed = !!far;
+      if (st && st._solid) {
+        if (!isSheathed) {
+          const sTip = [b[0] + dir[0] * 12, b[1] + dir[1] * 12];
+          this.capsule(ctx, a, sTip, 4.0, 1.4, st._solid);
+        }
+        return;
+      }
+      if (isSheathed) {
+        // Khi vừa tra kiếm vào bao (Iaijutsu sheath): vẽ chuôi & lóe vàng nơi bao kiếm hông
+        ctx.save();
+        ctx.fillStyle = '#09090b';
+        ctx.beginPath(); ctx.arc(hand[0], hand[1], 3.8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.arc(hand[0], hand[1], 5.8, -0.8, 1.4); ctx.stroke();
+        ctx.restore();
+        return;
+      }
+
+      const hiltEnd = [a[0] - dir[0] * 3.5, a[1] - dir[1] * 3.5];
+      const guardPt = [hand[0] + dir[0] * 6.0, hand[1] + dir[1] * 6.0];
+      const tipPt = [b[0] + dir[0] * 13.5, b[1] + dir[1] * 13.5];
+      const midCurve = [
+        (guardPt[0] + tipPt[0]) * 0.5 - perp[0] * 3.8,
+        (guardPt[1] + tipPt[1]) * 0.5 - perp[1] * 3.8
+      ];
+
+      // Chuôi Tsuka bọc đỏ đen viền vàng
+      this.capsule(ctx, hiltEnd, guardPt, 3.8, 3.6, '#18181b');
+      ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.6;
+      for (let w = 0.2; w <= 0.85; w += 0.22) {
+        const wx = hiltEnd[0] + (guardPt[0] - hiltEnd[0]) * w;
+        const wy = hiltEnd[1] + (guardPt[1] - hiltEnd[1]) * w;
+        ctx.beginPath();
+        ctx.moveTo(wx - perp[0] * 2.4, wy - perp[1] * 2.4);
+        ctx.lineTo(wx + perp[0] * 2.4, wy + perp[1] * 2.4);
+        ctx.stroke();
+      }
+      // Chỏm chuôi vàng & Tsuba bát giác hoàng kim
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath(); ctx.arc(hiltEnd[0], hiltEnd[1], 2.7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#eab308';
+      ctx.beginPath();
+      ctx.moveTo(guardPt[0] - perp[0] * 6.5, guardPt[1] - perp[1] * 6.5);
+      ctx.lineTo(guardPt[0] + dir[0] * 2.4, guardPt[1] + dir[1] * 2.4);
+      ctx.lineTo(guardPt[0] + perp[0] * 6.5, guardPt[1] + perp[1] * 6.5);
+      ctx.lineTo(guardPt[0] - dir[0] * 1.8, guardPt[1] - dir[1] * 1.8);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#78350f'; ctx.lineWidth = 0.9; ctx.stroke();
+
+      // Lưỡi Katana cong ánh vàng-bạch kim & sống kiếm huyết đỏ
+      const bladeGrad = ctx.createLinearGradient(guardPt[0], guardPt[1], tipPt[0], tipPt[1]);
+      bladeGrad.addColorStop(0, '#fef08a');
+      bladeGrad.addColorStop(0.45, '#f8fafc');
+      bladeGrad.addColorStop(1, '#fde047');
+      ctx.fillStyle = bladeGrad;
+      ctx.beginPath();
+      ctx.moveTo(guardPt[0] - perp[0] * 2.4, guardPt[1] - perp[1] * 2.4);
+      ctx.quadraticCurveTo(midCurve[0] - perp[0] * 2.1, midCurve[1] - perp[1] * 2.1, tipPt[0], tipPt[1]);
+      ctx.quadraticCurveTo(midCurve[0] + perp[0] * 1.5, midCurve[1] + perp[1] * 1.5, guardPt[0] + perp[0] * 2.1, guardPt[1] + perp[1] * 2.1);
+      ctx.closePath(); ctx.fill();
+
+      // Sống lưỡi đỏ thẫm & quầng kiếm khí Dạ Xoa
+      ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(guardPt[0] + perp[0] * 1.6, guardPt[1] + perp[1] * 1.6);
+      ctx.quadraticCurveTo(midCurve[0] + perp[0] * 1.1, midCurve[1] + perp[1] * 1.1, tipPt[0], tipPt[1]);
+      ctx.stroke();
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.72)'; ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(guardPt[0], guardPt[1]);
+      ctx.quadraticCurveTo(midCurve[0], midCurve[1], tipPt[0] + dir[0] * 4, tipPt[1] + dir[1] * 4);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
     // 4A. HÀN BĂNG KIẾM (Giang Mạnh): Trường kiếm Đạo gia thẳng thanh mảnh hai lưỡi + Hộ thủ cánh phượng bạc xanh + Đốc ngọc
     if (st.frostBlade) {
       const swordBase = [hand[0] + dir[0] * 5.2, hand[1] + dir[1] * 5.2];

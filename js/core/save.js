@@ -229,7 +229,7 @@ class SaveManager {
 
     out.shopPurchases = this.cleanArray(raw.shopPurchases, 'string');
     out.shopPurchases.forEach((pId) => {
-      if (pId && !pId.startsWith('skin_') && !['namcheo', 'thantrung', 'chodoinon', 'hoxam', 'thuongluong', 'ngutinh'].includes(pId) && !out.unlockedCharacters.includes(pId)) {
+      if (pId && !pId.startsWith('skin_') && !['namcheo', 'thantrung', 'chodoinon', 'hoxam', 'thuongluong', 'ngutinh', 'quydaxoa'].includes(pId) && !out.unlockedCharacters.includes(pId)) {
         out.unlockedCharacters.push(pId);
       }
     });

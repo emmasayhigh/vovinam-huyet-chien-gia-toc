@@ -1,0 +1,41 @@
+{
+  "taskId": "TASK-044",
+  "title": "Add Thiên Khánh Mythic Skin Quỷ Dạ Xoa with Oni Demon VFX, Iaijutsu Delayed Ultimate & Full-Screen Code Cutscene",
+  "allowedFiles": [
+    "assets/images/characters/char_thienkhanh_quydaxoa.png",
+    "ssets/images/characters/char_thienkhanh_quydaxoa.png",
+    "arness/reports/latest-test-run.json",
+    "harness/reports/latest-test-run.json",
+    "index.html",
+    "ndex.html",
+    "js/core/effects.js",
+    "s/core/effects.js",
+    "js/core/game.js",
+    "s/core/game.js",
+    "js/core/save.js",
+    "s/core/save.js",
+    "js/data/skins.js",
+    "s/data/skins.js",
+    "js/entities/animation/animationArchetypes.js",
+    "s/entities/animation/animationArchetypes.js",
+    "js/entities/animation/animationBody.js",
+    "s/entities/animation/animationBody.js",
+    "js/entities/animation/animationRenderBase.js",
+    "s/entities/animation/animationRenderBase.js",
+    "js/entities/animation/animationWeapon.js",
+    "s/entities/animation/animationWeapon.js",
+    "js/entities/characters/thienkhanh.js",
+    "s/entities/characters/thienkhanh.js",
+    "tasks/TASK-044.json",
+    "asks/TASK-044.json",
+    "tests/test_skin_registry_and_cloud_auth.js",
+    "ests/test_skin_registry_and_cloud_auth.js"
+  ],
+  "deletionBudget": {
+    "allowedDeletedLines": 60,
+    "authorizedRemovals": []
+  },
+  "requiredTests": [
+    "node harness/run-tests.js"
+  ]
+}

@@ -124,7 +124,7 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     image: 'assets/images/characters/char_thienkhanh.png'
   });
   const tkSkins = window.SkinRegistry.getForCharacter('thienkhanh');
-  assert.strictEqual(tkSkins.length, 4, 'SkinRegistry.register tự thêm skin vào danh sách nhân vật (default, vovinam, thantrung, test_huyet_linh)');
+  assert.strictEqual(tkSkins.length, 5, 'SkinRegistry.register tự thêm skin vào danh sách nhân vật (default, vovinam, thantrung, quydaxoa, test_huyet_linh)');
   assert.ok(window.SkinRegistry.getShopSkins().some((s) => s.id === 'test_huyet_linh'), 'Skin mới đăng ký tự động xuất hiện trong ShopSkins');
 
   // Kiểm chứng runtime skin styles đã tách hoàn toàn khỏi file nhân vật
@@ -370,6 +370,15 @@ function httpRequest(port, method, reqPath, body = null, token = null) {
     const trainingBaseSrc = fs.readFileSync(path.resolve(__dirname, '../js/ui/training/trainingManagerBase.js'), 'utf8');
     assert.ok(playerBaseSrc.includes('f.life = 0') && effectsSrc.includes('sp._staleWatch'), 'Linh vật cũ tự thu hồi khi đổi tướng hoặc ngưng cập nhật');
     assert.ok(trainingModesSrc.includes('clearCombatEffects') && trainingBaseSrc.includes('clearCombatEffects'), 'Đổi tướng và Reset [R] trong Võ Đường dọn sạch hiệu ứng cũ');
+
+    // TEST 10: Thiên Khánh — Skin Chí Tôn Quỷ Dạ Xoa (Mặt nạ, Katana, 3 VFX Quỷ & Ulti Cutscene Tra Kiếm kích nổ)
+    const oniSk = window.SkinRegistry.getSkin('thienkhanh', 'quydaxoa');
+    assert.ok(oniSk && oniSk.rarity === 'mythic' && oniSk.image === 'assets/images/characters/char_thienkhanh_quydaxoa.png', 'Skin Quỷ Dạ Xoa phân hạng Chí Tôn Phẩm (Đỏ) & có ảnh riêng');
+    const oniRuntime = window.SkinRegistry.getRuntimeStyle('thienkhanh', 'quydaxoa');
+    assert.ok(oniRuntime && oniRuntime.style && oniRuntime.style.oniMask && oniRuntime.style.oniArmor && oniRuntime.style.weapon === 'oni_katana', 'Quỷ Dạ Xoa có mặt nạ Dạ Xoa, giáp Samurai Đỏ-Vàng & Katana');
+    assert.ok(oniRuntime.cinematic && oniRuntime.cinematic.style === 'oni_demon', 'Quỷ Dạ Xoa dùng Cutscene riêng style oni_demon');
+    assert.ok(effectsSrc.includes('createOniDemonUppercutHand') && effectsSrc.includes('createOniDemonPushHand') && effectsSrc.includes('createOniDemonAerialSlash') && effectsSrc.includes('createOniPinnedSlash') && effectsSrc.includes('detonateOniPinnedSlashes') && effectsSrc.includes("c.style === 'oni_demon'"), 'Effects có đủ 3 VFX Quỷ Thủ/Không Trảm, nhát chém ghim nổ & Cutscene code Quỷ Dạ Xoa');
+    assert.ok(thienKhanhSrc.includes('isQuyDaXoaSkin') && thienKhanhSrc.includes('target._oniPendingDmg') && thienKhanhSrc.includes('detonateOniPinnedSlashes'), 'Thiên Khánh Quỷ Dạ Xoa tích nhát chém ghim và kích nổ đúng khi tra kiếm vào bao');
 
     // TEST 6: AccountManager Local Mirror & Auto-Recovery when Cloud Server wipes accounts.json (Render redeploy)
     {

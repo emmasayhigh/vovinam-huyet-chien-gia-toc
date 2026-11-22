@@ -556,6 +556,36 @@ class SkeletalRendererBody extends _ParentRenderer {
       ctx.beginPath(); ctx.moveTo(s2[0], s2[1]); ctx.quadraticCurveTo(s2[0] - 9, s2[1] + 14, s2[0] - 17, s2[1] + 24); ctx.stroke();
     }
 
+    // Giáp Ngực Samurai Đỏ-Vàng Dạ Xoa (xếp tầng lá giáp + dây thừng hoàng kim)
+    if (st.oniArmor && !isSolid) {
+      for (let row = 0; row < 3; row++) {
+        const yOff = -4.2 - row * 4.8;
+        const pL = P(sh, -7.2 + row * 0.4, yOff);
+        const pR = P(sh, 7.2 - row * 0.4, yOff);
+        const pBR = P(sh, 6.8 - row * 0.4, yOff - 3.6);
+        const pBL = P(sh, -6.8 + row * 0.4, yOff - 3.6);
+        ctx.fillStyle = row % 2 === 0 ? '#991b1b' : '#7f1d1d';
+        ctx.beginPath();
+        ctx.moveTo(pL[0], pL[1]); ctx.lineTo(pR[0], pR[1]);
+        ctx.lineTo(pBR[0], pBR[1]); ctx.lineTo(pBL[0], pBL[1]);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.05; ctx.stroke();
+        // Mối đan chữ X trên từng tấm giáp đỏ Samurai
+        ctx.strokeStyle = '#09090b'; ctx.lineWidth = 0.85;
+        for (let t = 0.28; t <= 0.72; t += 0.22) {
+          const lx = pL[0] + (pR[0] - pL[0]) * t;
+          const ly = pL[1] + (pR[1] - pL[1]) * t + 1.5;
+          ctx.beginPath();
+          ctx.moveTo(lx - 1.2, ly - 1.1); ctx.lineTo(lx + 1.2, ly + 1.1);
+          ctx.moveTo(lx + 1.2, ly - 1.1); ctx.lineTo(lx - 1.2, ly + 1.1);
+          ctx.stroke();
+        }
+      }
+      // Cổ giáp vàng-đỏ ôm vai
+      ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(P(sh, -7.8, 1.0)[0], P(sh, -7.8, 1.0)[1]); ctx.quadraticCurveTo(P(sh, 0.4, -3.2)[0], P(sh, 0.4, -3.2)[1], P(sh, 7.8, 0.6)[0], P(sh, 7.8, 0.6)[1]); ctx.stroke();
+    }
+
     // Huy hiệu Vovinam Việt Võ Đạo sắc nét trên ngực trái
     if (st.patch && !isSolid) {
       const c = P(sh, Math.max(4.6, shW * 0.56), -8.8);
@@ -973,6 +1003,26 @@ class SkeletalRendererBody extends _ParentRenderer {
         ctx.beginPath();
         ctx.moveTo(-4.2, -13.2); ctx.quadraticCurveTo(-13.5, -13.0 + sw * 0.25, -20.5 + sw * 0.6, -7.8);
         ctx.moveTo(-4.0, -12.6); ctx.quadraticCurveTo(-12.0, -8.5 + sw * 0.2, -17.5 + sw * 0.5, -2.5);
+        ctx.stroke();
+      }
+    } else if (hs === 'oni_silver_mane') {
+      // Quỷ Dạ Xoa: Suối tóc bạc trắng dài xù tung bay rực khí chất ác quỷ Samurai
+      ctx.fillStyle = this._c(st, st.hair || '#f1f5f9');
+      ctx.beginPath();
+      ctx.moveTo(-5.8, -8.8);
+      ctx.quadraticCurveTo(-18.5 + sw * 0.45, -8.0, -24.5 + sw * 0.85, 6.5);
+      ctx.lineTo(-15.5 + sw * 0.65, 11.5);
+      ctx.lineTo(-20.2 + sw * 0.72, 22.5);
+      ctx.lineTo(-8.8 + sw * 0.42, 16.5);
+      ctx.quadraticCurveTo(-6.2, 6.5, -4.6, 2.2);
+      ctx.closePath();
+      ctx.fill();
+      if (!isSolid) {
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.05; ctx.stroke();
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.1; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-7.2, -5.8); ctx.quadraticCurveTo(-15.8 + sw * 0.35, -3.5, -21.2 + sw * 0.7, 5.2);
+        ctx.moveTo(-6.5, -2.2); ctx.quadraticCurveTo(-13.2 + sw * 0.3, 4.0, -17.8 + sw * 0.6, 17.5);
         ctx.stroke();
       }
     }
@@ -1406,6 +1456,72 @@ class SkeletalRendererBody extends _ParentRenderer {
         ctx.strokeStyle = '#64748b'; ctx.lineWidth = 0.85; ctx.stroke();
         ctx.strokeStyle = 'rgba(255, 245, 220, 0.58)'; ctx.lineWidth = 1.25;
         ctx.beginPath(); ctx.moveTo(3.2, -2.7); ctx.lineTo(7.4, 0.4); ctx.stroke();
+      } else if (st.oniMask) {
+        // Mặt nạ Quỷ Dạ Xoa Đỏ Hannya + Cặp sừng đỏ cong vút + Trăng lưỡi liềm vàng + Mắt quỷ rực hổ phách
+        ctx.save();
+        // Lọn mái tóc bạc xõa hai bên trán
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.moveTo(-7.8, -8.5); ctx.quadraticCurveTo(-11.2, -1.0, -9.2, 8.5); ctx.lineTo(-5.2, 4.5); ctx.closePath(); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(4.2, -10.8); ctx.quadraticCurveTo(9.8, -6.5, 9.6, 0.5); ctx.lineTo(5.8, -3.0); ctx.closePath(); ctx.fill();
+
+        // Mặt nạ Đỏ Hannya góc cạnh che trọn nửa mặt + răng nanh
+        const mGrad = ctx.createLinearGradient(-4, -8, 10, 11);
+        mGrad.addColorStop(0, '#ef4444');
+        mGrad.addColorStop(0.55, '#b91c1c');
+        mGrad.addColorStop(1, '#450a0a');
+        ctx.fillStyle = mGrad;
+        ctx.beginPath();
+        ctx.moveTo(-3.6, -7.8);
+        ctx.lineTo(7.8, -7.4);
+        ctx.lineTo(10.6, -1.2);
+        ctx.lineTo(9.4, 6.2);
+        ctx.lineTo(5.2, 11.4);
+        ctx.lineTo(-2.8, 9.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#450a0a'; ctx.lineWidth = 1.2; ctx.stroke();
+
+        // Miệng quỷ nhe nanh trắng sắc nhọn
+        ctx.fillStyle = '#09090b';
+        ctx.beginPath(); ctx.moveTo(2.0, 5.8); ctx.lineTo(9.2, 4.6); ctx.lineTo(8.0, 7.6); ctx.lineTo(2.4, 8.0); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#fef3c7';
+        ctx.beginPath();
+        ctx.moveTo(3.2, 5.6); ctx.lineTo(4.0, 7.2); ctx.lineTo(4.8, 5.4);
+        ctx.moveTo(6.6, 5.0); ctx.lineTo(7.4, 7.4); ctx.lineTo(8.2, 4.8);
+        ctx.fill();
+
+        // Vầng trăng khuyết vàng kim trên trán mặt nạ
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(4.8, -5.0, 2.0, 0.4, Math.PI * 1.65); ctx.stroke();
+
+        // Mắt quỷ hổ phách phát sáng xuyên qua khe mặt nạ
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath(); ctx.moveTo(1.8, -2.5); ctx.lineTo(7.8, -3.4); ctx.lineTo(6.8, -0.6); ctx.lineTo(2.4, -0.9); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(5.4, -2.0, 0.8, 0, Math.PI * 2); ctx.fill();
+
+        // Cặp sừng Quỷ Đỏ cong vút vươn cao lên trời
+        if (st.oniHorns) {
+          const drawHorn = (bx, by, tx, ty, cx1, cy1, wBase) => {
+            const hGrad = ctx.createLinearGradient(bx, by, tx, ty);
+            hGrad.addColorStop(0, '#7f1d1d');
+            hGrad.addColorStop(0.55, '#dc2626');
+            hGrad.addColorStop(1, '#fca5a5');
+            ctx.fillStyle = hGrad;
+            ctx.beginPath();
+            ctx.moveTo(bx - wBase, by);
+            ctx.quadraticCurveTo(cx1, cy1, tx, ty);
+            ctx.quadraticCurveTo(cx1 + wBase * 1.2, cy1 + 2, bx + wBase, by + 0.5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#450a0a'; ctx.lineWidth = 0.9; ctx.stroke();
+          };
+          drawHorn(-2.2, -9.2, -9.5, -24.5, -9.5, -16.2, 2.4);
+          drawHorn(4.6, -9.4, 10.2, -26.0, 10.6, -17.5, 2.6);
+        }
+        ctx.restore();
       } else if (st.glowingEyes) {
         // Mắt rực sáng Cyan Tiến Đăng + viền mi mắt sắc sảo
         ctx.save();
@@ -1586,6 +1702,7 @@ class SkeletalRendererBody extends _ParentRenderer {
     const isChoDoiNon = (skinId === 'chodoinon');
     const isThuongLuong = (skinId === 'thuongluong');
     const isNguTinh = (skinId === 'ngutinh');
+    const isQuyDaXoa = (skinId === 'quydaxoa');
     const styleType = charObj.styleType || 'player';
     const dummy = {
       id: 'skin_card_' + charObj.id + '_' + skinId,
@@ -1632,6 +1749,10 @@ class SkeletalRendererBody extends _ParentRenderer {
       bg.addColorStop(0, '#042f2e');
       bg.addColorStop(0.5, '#4c1d95');
       bg.addColorStop(1, '#050a14');
+    } else if (isQuyDaXoa) {
+      bg.addColorStop(0, '#450a0a');
+      bg.addColorStop(0.52, '#991b1b');
+      bg.addColorStop(1, '#09090b');
     } else if (isVovinam) {
       bg.addColorStop(0, '#0c2461');
       bg.addColorStop(0.55, '#1e3799');

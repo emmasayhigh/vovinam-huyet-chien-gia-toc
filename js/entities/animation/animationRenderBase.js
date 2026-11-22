@@ -253,6 +253,10 @@ class SkeletalRendererRenderBase extends window.SkeletalRendererPose {
     else if (st.weapon === 'knife') this.drawWeapon(ctx, jt.nHand, jt.nFore, st, 20, jt.grip || 0);
     else if (st.weapon === 'baton') this.drawWeapon(ctx, jt.nHand, jt.nFore, st, st.weaponLen || 34, jt.grip || 0);
     else if (st.weapon === 'coin_sword') this.drawWeapon(ctx, jt.nHand, jt.nFore, st, st.weaponLen || 44, jt.grip || 0);
+    else if (st.weapon === 'oni_katana') {
+      const isSheathedPose = (state === 'ultimate_precision' && p >= 0.72) || !!e._katanaSheathed;
+      this.drawWeapon(ctx, jt.nHand, jt.nFore, st, st.weaponLen || 50, jt.grip || 0, isSheathedPose);
+    }
     if (st.cigar && (state === 'ultimate_barrage' || state === 'counter_hand_strike' || state === 'boss_bash' || state === 'air_punch' || (state === 'punch_hook' && p > 0.28 && p < 0.75))) {
       this.drawPistol(ctx, jt.nHand, jt.nFore, now, state === 'ultimate_barrage' || state === 'boss_bash' || state === 'counter_hand_strike', st);
     }

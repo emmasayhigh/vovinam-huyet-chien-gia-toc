@@ -980,6 +980,83 @@ class EffectManager {
     });
   }
 
+  createOniDemonUppercutHand(x, y, dir = 1, scale = 1) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'oni_uppercut_hand',
+      x, y, dir: dir || 1, scale: scale || 1,
+      t: 0, life: 0.56, maxLife: 0.56, alpha: 1
+    });
+    if (typeof this.createGroundCrack === 'function') {
+      this.createGroundCrack(x, y, '#dc2626');
+    }
+    this.createHitSparks(x, y - 35, 12, true);
+  }
+
+  createOniDemonPushHand(x, y, dir = 1, scale = 1) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'oni_push_hand',
+      x, y, dir: dir || 1, scale: scale || 1,
+      t: 0, life: 0.52, maxLife: 0.52, alpha: 1
+    });
+    this.createShockRing(x, y, '#ef4444');
+  }
+
+  createOniDemonAerialSlash(x, y, dir = 1, scale = 1) {
+    if (!Array.isArray(this.serpentFx)) this.serpentFx = [];
+    this.serpentFx.push({
+      kind: 'oni_aerial_slash',
+      x, y, dir: dir || 1, scale: scale || 1,
+      t: 0, life: 0.48, maxLife: 0.48, alpha: 1
+    });
+    this.createHitSparks(x + (dir || 1) * 32, y, 10, true);
+  }
+
+  createOniPinnedSlash(target, dir = 1, angle = -0.45, step = 1) {
+    if (!Array.isArray(this.serpentFx) || !target) return;
+    this.serpentFx.push({
+      kind: 'oni_pinned_slash',
+      target,
+      x: target.x || 0,
+      y: (target.y || 580) - 62,
+      dir: dir || 1,
+      angle: angle || -0.45,
+      step: step || 1,
+      detonated: false,
+      detonateAt: 0,
+      t: 0,
+      life: 2.2,
+      maxLife: 2.2,
+      alpha: 1
+    });
+  }
+
+  detonateOniPinnedSlashes() {
+    if (!Array.isArray(this.serpentFx)) return 0;
+    let count = 0;
+    const seenTargets = new Set();
+    for (const sf of this.serpentFx) {
+      if (sf && sf.kind === 'oni_pinned_slash' && !sf.detonated) {
+        sf.detonated = true;
+        sf.detonateAt = sf.t || 0;
+        sf.life = 0.42;
+        sf.maxLife = 0.42;
+        count++;
+        if (typeof this.createDimensionalSlash === 'function') {
+          this.createDimensionalSlash(sf.x, sf.y, sf.angle, 235, '#ef4444', { coreColor: '#fef08a', width: 7.5 });
+          this.createDimensionalSlash(sf.x, sf.y, -sf.angle, 210, '#dc2626', { coreColor: '#ffffff', width: 6.2 });
+        }
+        if (sf.target && !seenTargets.has(sf.target)) {
+          seenTargets.add(sf.target);
+          this.createHitSparks(sf.x, sf.y, 14, true);
+          this.createShockRing(sf.x, (sf.target.y || 580), '#facc15');
+        }
+      }
+    }
+    return count;
+  }
+
   createDimensionalSlash(x, y, angle = -0.3, length = 220, color = '#38bdf8', opts = null) {
     const darkCore = !!(opts && opts.darkCore);
     const width = (opts && opts.width) || (darkCore ? 7.2 : 5);
@@ -1450,6 +1527,22 @@ class EffectManager {
             sf.alpha = eElapsed < 0.65 ? 1 : Math.max(0, 1 - (eElapsed - 0.65) / 0.30);
           } else {
             sf.alpha = Math.max(0, Math.min(1, sf.life / 0.35));
+          }
+          if (sf.life <= 0) {
+            this.serpentFx.splice(i, 1);
+          }
+          continue;
+        }
+        if (sf.kind === 'oni_pinned_slash') {
+          if (sf.target && !sf.target.isDead) {
+            sf.x = sf.target.x;
+            sf.y = (sf.target.y || 580) - 62 + (sf.step - 2) * 10;
+          }
+          if (!sf.detonated && sf.t < 1.9) {
+            sf.life = Math.max(sf.life, 0.9);
+            sf.alpha = 1;
+          } else {
+            sf.alpha = Math.max(0, Math.min(1, sf.life / (sf.maxLife || 0.42)));
           }
           if (sf.life <= 0) {
             this.serpentFx.splice(i, 1);
@@ -2205,6 +2298,151 @@ class EffectManager {
             }
             ctx.restore();
           }
+        } else if (sf.kind === 'oni_uppercut_hand') {
+            // [W+J] Bàn Tay Quỷ Đỏ-Đen khổng lồ trồi lên từ lòng đất đấm vút lên trời!
+            const rise = Math.min(1, prog * 2.4);
+            const ease = 1 - Math.pow(1 - rise, 3);
+            const sc = sf.scale || 1;
+            ctx.save();
+            ctx.translate(sf.x, sf.y);
+            // Hố nứt hắc hỏa dưới nền đất
+            ctx.fillStyle = 'rgba(15, 3, 6, 0.85)';
+            ctx.beginPath(); ctx.ellipse(0, 0, 56 * sc, 18 * sc, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3.2;
+            ctx.beginPath(); ctx.ellipse(0, 0, 62 * sc, 21 * sc, 0, 0, Math.PI * 2); ctx.stroke();
+
+            // Cánh tay & nắm đấm Quỷ Dạ Xoa phóng thẳng lên
+            const reachY = -168 * ease * sc;
+            ctx.save();
+            ctx.scale(sf.dir * sc, sc);
+            const armGrad = ctx.createLinearGradient(0, 0, 0, reachY);
+            armGrad.addColorStop(0, '#09090b');
+            armGrad.addColorStop(0.42, '#7f1d1d');
+            armGrad.addColorStop(0.85, '#dc2626');
+            armGrad.addColorStop(1, '#fca5a5');
+            ctx.fillStyle = armGrad;
+            ctx.beginPath();
+            ctx.moveTo(-24, 0);
+            ctx.lineTo(-18, reachY + 34);
+            ctx.lineTo(-28, reachY + 12);
+            ctx.lineTo(-16, reachY - 14);
+            ctx.lineTo(18, reachY - 12);
+            ctx.lineTo(28, reachY + 16);
+            ctx.lineTo(18, reachY + 36);
+            ctx.lineTo(24, 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2.0; ctx.stroke();
+
+            // Vòng xích vàng ở cổ tay quỷ + gân máu + khớp nắm đấm sắc nhọn
+            ctx.strokeStyle = '#eab308'; ctx.lineWidth = 4.2;
+            ctx.beginPath(); ctx.moveTo(-18, reachY + 36); ctx.lineTo(18, reachY + 36); ctx.stroke();
+            ctx.fillStyle = '#fef08a';
+            for (let k = -1; k <= 1; k++) {
+              ctx.beginPath(); ctx.moveTo(k * 10 - 3, reachY - 10); ctx.lineTo(k * 10, reachY - 26); ctx.lineTo(k * 10 + 3, reachY - 10); ctx.fill();
+            }
+            ctx.restore();
+
+            // Vòng xung kích đấm xuyên không
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)'; ctx.lineWidth = 3.5;
+            ctx.beginPath(); ctx.ellipse(0, reachY + 14, 48 * ease * sc, 13 * ease * sc, 0, 0, Math.PI * 2); ctx.stroke();
+            ctx.restore();
+          } else if (sf.kind === 'oni_push_hand') {
+            // [S+K] Ấn Hắc Phong bùng nổ & Bàn Tay Quỷ khổng lồ lao đẩy thẳng về trước!
+            const surge = Math.min(1, prog * 2.5);
+            const ease = 1 - Math.pow(1 - surge, 3);
+            const sc = sf.scale || 1;
+            const reach = 165 * ease * sc;
+            ctx.save();
+            ctx.translate(sf.x, sf.y);
+            ctx.scale(sf.dir * sc, sc);
+
+            // Cổng triệu hồi thẳng đứng sau bàn tay
+            ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 3.2;
+            ctx.beginPath(); ctx.ellipse(0, 0, 16, 48, 0, 0, Math.PI * 2); ctx.stroke();
+            ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.6;
+            ctx.beginPath(); ctx.ellipse(0, 0, 10, 34, 0, 0, Math.PI * 2); ctx.stroke();
+
+            // Cánh tay Quỷ xòe 5 ngón vuốt nhọn đẩy mạnh tới
+            const pushGrad = ctx.createLinearGradient(0, 0, reach, 0);
+            pushGrad.addColorStop(0, 'rgba(9,9,11,0.15)');
+            pushGrad.addColorStop(0.35, '#7f1d1d');
+            pushGrad.addColorStop(0.85, '#dc2626');
+            pushGrad.addColorStop(1, '#fecaca');
+            ctx.fillStyle = pushGrad;
+            ctx.beginPath();
+            ctx.moveTo(0, -18);
+            ctx.lineTo(reach - 36, -16);
+            ctx.lineTo(reach - 18, -32);
+            ctx.lineTo(reach + 10, -24);
+            ctx.lineTo(reach - 10, -10);
+            ctx.lineTo(reach + 18, -6);
+            ctx.lineTo(reach - 8, 2);
+            ctx.lineTo(reach + 16, 12);
+            ctx.lineTo(reach - 12, 16);
+            ctx.lineTo(reach + 4, 28);
+            ctx.lineTo(reach - 28, 22);
+            ctx.lineTo(0, 18);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.8; ctx.stroke();
+
+            // 3 vệt sóng khí xé gió trước lòng bàn tay quỷ
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.strokeStyle = 'rgba(250, 204, 21, 0.85)'; ctx.lineWidth = 3.2;
+            ctx.beginPath(); ctx.ellipse(reach + 6, 0, 14, 38 * ease, 0, -1.2, 1.2); ctx.stroke();
+            ctx.restore();
+          } else if (sf.kind === 'oni_aerial_slash') {
+            // [Space+K] Không Trảm Quỷ Ảnh: Bán nguyệt Katana đỏ-vàng & Bóng Quỷ Dạ Xoa lao xuống!
+            const sc = sf.scale || 1;
+            const swing = Math.min(1, prog * 2.2);
+            ctx.save();
+            ctx.translate(sf.x, sf.y);
+            ctx.scale(sf.dir * sc, sc);
+
+            // Hình bóng Hộ Pháp Quỷ Dạ Xoa có cặp sừng đỏ rực hiện mờ sau lưng cú đá/chém
+            ctx.globalAlpha = Math.max(0, 0.52 * (1 - prog * 0.7));
+            ctx.fillStyle = '#7f1d1d';
+            ctx.beginPath(); ctx.arc(-18, -22, 18, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(-28, -32); ctx.quadraticCurveTo(-40, -52, -32, -62); ctx.lineTo(-22, -36);
+            ctx.moveTo(-10, -34); ctx.quadraticCurveTo(2, -56, -6, -66); ctx.lineTo(-15, -36);
+            ctx.fill();
+
+            // Vòng trảm bán nguyệt Đỏ-Hoàng Kim xé chéo không trung
+            ctx.globalAlpha = sf.alpha;
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.rotate(0.42);
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = Math.max(3, (1 - prog) * 14);
+            ctx.beginPath(); ctx.arc(10, 0, 68 + swing * 22, -0.95, 1.05); ctx.stroke();
+            ctx.strokeStyle = '#facc15'; ctx.lineWidth = Math.max(2, (1 - prog) * 6);
+            ctx.beginPath(); ctx.arc(16, 0, 74 + swing * 22, -0.82, 0.92); ctx.stroke();
+            ctx.restore();
+          } else if (sf.kind === 'oni_pinned_slash') {
+            // [I Ulti] Nhát chém phát sáng ghim thẳng lên người kẻ địch cho đến khoảnh khắc tra kiếm vào bao!
+            ctx.save();
+            ctx.translate(sf.x, sf.y);
+            const pulse = sf.detonated ? (1 + (1 - sf.alpha) * 1.4) : (0.92 + Math.sin(sf.t * 28) * 0.14);
+            ctx.rotate(sf.angle);
+            ctx.globalCompositeOperation = 'lighter';
+
+            // Lưỡi ánh sáng đỏ-vàng ghim chặt qua thân mục tiêu
+            const halfLen = 46 * pulse;
+            ctx.strokeStyle = sf.detonated ? '#fef08a' : '#ef4444';
+            ctx.lineWidth = sf.detonated ? 8 : 4.5;
+            ctx.beginPath(); ctx.moveTo(-halfLen, 0); ctx.lineTo(halfLen, 0); ctx.stroke();
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = sf.detonated ? 4 : 2.0;
+            ctx.beginPath(); ctx.moveTo(-halfLen * 0.8, 0); ctx.lineTo(halfLen * 0.8, 0); ctx.stroke();
+
+            // Ấn Dạ Xoa ở tâm nhát chém chờ nổ
+            if (!sf.detonated) {
+              ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.6;
+              ctx.beginPath(); ctx.arc(0, 0, 10 + Math.sin(sf.t * 20) * 2.5, 0, Math.PI * 2); ctx.stroke();
+            }
+            ctx.restore();
         }
         ctx.restore();
       }
@@ -3182,6 +3420,106 @@ class EffectManager {
       vig.addColorStop(1, `rgba(3, 7, 18, ${0.65 * inPhase})`);
       ctx.fillStyle = vig;
       ctx.fillRect(0, 0, width, height);
+
+      // 2b-oni. Cutscene Độc Quyền Code-Rendered: QUỶ DẠ XOA — NHẬT THỰC & MẶT NẠ HẮC ÁM + VẾT CHÉM XÉ MÀN HÌNH
+      if (c.style === 'oni_demon' && inPhase > 0.15) {
+        const elapsed = 1 - progress; // 0 -> 1
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, inPhase * 0.95);
+
+        // Hào quang huyết ngục phủ màn hình
+        const oniBg = ctx.createRadialGradient(width * 0.5, height * 0.42, 10, width * 0.5, height * 0.42, width * 0.58);
+        oniBg.addColorStop(0, 'rgba(153, 27, 27, 0.36)');
+        oniBg.addColorStop(0.55, 'rgba(69, 10, 10, 0.55)');
+        oniBg.addColorStop(1, 'rgba(5, 5, 9, 0.78)');
+        ctx.fillStyle = oniBg;
+        ctx.fillRect(0, barH, width, height - barH * 2);
+
+        // Vầng Nhật Thực Huyết Nguyệt ở trung tâm
+        const mx = width * 0.5;
+        const my = height * 0.42;
+        const moonR = Math.min(width, height) * 0.20 * (0.85 + Math.min(1, elapsed * 3.5) * 0.15);
+        ctx.fillStyle = '#09090b';
+        ctx.beginPath(); ctx.arc(mx, my, moonR, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(mx, my, moonR + 2, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(mx, my, moonR + 8, 0, Math.PI * 2); ctx.stroke();
+
+        // Mặt Nạ Quỷ Dạ Xoa Khổng Lồ trồi dần từ Nhật Thực với đôi mắt hổ phách phát sáng
+        const maskScale = moonR / 62;
+        ctx.save();
+        ctx.translate(mx, my + 8);
+        ctx.scale(maskScale, maskScale);
+        // Hai Sừng Đỏ Khổng Lồ uốn cong
+        ctx.fillStyle = '#dc2626';
+        ctx.strokeStyle = '#450a0a'; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-24, -22); ctx.quadraticCurveTo(-56, -54, -44, -84); ctx.quadraticCurveTo(-30, -56, -12, -28); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(24, -22); ctx.quadraticCurveTo(56, -54, 44, -84); ctx.quadraticCurveTo(30, -56, 12, -28); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+
+        // Khối Mặt Nạ Đỏ Góc Cạnh
+        const mGr = ctx.createLinearGradient(0, -34, 0, 42);
+        mGr.addColorStop(0, '#ef4444');
+        mGr.addColorStop(0.6, '#991b1b');
+        mGr.addColorStop(1, '#450a0a');
+        ctx.fillStyle = mGr;
+        ctx.beginPath();
+        ctx.moveTo(-34, -18); ctx.lineTo(0, -36); ctx.lineTo(34, -18);
+        ctx.lineTo(38, 12); ctx.lineTo(20, 42); ctx.lineTo(0, 48); ctx.lineTo(-20, 42); ctx.lineTo(-38, 12);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.6; ctx.stroke();
+
+        // Trăng khuyết vàng trên trán Quỷ
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3.2;
+        ctx.beginPath(); ctx.arc(0, -18, 7, 0.25, Math.PI * 1.75); ctx.stroke();
+
+        // Đôi Mắt Hổ Phách Sắc Lẹm & Tia Lóe Anime
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath(); ctx.moveTo(-26, -6); ctx.lineTo(-7, 1); ctx.lineTo(-13, 8); ctx.lineTo(-28, 3); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(26, -6); ctx.lineTo(7, 1); ctx.lineTo(13, 8); ctx.lineTo(28, 3); ctx.closePath(); ctx.fill();
+        if (elapsed > 0.18 && elapsed < 0.72) {
+          const beamW = 68 * Math.sin(((elapsed - 0.18) / 0.54) * Math.PI);
+          ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(-18 - beamW, 1); ctx.lineTo(-18 + beamW, 1);
+          ctx.moveTo(18 - beamW, 1); ctx.lineTo(18 + beamW, 1);
+          ctx.stroke();
+        }
+        ctx.globalCompositeOperation = 'source-over';
+        // Miệng quỷ & 4 nanh trắng
+        ctx.fillStyle = '#09090b';
+        ctx.beginPath(); ctx.moveTo(-20, 20); ctx.lineTo(20, 20); ctx.lineTo(14, 34); ctx.lineTo(-14, 34); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#fef3c7';
+        ctx.beginPath();
+        ctx.moveTo(-16, 20); ctx.lineTo(-12, 31); ctx.lineTo(-8, 20);
+        ctx.moveTo(16, 20); ctx.lineTo(12, 31); ctx.lineTo(8, 20);
+        ctx.fill();
+        ctx.restore();
+
+        // Nhát Chém Katana Chéo Toàn Màn Hình lúc cao trào Cutscene (elapsed 0.42 -> 0.88)
+        if (elapsed >= 0.38 && elapsed <= 0.90) {
+          const cutP = Math.min(1, (elapsed - 0.38) / 0.16);
+          const fadeCut = elapsed > 0.68 ? Math.max(0, 1 - (elapsed - 0.68) / 0.22) : 1;
+          ctx.save();
+          ctx.globalAlpha = fadeCut;
+          ctx.globalCompositeOperation = 'lighter';
+          const sx0 = 0, sy0 = height * 0.72;
+          const sx1 = width * cutP, sy1 = height * 0.72 - (height * 0.52) * cutP;
+          ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 22 * fadeCut;
+          ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(sx1, sy1); ctx.stroke();
+          ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 9 * fadeCut;
+          ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(sx1, sy1); ctx.stroke();
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.5 * fadeCut;
+          ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(sx1, sy1); ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+      }
 
       // 2c. Anime Speedlines (Tia tốc độ hướng tâm)
       if (c.speedlines && inPhase > 0.3) {

@@ -723,6 +723,42 @@ class SkeletalRendererArchetypes extends window.SkeletalRendererWeapon {
 
     // B2. Vạt tà Đạo Bào Đỏ Huyết Đạo Tà (Châu Ngọc Thiên Khánh: vạt đỏ rách xẻ tà + đai đen + bầu hồ lô đồng)
     if (arch === 'crimson_coin_taoist') {
+      if (st.oniArmor) {
+        // Quỷ Dạ Xoa: Giáp đùi Samurai Đỏ-Vàng 3 tầng + Thừng Hoàng Kim cuộn eo + Bao Katana đen viền đỏ
+        const flare = sw * 0.28 + runBias * 0.18;
+        const drawOniTasset = (x0, x1, farSide) => {
+          const p1 = P(x0, -1), p2 = P(x1, -1);
+          const p3 = P(x1 + Math.sign(x1 || 1) * 2.4 + flare, -19.5);
+          const p4 = P(x0 + Math.sign(x0 || 1) * 1.4 + flare * 0.7, -19.5);
+          this._drawScaleTasset(ctx, st, [p1, p2, p3, p4], '#991b1b', '#facc15', farSide);
+        };
+        drawOniTasset(-11.2, -1.6, true);
+        drawOniTasset(1.6, 11.4, false);
+        if (!isSolid) {
+          // Thừng bện vàng to quấn quanh eo thắt nút rủ xuống phía trước (như Ghost Samurai)
+          const rL = P(-9.6, 1.5), rM = P(0.4, -0.8), rR = P(9.6, 1.2);
+          ctx.strokeStyle = '#ca8a04'; ctx.lineWidth = 4.6; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(rL[0], rL[1]); ctx.quadraticCurveTo(rM[0], rM[1], rR[0], rR[1]); ctx.stroke();
+          ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 1.6;
+          ctx.beginPath(); ctx.moveTo(rL[0] + 1, rL[1] - 0.8); ctx.quadraticCurveTo(rM[0], rM[1] - 0.8, rR[0] - 1, rR[1] - 0.8); ctx.stroke();
+          // Hai đuôi thừng rủ trước
+          const tEnd1 = P(1.2 + sw * 0.35, -18.5);
+          const tEnd2 = P(-1.8 + sw * 0.28, -15.5);
+          ctx.strokeStyle = '#eab308'; ctx.lineWidth = 3.2;
+          ctx.beginPath(); ctx.moveTo(rM[0], rM[1]); ctx.lineTo(tEnd1[0], tEnd1[1]); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(rM[0] - 1.5, rM[1]); ctx.lineTo(tEnd2[0], tEnd2[1]); ctx.stroke();
+
+          // Bao Katana đen viền đỏ-vàng đeo ngang hông
+          const scA = P(-14.5, 5.2), scB = P(7.5, -5.8);
+          ctx.strokeStyle = '#09090b'; ctx.lineWidth = 4.4; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(scA[0], scA[1]); ctx.lineTo(scB[0], scB[1]); ctx.stroke();
+          ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.moveTo(scA[0] + 1, scA[1] - 0.5); ctx.lineTo(scB[0] - 1, scB[1] + 0.5); ctx.stroke();
+          ctx.fillStyle = '#facc15';
+          ctx.beginPath(); ctx.arc(scB[0], scB[1], 2.1, 0, Math.PI * 2); ctx.fill();
+        }
+        return;
+      }
       const flare = sw * 0.34 + runBias * 0.22;
       const drawRobeWing = (x0, x1, col, dropY, farSide) => {
         const p1 = P(x0, -1), p2 = P(x1, -1);
@@ -878,6 +914,35 @@ class SkeletalRendererArchetypes extends window.SkeletalRendererWeapon {
 
     // 2B. Cầu vai Đạo Bào Đỏ Huyết viền kim-hắc (Châu Ngọc Thiên Khánh)
     if (arch === 'crimson_coin_taoist') {
+      if (st.oniArmor) {
+        // Giáp vai Samurai Sode Đỏ-Vàng xếp tầng 3 lớp giống ảnh Quỷ Dạ Xoa
+        const drawOniSode = (pt, far) => {
+          const outX = far ? 2.4 : -2.2;
+          ctx.save();
+          ctx.translate(pt[0] + outX, pt[1] + 1.0);
+          ctx.rotate(jt.ang);
+          for (let l = 2; l >= 0; l--) {
+            const ly = -2.2 + l * 4.0;
+            const w = 15.0 - l * 0.8;
+            ctx.fillStyle = isSolid ? st._solid : this._materialFill(ctx, st, 'metal', -w * 0.5, ly, w * 0.5, ly + 3.8, l === 0 ? '#dc2626' : '#991b1b', far);
+            ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-w * 0.5, ly, w, 4.0, 1.5) : ctx.rect(-w * 0.5, ly, w, 4.0); ctx.fill();
+            if (!isSolid) {
+              ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.05; ctx.stroke();
+              ctx.strokeStyle = '#09090b'; ctx.lineWidth = 0.85;
+              ctx.beginPath();
+              ctx.moveTo(-3.2, ly + 0.8); ctx.lineTo(-1.4, ly + 3.2);
+              ctx.moveTo(-1.4, ly + 0.8); ctx.lineTo(-3.2, ly + 3.2);
+              ctx.moveTo(1.4, ly + 0.8); ctx.lineTo(3.2, ly + 3.2);
+              ctx.moveTo(3.2, ly + 0.8); ctx.lineTo(1.4, ly + 3.2);
+              ctx.stroke();
+            }
+          }
+          ctx.restore();
+        };
+        drawOniSode(fSh, true);
+        drawOniSode(nSh, false);
+        return;
+      }
       const sideN = nSh[0] <= sh[0] ? -1 : 1;
       ctx.fillStyle = isSolid ? st._solid : this._materialFill(ctx, st, 'fabric', sh[0] - 10, sh[1] - 4, nSh[0] + 8, nSh[1] + 8, '#290c0c', false);
       ctx.beginPath();
